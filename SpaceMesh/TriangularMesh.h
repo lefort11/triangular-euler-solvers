@@ -7,69 +7,105 @@
 
 namespace euler
 {
-
-	class Triangle //~triangle in fade_2d triangulation;
+/*
+	class Triangle: public GEOM_FADE2D::Triangle2
 	{
 
 
-		GEOM_FADE2D::Triangle2* triangle;
-		std::array<double, 4> m_currentState; // {ro, v, w, P} at current time in the centroid of the triangle
-
 	public:
-		Triangle(std::array<double, 4> const& currentState): m_currentState(currentState),
-															 triangle(nullptr)
-		{}
 
 
 		void SetState(std::array<double, 4> const& currentState)
 		{
-			m_currentState = currentState;
+			m_CurrentState = currentState;
 		}
 
-		void SetTriangle2(GEOM_FADE2D::Triangle2* tr2)
+
+
+
+
+		double& Density()
 		{
-			triangle = tr2;
+			return m_CurrentState[0];
 		}
 
-		GEOM_FADE2D::Point2 GetBarycenter() const
+		double& VelocityX() // global x coord of velocity
 		{
-			return triangle->getBarycenter();
+			return m_CurrentState[1];
 		}
 
-		GEOM_FADE2D::Point2* GetCorner(int const i) const
+		double& VelocityY() // global y coord of velocyty
 		{
-			return triangle->getCorner(i);
+			return m_CurrentState[2];
 		}
 
-/*		GEOM_FADE2D::Triangle2* GetOppositeTriangle(int const i) const
+		double& Pressure()
 		{
-			return triangle->getOppositeTriangle(i);
-		} */
+			return m_CurrentState[3];
+		}
 
-	};
+
+
+	}; */
+
+	//fade2d library doesn't allow to modernize Triangle2 class saving the graph. Library was fixed in "Triangle2.h"
+	typedef GEOM_FADE2D::Triangle2 Triangle;
+
+
 
 	class TriangularMesh
 	{
-		std::vector<Triangle> m_Mesh;
+		std::vector<Triangle*> m_mesh;
 
 	public:
-		TriangularMesh(std::vector<Triangle> const& vec): m_Mesh(vec)
+
+		TriangularMesh(): m_mesh()
 		{}
 
-		//!@param i-th elem of initialStates corresponds to i-th triangle
+		TriangularMesh(std::vector<Triangle*> const& mesh): m_mesh(mesh)
+		{}
+
+		TriangularMesh(std::vector<Triangle*> const& mesh, std::vector<std::array<double, 4>> const& initialState):
+				m_mesh(mesh)
+		{
+			assert(m_mesh.size() == initialState.size());
+			for(int i = 0; i < m_mesh.size(); ++i)
+				m_mesh[i]->SetState(initialState[i]);
+		}
+
+/*		//!@param i-th elem of initialStates corresponds to i-th triangle
+
+		//@todo переделать
 		TriangularMesh(std::vector<GEOM_FADE2D::Triangle2*> const& vTr2,
 					   std::vector<std::array<double, 4>> const& initialStates):
-				m_Mesh()
+				m_mesh()
 		{
 			assert(vTr2.size() == initialStates.size());
 			for(int i = 0; i < vTr2.size(); ++i)
 			{
-				auto triangle = Triangle(initialStates[i]);
-				triangle.SetTriangle2(vTr2[i]);
+				auto triangle = Triangle(*(vTr2[i]));
+				triangle.SetState(initialStates[i]);
 
-				m_Mesh.push_back(triangle);
+				m_mesh.push_back(triangle);
 			}
 		}
+		*/
+
+/*		void SortByX()
+		{
+			std::sort(m_mesh.begin(), m_mesh.end(), [](Triangle const& first, Triangle const& scnd)
+			{
+				return (first.GetBarycenter().x() <  scnd.GetBarycenter().x());
+			});
+		}
+
+		void SortByY()
+		{
+			std::sort(m_mesh.begin(), m_mesh.end(), [](Triangle const& first, Triangle const& scnd)
+			{
+				return (first.GetBarycenter().y() <  scnd.GetBarycenter().y());
+			});
+		} */
 	};
 }
 

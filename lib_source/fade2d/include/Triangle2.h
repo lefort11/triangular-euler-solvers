@@ -19,6 +19,8 @@
 #pragma once
 #include "Point2.h"
 
+#include <array>
+
 
 #include "common.h"
 #if GEOM_PSEUDO3D==GEOM_TRUE
@@ -47,6 +49,9 @@
 */
 class CLASS_DECLSPEC  Triangle2
 {
+protected:
+	std::array<double, 4> m_currentState; //fix here
+
 public:
 /** \brief Constructor
 *
@@ -63,8 +68,38 @@ public:
 	} // Never used!
 
 
+	/******* Fix here **********/
 
-/** \brief Get the \e i-th corner of the triangle
+	void SetState(std::array<double, 4> const& state)
+	{
+		m_currentState = state;
+	}
+
+	double& Density()
+	{
+		return m_currentState[0];
+	}
+
+	double& VelocityX() // global x coord of velocity
+	{
+		return m_currentState[1];
+	}
+
+	double& VelocityY() // global y coord of velocyty
+	{
+		return m_currentState[2];
+	}
+
+	double& Pressure()
+	{
+		return m_currentState[3];
+	}
+
+	/*************************************/
+
+
+
+	/** \brief Get the \e i-th corner of the triangle
 *
 * \return a pointer to the i-th corner point of the triangle.
 *

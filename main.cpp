@@ -34,7 +34,7 @@ int main()
 
 	std::array<double, 3> trProp = {10, 0.01, 1};
 	area.Triangulate(1000, trProp, [](GEOM_FADE2D::Point2){
-		return std::array<double,4>{0.0,0.0,0.0,0.0};
+		return std::array<double,4>{1.0,0.0,0.0,0.0};
 	});
 
 	return 0;
