@@ -30,6 +30,8 @@
 
 
 /** \brief User defined predicate
+ *
+ * \sa http://www.geom.at/remove-border-triangles/
 */
 class CLASS_DECLSPEC UserPredicateT
 {

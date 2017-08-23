@@ -95,7 +95,7 @@ void generateRandomNumbers(	size_t num,
  *
  *
 * \image html randomPoints.png "Point generator"
-* \image latex randomPoints.eps "Point generator" width=15cm
+* \image latex randomPoints.eps "Point generator" width=10cm
 *
 */
 CLASS_DECLSPEC
@@ -117,7 +117,7 @@ void generateRandomPoints(	size_t numRandomPoints,
  *
  *
 * \image html randomPolygon.png "Polygon generator: Random simple polygon"
-* \image latex randomPolygon.eps "Polygon generator: Random simple polygon" width=15cm
+* \image latex randomPolygon.eps "Polygon generator: Random simple polygon" width=10cm
  */
 CLASS_DECLSPEC
 void generateRandomPolygon(	size_t numSegments,
@@ -140,7 +140,7 @@ void generateRandomPolygon(	size_t numSegments,
  *
  *
 * \image html randomSegments.png "Segment generator: Random line segments"
-* \image latex randomSegments.eps "Segment generator: Random line segments" width=15cm
+* \image latex randomSegments.eps "Segment generator: Random line segments" width=10cm
  */
 CLASS_DECLSPEC
 void generateRandomSegments(size_t numSegments,
@@ -162,7 +162,7 @@ void generateRandomSegments(size_t numSegments,
  * @param [out] vSineSegmentsOut is the output vector
  *
  * * \image html sinePolyline.png "Polyline generator: Polylines from sine functions"
-* \image latex sinePolyline.eps "Polyline generator: Polylines from sine functions" width=15cm
+* \image latex sinePolyline.eps "Polyline generator: Polylines from sine functions" width=10cm
  */
 CLASS_DECLSPEC
 void generateSineSegments(
@@ -229,7 +229,8 @@ void generateRandomSurfacePoints(
 
 #endif
 
-
+CLASS_DECLSPEC
+void shear(	std::vector<Point2>& vPointsInOut,double shearX,double shearY );
 
 
 /** @}*/

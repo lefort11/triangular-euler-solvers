@@ -19,6 +19,6 @@ include_directories(${FADE2D_INCLUDE_DIRS})
 set(CMAKE_BUILD_TYPE Debug)
 
 
-set(SOURCE_FILES main.cpp SpaceMesh/Area.cpp SpaceMesh/Area.h SpaceMesh/TriangularMesh.cpp SpaceMesh/TriangularMesh.h FirstOrderSolver/Solver.h FirstOrderSolver/Solver.cpp Maths/Algebra.cpp Maths/Algebra.h)
+set(SOURCE_FILES main.cpp SpaceMesh/Area.cpp SpaceMesh/Area.h SpaceMesh/TriangularMesh.cpp SpaceMesh/TriangularMesh.h FirstOrderSolver/Solver.h FirstOrderSolver/Solver.cpp Maths/Algebra.cpp Maths/Algebra.h FirstOrderSolver/LaxFriedrichSolver.cpp FirstOrderSolver/LaxFriedrichSolver.h)
 add_executable(Triangular_Solvers ${SOURCE_FILES})
 target_link_libraries(Triangular_Solvers ${FADE2D_LIBRARY})

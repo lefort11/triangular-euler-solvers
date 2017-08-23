@@ -29,16 +29,17 @@
 
 class  GeomTest; // FWD
 
-/** \brief Boundingbox
+
+/** \brief Bbox2 is an axis aligned bounding box.
+*
 */
 class CLASS_DECLSPEC Bbox2
 {
 public:
-/** \brief Create a bounding box
-* Bounds stay uninitialized
+/** \brief Constructor
+ *
+ * Bounds not initialized
 */
-
-
 	explicit Bbox2(GeomTest* pGeomTest_=NULL):
 		minX(DBL_MAX),minY(DBL_MAX),
 		maxX(DBL_MIN),maxY(DBL_MIN),
@@ -46,8 +47,9 @@ public:
 	{
 	}
 
-/** \brief Create a bounding box
-* Bounds initialized to the minimal bounding box of the iterator range of points
+/** \brief Constructor
+ *
+ * Bounds initialized to the minimal bounding box of the iterator range of points
 */
 
 	Bbox2(	std::vector<Point2>::const_iterator start_it,
@@ -62,6 +64,8 @@ public:
 	}
 
 /** \brief Are the bounds valid?
+ *
+ * The bounds are valid when at least one point has been added
 */
 
 	bool isValid() const
@@ -69,12 +73,16 @@ public:
 		return minX<DBL_MAX;
 	}
 
-/** \brief Get the 4 corners
+/** \brief Get corners
+ *
+ * Convenience function: Returns the 4 corners of the bounding box
  */
 	void getCorners(std::vector<Point2>& vBoxCorners) const;
 
 
 /** \brief Add points
+ *
+ * Extends the bounding box if required.
 * \return true if the bounding box changes, false otherwise
 */
 
@@ -98,6 +106,8 @@ public:
 	}
 
 /** \brief Add points
+ *
+ * Extends the bounding box if required.
 * \return true if the bounding box changes, false otherwise
 */
 
@@ -133,6 +143,8 @@ public:
 	}
 
 /** \brief Add a point
+ *
+ * Extends the bounding box if required.
 * \return true if the bounding box changes, false otherwise
 */
 
@@ -154,10 +166,10 @@ public:
 	}
 
 /** \brief Add a bounding box
+ *
+ * Extends the bounding box if required.
 * \return the resulting bounding box
 */
-
-
 	Bbox2 operator+(const Bbox2& b)
 	{
 		if(b.minX<minX) minX=b.minX;
@@ -167,13 +179,16 @@ public:
 		return *this;
 	}
 
+
 #if GEOM_PSEUDO3D==GEOM_TRUE
 /** \brief Get the min point
-* \return the point with the three minimum coordinates, the z-coordinate is set to 0
+ *
+* \return the corner point with the minimum coordinates, the z-coordinate is set to 0
 */
 #else
 /** \brief Get the min point
-* \return the point with the three minimum coordinates
+ *
+* \return the corner point with the minimum coordinates
 */
 #endif
 
@@ -189,11 +204,13 @@ public:
 
 #if GEOM_PSEUDO3D==GEOM_TRUE
 /** \brief Get the max point
-* \return the point with the three maximum coordinates, the z-coordinate is set to 0
+ *
+* \return the corner point with the maximum coordinates, the z-coordinate is set to 0
 */
 #else
 /** \brief Get the max point
-* \return the point with the three maximum coordinates
+ *
+* \return the corner point with the maximum coordinates
 */
 #endif
 
@@ -207,7 +224,8 @@ public:
 	}
 
 /** \brief Get minimum coordinate
-* \return the smallest coordinate value of {x,y}
+*
+* \return the smallest coordinate value, i.e. min(minX,minY)
 */
 
 	double getMinCoord() const
@@ -216,7 +234,8 @@ public:
 			else return minY;
 	}
 /** \brief Get maximum coordinate
-* \return the largest coordinate value of {x,y}
+ *
+* \return the largest coordinate value, i.e. max(maxX,maxY)
 */
 
 	double getMaxCoord() const
@@ -224,7 +243,9 @@ public:
 		if(maxX>maxY) return maxX;
 			else return maxY;
 	}
-/** \brief Get x range
+
+/** \brief Get x-range
+ *
 * \return maxX-minX
 */
 
@@ -232,52 +253,58 @@ public:
 	{
 		return maxX-minX;
 	}
-/** \brief Get y range
+/** \brief Get y-range
+ *
 * \return maxY-minY
 */
-
 	double getRangeY() const
 	{
 		return maxY-minY;
 	}
+
 /** \brief Get max range
-* \return the largest range of {x,y}
+*
+* \return the largest range, i.e. max(getRangeX(),getRangeY())
 */
 
 	double getMaxRange() const
 	{
 		double range0=getRangeX();
 		double range1=getRangeY();
-		if(range0>range1) std::swap(range0,range1);
+		if(range0>range1) return range0;
 		return range1;
 	}
+
 /** \brief Get minX
+ *
 * \return minX
 */
 	double get_minX() {return minX;}
 /** \brief Get minY
+ *
 * \return minY
 */
 	double get_minY() {return minY;}
 /** \brief Get maxX
+ *
 * \return maxX
 */
 	double get_maxX() {return maxX;}
 /** \brief Get maxY
+ *
 * \return maxY
 */
 	double get_maxY() {return maxY;}
 
-/** \brief Double the box size
-* Changes the bounds such that the box grows in each direction by half the range
+/** \brief Double the box
+ *
+* Changes the bounds such that the box grows in each direction by half
+* the previous range
 */
 
 	void doubleTheBox();
 
 protected:
-/** \brief Add a point to a valid box
-*/
-
 	inline void treatPointForValidBox(const Point2& p)
 	{
 		double x,y;
@@ -287,19 +314,12 @@ protected:
 		if(y<minY) minY=y;
 			else if(y>maxY) maxY=y;
 	}
-
-/** \brief Add a point to an uninitialized
-*/
-
 	inline void treatPointForInvalidBox(const Point2& p)
 	{
 		p.xy(minX,minY);
 		p.xy(maxX,maxY);
 		bValid=true;
 	}
-
-
-
 
 protected:
 	double minX,minY;

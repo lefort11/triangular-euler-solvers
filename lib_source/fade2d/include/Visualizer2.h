@@ -37,12 +37,15 @@
 #endif
 
 
-/** \brief Postscript writer
-*
+/** \brief Visualizer2 is a general Postscript writer. It draws the
+ * objects Point2, Segment2, Triangle2, Circle2 and Label.
+ *
+* \sa http://www.geom.at/example2-traversing/
 * \image html visualizer.jpg "Figure 1: Example output of the Visualizer"
 * \image latex visualizer.eps "Example output of the Visualizer" width=12cm
 *
-* Visualizer2 is a generally usable postscript writer. It supports Point2, Segment2, Circle2, Label and Color
+*
+
 */
 class Visualizer2
 {
@@ -144,7 +147,7 @@ protected:
 	void writeLine(const Point2& pSource,const Point2& pTarget);
 	void writeTriangle(const Triangle2* pT,bool bFill_,double width);
 	void writePoint(Point2& p1_,float size);
-	void writeCircle(const Point2& p1_,double radius);
+	void writeCircle(const Point2& p1_,double radius,bool bFill);
 	void periodicStroke();
 	void setRange();
 	Color lastColor;

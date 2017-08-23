@@ -79,7 +79,7 @@ TriangularMesh Area::Triangulate(int const discrPointNumber,
 
 	pGrowZone->getTriangles(triangles);
 
-	pGrowZone->show("kekas.ps", false, true);
+//	pGrowZone->show("kekas.ps", false, true);
 
 
 	//refining final zone
@@ -90,25 +90,30 @@ TriangularMesh Area::Triangulate(int const discrPointNumber,
 	pBoundedZone->show("lul.ps", false, true);
 
 
-	globalArea.show("kek.ps");
+//	globalArea.show("kek.ps");
 
 
-	std::vector<Triangle *> vTriangles;
+	std::vector<GEOM_FADE2D::Triangle2*> vTriangles2;
 
-	pBoundedZone->getTriangles(vTriangles);
+	pBoundedZone->getTriangles(vTriangles2);
+
+
+	std::vector<Triangle*> vTriangle;
+
+	CopyGraph(vTriangle, vTriangles2);
+
 
 
 	//setting init state for each triangle
-	for (auto &triangle : vTriangles)
+	for (auto &triangle : vTriangle)
 	{
 		auto const point = triangle->getBarycenter();
 		triangle->SetState(initStateFunc(point));
 	}
 
 
-	//i-th element of vInitStates corresponds to i-th m_Triangle
-
-	return TriangularMesh(vTriangles);
+	return TriangularMesh(vTriangle);
+//	return TriangularMesh(triangles);
 
 
 }

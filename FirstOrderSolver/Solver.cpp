@@ -4,7 +4,7 @@
 
 using namespace euler;
 
-void Solver::Calculate(double time)
+void Solver::Calculate(double time) const
 {
 
 	/****** Runge-Kutta method parameters ******/
@@ -43,6 +43,8 @@ void Solver::Calculate(double time)
 		{
 
 
+			if(trngl_cntr == 510)
+				double kek;
 			auto const next_q = RungeKuttaTVDStep(currentQs[trngl_cntr], delta_t, [this, trngl_cntr](Vec4 qVec)
 			{
 				auto const area = CalculateTriangleArea(trngl_cntr);

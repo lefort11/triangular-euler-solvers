@@ -40,6 +40,8 @@ enum MsgType
 * example widgets, progress bars, ...) can be derived which then
 * receive messages (progress, warnings, ...) from Fade.
 *
+* \sa http://www.geom.at/progress-bar/
+*
 */
 class CLASS_DECLSPEC MsgBase
 {

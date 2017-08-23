@@ -94,8 +94,14 @@ public:
 * This method is thought for development purposes. Don't call it
 * method unless you assume that something is wrong with the code.
 */
-	bool checkValidity(bool bCheckEmptyCircleProperty,const std::string& msg);
+	bool checkValidity(bool bCheckEmptyCircleProperty,const std::string& msg) const;
 
+
+/** \brief Statistics
+ *
+ * Prints mesh statistics to stdout.
+ */
+ 	void statistics(const std::string& s) const;
 
 /** \brief Draws the triangulation as postscript file.
 *
@@ -245,14 +251,32 @@ public:
 
 
 #if GEOM_PSEUDO3D==GEOM_TRUE
-/** \brief Compute the height (z-coordinate) of a certain point
+/** \brief Compute the height of a certain point
 *
-* If the coordinates (x,y) are inside the triangulation, this function computes
-* the height and returns true. If the (x,y) is outside, the function returns false.
+* Computes the height (z) at the coordinates \p x and \p y, assigns it
+* to heightOut and returns true if successful.
+*
+* \param [in] x,y are the input coordinates
+* \param [out] heightOut is the computed height
+* \param [in] pApproxT can be set to a nearby triangle. If unknown, use NULL.
+* \param [in] tolerance is by default 0, see below
+*
+* \note pApproxT is an optional parameter to speed up the search in
+* case that you know a nearby triangle. But point location if very
+* fast anyway and if you are not sure, using NULL is probably faster.
+*
+* \note Due to rounding errors your query point may lie slightly outside
+* the convex hull of the triangulation and in such a case the present
+* method would correctly return false. But you can use the optional
+* \p tolerance parameter (default: 0): If your query point is not
+* farther outside the convex hull than \p tolerance then the height
+* of the closest point of the convex hull is returned.
+*
+*
 *
 */
 
-	bool getHeight(double x,double y,double& height) const;
+	bool getHeight(double x,double y,double& heightOut,Triangle2* pApproxT=NULL,double tolerance=0) const;
 #endif
 
 /** \brief Delaunay refinement
@@ -726,12 +750,21 @@ void unsubscribe(MsgType msgType,MsgBase* pMsg);
 
 
 	// Development functions, not for public use
+/// @private
 	void internal(int au,int fu,std::string s="");
+/// @private
 	Dt2* getImpl();
+/// @private
+	void setDev(const std::string& s,int ival,double dval);
+
 protected:
+/// @private
 	void initFade(unsigned numExpectedVertices);
+/// @private
 	Fade_2D(const Fade_2D&); // No copy constructor
+/// @private
 	Fade_2D& operator=(const Fade_2D&); // No assignment allowed
+/// @private
 	Dt2* pImpl;
 };
 

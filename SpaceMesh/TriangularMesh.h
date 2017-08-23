@@ -7,49 +7,52 @@
 
 namespace euler
 {
-/*
+
 	class Triangle: public GEOM_FADE2D::Triangle2
 	{
+	private:
+		Triangle* m_pOppTriangles[3];
 
 
 	public:
+		double density = 0, velocityX = 0, velocityY = 0, pressure = 0;
 
+	public:
 
-		void SetState(std::array<double, 4> const& currentState)
+		Triangle()
 		{
-			m_CurrentState = currentState;
+			m_pOppTriangles[0] = nullptr;
+			m_pOppTriangles[1] = nullptr;
+			m_pOppTriangles[2] = nullptr;
 		}
 
-
-
-
-
-		double& Density()
+		Triangle(GEOM_FADE2D::Triangle2 const& tr2): GEOM_FADE2D::Triangle2(tr2)
 		{
-			return m_CurrentState[0];
+			m_pOppTriangles[0] = nullptr;
+			m_pOppTriangles[1] = nullptr;
+			m_pOppTriangles[2] = nullptr;
 		}
 
-		double& VelocityX() // global x coord of velocity
+		void SetState(std::array<double, 4> const& state)
 		{
-			return m_CurrentState[1];
+			density = state[0];
+			velocityX = state[1];
+			velocityY = state[2];
+			pressure = state[3];
 		}
 
-		double& VelocityY() // global y coord of velocyty
+		void SetOppTriangle(const int ith, Triangle* const pTriangle)
 		{
-			return m_CurrentState[2];
+			m_pOppTriangles[ith] = pTriangle;
 		}
 
-		double& Pressure()
+		Triangle* GetOppTriangle(const int ith)
 		{
-			return m_CurrentState[3];
+			return m_pOppTriangles[ith];
 		}
 
+	};
 
-
-	}; */
-
-	//fade2d library doesn't allow to modernize Triangle2 class saving the graph. Library was fixed in "Triangle2.h"
-	typedef GEOM_FADE2D::Triangle2 Triangle;
 
 
 
@@ -70,24 +73,9 @@ namespace euler
 		{
 			assert(this->size() == initialState.size());
 			for(int i = 0; i < this->size(); ++i)
-			(*this)[i]->SetState(initialState[i]);
+				(*this)[i]->SetState(initialState[i]);
 		}
 
-/*		void SortByX()
-		{
-			std::sort(m_mesh.begin(), m_mesh.end(), [](Triangle const& first, Triangle const& scnd)
-			{
-				return (first.GetBarycenter().x() <  scnd.GetBarycenter().x());
-			});
-		}
-
-		void SortByY()
-		{
-			std::sort(m_mesh.begin(), m_mesh.end(), [](Triangle const& first, Triangle const& scnd)
-			{
-				return (first.GetBarycenter().y() <  scnd.GetBarycenter().y());
-			});
-		} */
 	};
 }
 

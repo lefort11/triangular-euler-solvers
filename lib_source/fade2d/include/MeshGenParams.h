@@ -38,12 +38,14 @@ template <typename T> inline void unusedParameter(const T&){} // Avoids compiler
 /** \brief Parameters for the mesh generator
 *
 * This class serves as container for mesh generator parameters. Client
-* code can provide a class which derives from MeshGenParams an which
+* code can provide a class which derives from MeshGenParams and which
 * provides custom implementations of the getMaxTriangleArea(Triangle* pT)
 * method or the getMaxEdgeLength(Triangle* pT) method in order to
 * gain control over the local density of the generated mesh. When the
 * meshing algorithm decides if a certain triangle T must be refined,
 * then it calls these functions.
+*
+* \sa http://www.geom.at/advanced-mesh-generation/
 */
 class CLASS_DECLSPEC MeshGenParams
 {
@@ -217,8 +219,8 @@ public:
 
 /** \brief gridVector
  *
- * When pre-meshing with grid points is used then the grid will be
- * aligned along this vector. By default %gridVector is axis aligned.
+ * When grid-meshing is used the grid is aligned to the \p gridVector.
+ * By default \p gridVector is axis aligned.
  *
  * \if SECTION_FADE25D
  * \image html grid-mesh-angle.png "Grid Meshing along Vector2(1.0,0.3,0.0)"

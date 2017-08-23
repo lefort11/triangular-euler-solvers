@@ -75,7 +75,57 @@ namespace euler
 
 	private:
 
+		/**@brief Finds a position of the Triangle in the triangle vector
+		 *
+		 * @param vpTriangle2 Triangle vector
+		 * @param pTr triangle pointer
+		 * @return an index
+		 */
+		int FindTriangleIndex(std::vector<GEOM_FADE2D::Triangle2*> const& vpTriangle2,
+							  GEOM_FADE2D::Triangle2* const pTr) const
+		{
+			int i = 0;
+			bool found = false;
+			while((!found) && (i < vpTriangle2.size()))
+			{
+				if(vpTriangle2[i] == pTr)
+					found = true;
+				else
+					++i;
+			}
+			if(found)
+				return i;
+			return -1;
+		}
 
+		/**@brief Makes a Triangle graph from a GEOM_FADE2D::Triangle2 graph. Needed to generate a mesh
+		 *
+		 * @param destination
+		 * @param source
+		**/
+		void CopyGraph(std::vector<Triangle*> & destination,
+					   std::vector<GEOM_FADE2D::Triangle2*> const& source) const
+		{
+
+			destination.resize(source.size());
+			for(int trngl_cntr = 0; trngl_cntr < source.size(); ++trngl_cntr)
+			{
+				destination[trngl_cntr] = new Triangle((*source[trngl_cntr]));
+			}
+			for(int trngl_cntr = 0; trngl_cntr < source.size(); ++trngl_cntr)
+			{
+				for(int ith = 0; ith < 3; ++ith)
+				{
+					auto const oppTriangle = source[trngl_cntr]->getOppositeTriangle(ith);
+					auto const oppTrianglePosition = FindTriangleIndex(source, oppTriangle);
+					if(oppTrianglePosition != -1)
+						destination[trngl_cntr]->SetOppTriangle(ith, destination[oppTrianglePosition]);
+					else
+						destination[trngl_cntr]->SetOppTriangle(ith, nullptr);
+				}
+			}
+
+		}
 	};
 
 }

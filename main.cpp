@@ -3,6 +3,8 @@
 
 #include "SpaceMesh/Area.h"
 
+#include "FirstOrderSolver/LaxFriedrichSolver.h"
+
 
 
 int main()
@@ -30,12 +32,23 @@ int main()
 //	vZone.push_back(zone);
 //	vZone.push_back(zone1);
 
-	euler::Area area(vZone);
+//	euler::Area area(vZone);
 
-	std::array<double, 3> trProp = {10, 0.01, 1};
-	area.Triangulate(1000, trProp, [](GEOM_FADE2D::Point2){
-		return std::array<double,4>{1.0,0.0,0.0,0.0};
-	});
+	std::array<double, 3> trProp = {27, 0.01, 10};
+//	area.Triangulate(1000, trProp, [](GEOM_FADE2D::Point2){
+//		return std::array<double,4>{1.0,0.0,0.0,0.0};
+//	});
+
+
+	euler::LaxFriedrichSolver solver(vZone, 1000, trProp);
+
+	solver.Init([](GEOM_FADE2D::Point2)
+				{
+					return std::array<double,4>{1.0,0.0,0.0,0.0};
+				});
+
+	solver.Calculate(0.10);
+
 
 	return 0;
 }

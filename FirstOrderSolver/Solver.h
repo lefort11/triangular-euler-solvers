@@ -17,11 +17,14 @@ namespace euler
 
 		std::array<double, 3> m_triangularizationProperties;
 
+
+		//const std::function<std::array<double, 4>(GEOM_FADE2D::Point2)> m_initStateFunc;
+
+	protected:
+
 		TriangularMesh m_triangles;
 
 		double const m_gamma;
-
-		//const std::function<std::array<double, 4>(GEOM_FADE2D::Point2)> m_initStateFunc;
 
 	public:
 
@@ -52,18 +55,23 @@ namespace euler
 		 *
 		**/
 
-		void Calculate(double time);
+		void Calculate(double time) const;
 
 
 	protected:
 
 		/**@brief method calculates flux between triangleNumber-th triangle and its edgeNumber-th opposite triangle
 		 *
+		 * @param qVec - q Vector corresponing triangleNumber-th triangle. It is needed for Runge-Kutta method
+		 * implementation
+		 *
 		 * @param triangleNumber - number of triangle
 		 *
 		 * @param edgeNumber - number of triangle's edge - 'cell's boundary'
 		**/
 		virtual Vec4 CalculateFlux(Vec4 const& qVec, int triangleNumber, int edgeNumber) const = 0;
+
+//		virtual Vec4 GaussianIntegration(Vec4 const& qVec) const = 0;
 
 
 		/**@brief method makes an iteration of Runge Kutta method modernized for TVD schemes
@@ -81,7 +89,7 @@ namespace euler
 		 * @return triangleNumber-th triangle's area
 		**/
 
-		double CalculateTriangleArea(int triangleNumber)
+		double CalculateTriangleArea(int triangleNumber) const
 		{
 			return m_triangles[triangleNumber]->getArea2D();
 		}
@@ -89,7 +97,7 @@ namespace euler
 		/**
 		 * @return length of the edgeNumber-th edge of triangleNumber-th triangle
 		**/
-		double CalculateTriangleEdgeLength(int triangleNumber, int edgeNumber)
+		double CalculateTriangleEdgeLength(int triangleNumber, int edgeNumber) const
 		{
 			return std::sqrt(m_triangles[triangleNumber]->getSquaredEdgeLength(edgeNumber));
 		}
@@ -98,7 +106,7 @@ namespace euler
 		/**
 		 * @return outer normal's coordinates
 		**/
-		std::array<double, 2> CalculateNormal(int triangleNumber, int edgeNumber)
+		std::array<double, 2> CalculateNormal(int triangleNumber, int edgeNumber) const
 		{
 			auto const vertex1 = m_triangles[triangleNumber]->getCorner((edgeNumber + 1) % 3);
 			auto const vertex2 = m_triangles[triangleNumber]->getCorner((edgeNumber + 2) % 3);
@@ -106,7 +114,9 @@ namespace euler
 			auto const p_x = vertex2->x() - vertex1->x();
 			auto const p_y = vertex2->y() - vertex1->y();
 
-			return {p_y, -p_x};
+			auto const p_abs = std::sqrt(p_x * p_x + p_y * p_y);
+
+			return {p_y/p_abs, -p_x/p_abs};
 		};
 
 

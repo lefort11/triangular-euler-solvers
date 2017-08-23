@@ -37,32 +37,24 @@ class ConstraintGraph2; // Fwd
 class Triangle2; // Fwd
 class Point2; // Fwd
 class Visualizer2; // Fwd
-/** \brief Area in a triangulation.
+/** \brief Zone2 is an exactly defined area of a triangulation
 *
-*  \see \ref createZone in the Fade2D class
-*
+* \sa http://www.geom.at/example4-zones-defined-areas-in-triangulations/
+* \sa http://www.geom.at/boolean-operations/
+* \sa \ref createZone in the Fade2D class
 */
 
 
 class CLASS_DECLSPEC Zone2
 {
 public:
-/**
- * internal use
- */
+/// @private
 	Zone2(Dt2* pDt_,ZoneLocation zoneLoc_);
-/**
- * internal use
- */
+/// @private
 	Zone2(Dt2* pDt_,ZoneLocation zoneLoc_,ConstraintGraph2* pConstraintGraph_);
-/**
- * internal use
- */
+/// @private
 	Zone2(Dt2* pDt_,ZoneLocation zoneLoc_,const std::vector<ConstraintGraph2*>& vConstraintGraphs_);
-
-/**
- * internal use
- */
+/// @private
 	Zone2(Dt2* pDt_,const std::vector<ConstraintGraph2*>& vConstraintGraphs_,ZoneLocation zoneLoc_,std::vector<Point2>& vStartPoints);
 
 /** \brief Get the zone location
@@ -199,10 +191,9 @@ void slopeValleyRidgeOptimization();
  */
 void unifyGrid(double tolerance);
 
-/**
- * internal use
- */
+/// @private
 	bool assignDt2(Dt2* pDt_);
+
 /** \brief Get the triangles of the zone.
 *
 * This command fetches the existing triangles of the zone.
@@ -217,6 +208,13 @@ void unifyGrid(double tolerance);
 *
 */
 	void getVertices(std::vector<Point2*>& vVertices_) const;
+
+
+/** Statistics
+ *
+ * Prints statistics to stdout.
+ */
+void statistics(const std::string& s) const;
 
 
 /** \brief Get the associated constraint
@@ -237,8 +235,7 @@ void unifyGrid(double tolerance);
 */
 	void getConstraintGraphs(std::vector<ConstraintGraph2*>& vConstraintGraphs_) const;
 
-/** \brief Get a pointer to the associated Delaunay triangulation
-*/
+/// @private
 	Dt2* getDelaunayTriangulation() const;
 
 /** \brief Get a the number of ConstraintGraph2 objects
@@ -279,7 +276,7 @@ void unifyGrid(double tolerance);
 
 
 #if GEOM_PSEUDO3D==GEOM_TRUE
-/** \brief Get 2.5D SpaceMesh
+/** \brief Get 2.5D Area
  *
  * Returns the 2.5D area of the zone.
  *
@@ -296,12 +293,17 @@ void unifyGrid(double tolerance);
 
 
 protected:
+/// @private
 	Zone2(const Zone2&);
+/// @private
 	void getTriangles_RESULT(std::vector<Triangle2*>& vTriangles) const;
+/// @private
 	void initWorkspace(bool bInside,std::vector<Triangle2*>& vWorkspace) const;
+/// @private
 	void bfsFromWorkspace(std::vector<Triangle2*>& vWorkspace,std::vector<Triangle2*>& vTriangles) const;
-
+/// @private
 	Zone2* ctbz_treatCC(std::vector<Triangle2*>& vOneCC);
+/// @private
 	void optimize(std::vector<Triangle2*>& vT,std::vector<Triangle2*>& vChangedT);
 	// Data
 	Dt2* pDt;

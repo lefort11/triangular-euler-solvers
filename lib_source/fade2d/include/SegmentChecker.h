@@ -24,6 +24,7 @@
 
 
 /** The Segment intersection type enumerates the way two line segments intersect each other
+ *
  */
 enum SegmentIntersectionType
 {
@@ -46,7 +47,7 @@ class SegmentCheckerData; // FWD, pImpl to ease DLL export
 
 
 /** \brief SegmentChecker identifies intersecting line segments
-*
+ *
 * SegmentChecker takes a bunch of line segments and fully automatically
 * identifies illegal segment intersections. The intersection points can
 * be computed in 2D and in 2.5D. Further this class offers visualization
@@ -56,6 +57,7 @@ class SegmentCheckerData; // FWD, pImpl to ease DLL export
 * \image html identify_intersecting_segments.png "Polylines: Intersecting segments are automatically found"
 * \image latex identify_intersecting_segments.eps "Polylines: Intersecting segments are automatically found" width=15cm
 *
+* \sa http://www.geom.at/segment-checker/
 *
 */
 class CLASS_DECLSPEC SegmentChecker

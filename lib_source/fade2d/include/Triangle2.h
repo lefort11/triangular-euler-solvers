@@ -50,82 +50,26 @@
 class CLASS_DECLSPEC  Triangle2
 {
 public:
-//	std::array<double, 4> m_currentState; //fix here
-	double density, velocityX, velocityY, pressure;
 
-public:
+	public:
 /** \brief Constructor
 *
 */
-	Triangle2()
-	{
-		aVertexPointer[0]=NULL;
-		aVertexPointer[1]=NULL;
-		aVertexPointer[2]=NULL;
-		aOppTriangles[0]=NULL;
-		aOppTriangles[1]=NULL;
-		aOppTriangles[2]=NULL;
+		Triangle2()
+		{
+			aVertexPointer[0]=NULL;
+			aVertexPointer[1]=NULL;
+			aVertexPointer[2]=NULL;
+			aOppTriangles[0]=NULL;
+			aOppTriangles[1]=NULL;
+			aOppTriangles[2]=NULL;
 
-	} // Never used!
-
-
-	/******* Fix here **********/
-
-	void SetState(std::array<double, 4> const& state)
-	{
-		density = state[0];
-		velocityX = state[1];
-		velocityY = state[2];
-		pressure = state[3];
-	}
-/*
-	double& Density()
-	{
-		return m_currentState[0];
-	}
-
-	double const& Density() const
-	{
-		return m_currentState[0];
-	}
-
-	double& VelocityX() // global x coord of velocity
-	{
-		return m_currentState[1];
-	}
-
-	double const& VelocityX() const// global x coord of velocity
-	{
-		return m_currentState[1];
-	}
-
-	double& VelocityY() // global y coord of velocyty
-	{
-		return m_currentState[2];
-	}
-
-	double const& VelocityY() const// global y coord of velocyty
-	{
-		return m_currentState[2];
-	}
-
-	double& Pressure()
-	{
-		return m_currentState[3];
-	}
-
-	double const& Pressure() const
-	{
-		return m_currentState[3];
-	}
-
-*/
-
-	/*************************************/
+		} // Never used!
 
 
 
-	/** \brief Get the \e i-th corner of the triangle
+
+/** \brief Get the \e i-th corner of the triangle
 *
 * \return a pointer to the i-th corner point of the triangle.
 *
@@ -236,7 +180,7 @@ double getInteriorAngle25D(int ith) const;
 
 
 #if GEOM_PSEUDO3D==GEOM_TRUE
-/** \brief Get 2.5D SpaceMesh
+/** \brief Get 2.5D Area
  *
  * Returns the 2.5D area of the triangle.
  *

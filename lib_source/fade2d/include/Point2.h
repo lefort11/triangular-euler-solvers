@@ -81,6 +81,24 @@ public:
 
 	}
 
+
+/** \brief Print
+ *
+ * Internal, prints the coordinates to stdout
+ */
+#if GEOM_PSEUDO3D==GEOM_TRUE
+	void print()
+	{
+		std::cout<<coordX<<" "<<coordY<<" "<<coordZ<<std::endl;
+	}
+#else
+	void print()
+	{
+		std::cout<<coordX<<" "<<coordY<<std::endl;
+	}
+#endif
+
+
 /** \brief Deprecated, use setHeight() instead. Kept for backward compatibility
 *
 */
@@ -359,6 +377,9 @@ public:
 		this->customIndex=pnt.customIndex;
 	}
 #endif
+
+
+
 /** \brief Set a custom index
 *
 * An arbitrary index can be assigned.
