@@ -53,43 +53,25 @@ namespace euler
 
 
 
-	class TriangularMesh
+	class TriangularMesh:public std::vector<Triangle*>
 	{
-		std::vector<Triangle*> m_mesh;
+
 
 	public:
 
-		TriangularMesh(): m_mesh()
+		TriangularMesh(): std::vector<Triangle*>()
 		{}
 
-		TriangularMesh(std::vector<Triangle*> const& mesh): m_mesh(mesh)
+		explicit TriangularMesh(std::vector<Triangle*> const& mesh): std::vector<Triangle*>(mesh)
 		{}
 
 		TriangularMesh(std::vector<Triangle*> const& mesh, std::vector<std::array<double, 4>> const& initialState):
-				m_mesh(mesh)
+				std::vector<Triangle*>(mesh)
 		{
-			assert(m_mesh.size() == initialState.size());
-			for(int i = 0; i < m_mesh.size(); ++i)
-				m_mesh[i]->SetState(initialState[i]);
+			assert(this->size() == initialState.size());
+			for(int i = 0; i < this->size(); ++i)
+			(*this)[i]->SetState(initialState[i]);
 		}
-
-/*		//!@param i-th elem of initialStates corresponds to i-th triangle
-
-		//@todo переделать
-		TriangularMesh(std::vector<GEOM_FADE2D::Triangle2*> const& vTr2,
-					   std::vector<std::array<double, 4>> const& initialStates):
-				m_mesh()
-		{
-			assert(vTr2.size() == initialStates.size());
-			for(int i = 0; i < vTr2.size(); ++i)
-			{
-				auto triangle = Triangle(*(vTr2[i]));
-				triangle.SetState(initialStates[i]);
-
-				m_mesh.push_back(triangle);
-			}
-		}
-		*/
 
 /*		void SortByX()
 		{

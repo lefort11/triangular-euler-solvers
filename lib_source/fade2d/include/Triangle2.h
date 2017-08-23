@@ -49,8 +49,9 @@
 */
 class CLASS_DECLSPEC  Triangle2
 {
-protected:
-	std::array<double, 4> m_currentState; //fix here
+public:
+//	std::array<double, 4> m_currentState; //fix here
+	double density, velocityX, velocityY, pressure;
 
 public:
 /** \brief Constructor
@@ -72,10 +73,18 @@ public:
 
 	void SetState(std::array<double, 4> const& state)
 	{
-		m_currentState = state;
+		density = state[0];
+		velocityX = state[1];
+		velocityY = state[2];
+		pressure = state[3];
+	}
+/*
+	double& Density()
+	{
+		return m_currentState[0];
 	}
 
-	double& Density()
+	double const& Density() const
 	{
 		return m_currentState[0];
 	}
@@ -85,7 +94,17 @@ public:
 		return m_currentState[1];
 	}
 
+	double const& VelocityX() const// global x coord of velocity
+	{
+		return m_currentState[1];
+	}
+
 	double& VelocityY() // global y coord of velocyty
+	{
+		return m_currentState[2];
+	}
+
+	double const& VelocityY() const// global y coord of velocyty
 	{
 		return m_currentState[2];
 	}
@@ -94,6 +113,13 @@ public:
 	{
 		return m_currentState[3];
 	}
+
+	double const& Pressure() const
+	{
+		return m_currentState[3];
+	}
+
+*/
 
 	/*************************************/
 

@@ -37,18 +37,18 @@ TriangularMesh Area::Triangulate(int const discrPointNumber,
 
 
 	std::vector<std::vector<GEOM_FADE2D::Segment2>> vvSegment(m_zones.size());
-	std::vector<GEOM_FADE2D::ConstraintGraph2*> vCSG;
-	std::vector<GEOM_FADE2D::Zone2*> vpZonesDealunay;
+	std::vector<GEOM_FADE2D::ConstraintGraph2 *> vCSG;
+	std::vector<GEOM_FADE2D::Zone2 *> vpZonesDealunay;
 
-	for(int i = 0; i < m_zones.size(); ++i)
+	for (int i = 0; i < m_zones.size(); ++i)
 	{
 		//discretizing zone's constraints
 		auto vPoints = m_zones[i].Discretize(discrPointNumber);
 
 		//creating segments
-		for(int j = 0; j < vPoints.size(); ++j)
+		for (int j = 0; j < vPoints.size(); ++j)
 		{
-			vvSegment[i].push_back(GEOM_FADE2D::Segment2(vPoints[j], vPoints[(j+1) % vPoints.size()]));
+			vvSegment[i].emplace_back(GEOM_FADE2D::Segment2(vPoints[j], vPoints[(j + 1) % vPoints.size()]));
 		}
 
 		//creating constraint graphs
@@ -56,27 +56,26 @@ TriangularMesh Area::Triangulate(int const discrPointNumber,
 
 
 		//creating fade2D delaunay zones
-		m_zones[i].IsInside() ? vpZonesDealunay.push_back(globalArea.createZone(vCSG[i], GEOM_FADE2D::ZL_INSIDE)):
-								vpZonesDealunay.push_back(globalArea.createZone(vCSG[i], GEOM_FADE2D::ZL_OUTSIDE));
-
+		m_zones[i].IsInside() ? vpZonesDealunay.push_back(globalArea.createZone(vCSG[i], GEOM_FADE2D::ZL_INSIDE)) :
+		vpZonesDealunay.push_back(globalArea.createZone(vCSG[i], GEOM_FADE2D::ZL_OUTSIDE));
 
 
 	}
-
 
 
 	auto pGrowZone = globalArea.createZone(vCSG, GEOM_FADE2D::ZL_GROW, p1);
 
 	//calculating final zone
-	for(int i = 0; i < vpZonesDealunay.size() - 1; ++i)
+	auto const size = static_cast<int>(vpZonesDealunay.size() - 1);
+	for (int i = 0; i < size; ++i)
 	{
-		pGrowZone = GEOM_FADE2D::zoneIntersection(vpZonesDealunay[i], vpZonesDealunay[i+1]);
+		pGrowZone = GEOM_FADE2D::zoneIntersection(vpZonesDealunay[i], vpZonesDealunay[i + 1]);
 	}
 
 
 	globalArea.applyConstraintsAndZones();
 
-	std::vector<GEOM_FADE2D::Triangle2*> triangles;
+	std::vector<GEOM_FADE2D::Triangle2 *> triangles;
 
 	pGrowZone->getTriangles(triangles);
 
@@ -94,22 +93,20 @@ TriangularMesh Area::Triangulate(int const discrPointNumber,
 	globalArea.show("kek.ps");
 
 
-	std::vector<Triangle*> vTriangles;
+	std::vector<Triangle *> vTriangles;
 
 	pBoundedZone->getTriangles(vTriangles);
 
 
 	//setting init state for each triangle
-//	std::vector<std::array<double, 4>> vInitStates;
-
-	for(int i = 0; i < vTriangles.size(); ++i)
+	for (auto &triangle : vTriangles)
 	{
-		auto const point = vTriangles[i]->getBarycenter();
-		vTriangles[i]->SetState(initStateFunc(point));
+		auto const point = triangle->getBarycenter();
+		triangle->SetState(initStateFunc(point));
 	}
 
 
-	//i-th element of vInitStates corresponing to i-th m_Triangle
+	//i-th element of vInitStates corresponds to i-th m_Triangle
 
 	return TriangularMesh(vTriangles);
 

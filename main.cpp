@@ -9,26 +9,26 @@ int main()
 {
 
 
-	euler::ConstraintFunction kek([](double t)
+	euler::ConstraintFunction circle1([](double t)
 	{
 		auto x =cos(2*M_PI * t);
 		auto y = sin(2*M_PI * t);
 		return GEOM_FADE2D::Point2(x, y);
 	});
 
-	euler::ConstraintFunction keks([](double t)
+	euler::ConstraintFunction circle2([](double t)
 	{
 		auto x = 1.1 * cos(2*M_PI * t);
 		auto y = 1.1 * sin(2*M_PI * t);
 		return GEOM_FADE2D::Point2(x, y);
 	});
 
-	euler::Zone zone(kek, false, {0.0, 0.0, 0.0, 0.0}),
-				zone1(keks, true, {0.0, 0.0, 0.0, 0.0});
+	euler::Zone zone(circle1, false, {0.0, 0.0, 0.0, 0.0}),
+				zone1(circle2, true, {0.0, 0.0, 0.0, 0.0});
 
 	std::vector<euler::Zone> vZone;
-	vZone.push_back(zone);
-	//vZone.push_back(zone1);
+//	vZone.push_back(zone);
+//	vZone.push_back(zone1);
 
 	euler::Area area(vZone);
 
