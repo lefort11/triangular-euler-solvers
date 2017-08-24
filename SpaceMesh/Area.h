@@ -58,6 +58,8 @@ namespace euler
 	{
 		std::vector<Zone> m_zones;
 
+		GEOM_FADE2D::Fade_2D globalArea;
+
 	public:
 
 		Area(std::vector<Zone> const& constraints): m_zones(constraints)
@@ -71,7 +73,7 @@ namespace euler
 		**/
 		TriangularMesh Triangulate(int discrPointNumber,
 								   std::array<double, 3> const& triangleProperties,
-								   std::function<std::array<double, 4>(GEOM_FADE2D::Point2)> const& initStateFunc) const;
+								   std::function<std::array<double, 4>(GEOM_FADE2D::Point2)> const& initStateFunc);
 
 	private:
 

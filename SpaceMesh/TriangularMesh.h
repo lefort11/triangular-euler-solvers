@@ -46,7 +46,7 @@ namespace euler
 			m_pOppTriangles[ith] = pTriangle;
 		}
 
-		Triangle* GetOppTriangle(const int ith)
+		Triangle* GetOppTriangle(const int ith) const
 		{
 			return m_pOppTriangles[ith];
 		}
@@ -59,13 +59,13 @@ namespace euler
 	class TriangularMesh:public std::vector<Triangle*>
 	{
 
-
 	public:
 
 		TriangularMesh(): std::vector<Triangle*>()
 		{}
 
-		explicit TriangularMesh(std::vector<Triangle*> const& mesh): std::vector<Triangle*>(mesh)
+		explicit TriangularMesh(std::vector<Triangle*> const& mesh):
+				std::vector<Triangle*>(mesh)
 		{}
 
 		TriangularMesh(std::vector<Triangle*> const& mesh, std::vector<std::array<double, 4>> const& initialState):

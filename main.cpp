@@ -32,23 +32,24 @@ int main()
 //	vZone.push_back(zone);
 //	vZone.push_back(zone1);
 
-//	euler::Area area(vZone);
 
-	std::array<double, 3> trProp = {27, 0.01, 10};
-//	area.Triangulate(1000, trProp, [](GEOM_FADE2D::Point2){
-//		return std::array<double,4>{1.0,0.0,0.0,0.0};
-//	});
+	std::array<double, 3> trProp = {27, 0.001, 0.08};
+
 
 
 	euler::LaxFriedrichSolver solver(vZone, 1000, trProp);
 
-	solver.Init([](GEOM_FADE2D::Point2)
+	solver.Init([](GEOM_FADE2D::Point2 point)
 				{
-					return std::array<double,4>{1.0,0.0,0.0,0.0};
+					if(point.x() < 1.0/2.0)
+						return euler::Vec4({2.0,0.0,0.0,5.0});
+					return euler::Vec4({1.0,0.0,0.0,1.0});
+
 				});
 
-	solver.Calculate(0.10);
+	solver.Calculate(0.177);
 
+	solver.DebugOutput("results/density.txt");
 
 	return 0;
 }

@@ -23,13 +23,13 @@ std::vector<GEOM_FADE2D::Point2> ConstraintFunction::Discretize(int const pointN
 
 TriangularMesh Area::Triangulate(int const discrPointNumber,
 								 std::array<double, 3> const& triangleProperties,
-								 std::function<std::array<double, 4>(GEOM_FADE2D::Point2)> const &initStateFunc) const
+								 std::function<std::array<double, 4>(GEOM_FADE2D::Point2)> const &initStateFunc)
 {
 
-	GEOM_FADE2D::Fade_2D globalArea;
+//	GEOM_FADE2D::Fade_2D globalArea;
 
 	//making bounding rectangle
-	GEOM_FADE2D::Point2 p1(-5, -5), p2(-5, 5), p3(5, -5), p4(5, 5);
+	GEOM_FADE2D::Point2 p1(0.0, 0.0), p2(0.0, 1.0), p3(1.0, 0.0), p4(1.0, 1.0);
 	globalArea.insert(p1);
 	globalArea.insert(p2);
 	globalArea.insert(p3);
@@ -75,9 +75,7 @@ TriangularMesh Area::Triangulate(int const discrPointNumber,
 
 	globalArea.applyConstraintsAndZones();
 
-	std::vector<GEOM_FADE2D::Triangle2 *> triangles;
 
-	pGrowZone->getTriangles(triangles);
 
 //	pGrowZone->show("kekas.ps", false, true);
 
@@ -85,7 +83,13 @@ TriangularMesh Area::Triangulate(int const discrPointNumber,
 	//refining final zone
 	auto pBoundedZone(pGrowZone->convertToBoundedZone());
 
-	globalArea.refine(pBoundedZone, triangleProperties[0], triangleProperties[1], triangleProperties[2], true);
+	GEOM_FADE2D::MeshGenParams params(pBoundedZone);
+	params.minAngleDegree = triangleProperties[0];
+	params.minEdgeLength = triangleProperties[1];
+	params.maxEdgeLength = triangleProperties[2];
+
+//	globalArea.refine(pBoundedZone, triangleProperties[0], triangleProperties[1], triangleProperties[2], true);
+	globalArea.refineAdvanced(&params);
 
 	pBoundedZone->show("lul.ps", false, true);
 
