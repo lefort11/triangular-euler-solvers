@@ -26,14 +26,12 @@ TriangularMesh Area::Triangulate(int const discrPointNumber,
 								 std::function<std::array<double, 4>(GEOM_FADE2D::Point2)> const &initStateFunc)
 {
 
-//	GEOM_FADE2D::Fade_2D globalArea;
-
 	//making bounding rectangle
 	GEOM_FADE2D::Point2 p1(0.0, 0.0), p2(0.0, 1.0), p3(1.0, 0.0), p4(1.0, 1.0);
-	globalArea.insert(p1);
-	globalArea.insert(p2);
-	globalArea.insert(p3);
-	globalArea.insert(p4);
+	m_globalArea.insert(p1);
+	m_globalArea.insert(p2);
+	m_globalArea.insert(p3);
+	m_globalArea.insert(p4);
 
 
 	std::vector<std::vector<GEOM_FADE2D::Segment2>> vvSegment(m_zones.size());
@@ -52,18 +50,18 @@ TriangularMesh Area::Triangulate(int const discrPointNumber,
 		}
 
 		//creating constraint graphs
-		vCSG.push_back(globalArea.createConstraint(vvSegment[i], GEOM_FADE2D::CIS_CONSTRAINED_DELAUNAY));
+		vCSG.push_back(m_globalArea.createConstraint(vvSegment[i], GEOM_FADE2D::CIS_CONSTRAINED_DELAUNAY));
 
 
 		//creating fade2D delaunay zones
-		m_zones[i].IsInside() ? vpZonesDealunay.push_back(globalArea.createZone(vCSG[i], GEOM_FADE2D::ZL_INSIDE)) :
-		vpZonesDealunay.push_back(globalArea.createZone(vCSG[i], GEOM_FADE2D::ZL_OUTSIDE));
+		m_zones[i].IsInside() ? vpZonesDealunay.push_back(m_globalArea.createZone(vCSG[i], GEOM_FADE2D::ZL_INSIDE)) :
+		vpZonesDealunay.push_back(m_globalArea.createZone(vCSG[i], GEOM_FADE2D::ZL_OUTSIDE));
 
 
 	}
 
 
-	auto pGrowZone = globalArea.createZone(vCSG, GEOM_FADE2D::ZL_GROW, p1);
+	auto pGrowZone = m_globalArea.createZone(vCSG, GEOM_FADE2D::ZL_GROW, p1);
 
 	//calculating final zone
 	auto const size = static_cast<int>(vpZonesDealunay.size() - 1);
@@ -73,7 +71,7 @@ TriangularMesh Area::Triangulate(int const discrPointNumber,
 	}
 
 
-	globalArea.applyConstraintsAndZones();
+	m_globalArea.applyConstraintsAndZones();
 
 
 
@@ -88,13 +86,13 @@ TriangularMesh Area::Triangulate(int const discrPointNumber,
 	params.minEdgeLength = triangleProperties[1];
 	params.maxEdgeLength = triangleProperties[2];
 
-//	globalArea.refine(pBoundedZone, triangleProperties[0], triangleProperties[1], triangleProperties[2], true);
-	globalArea.refineAdvanced(&params);
+//	m_globalArea.refine(pBoundedZone, triangleProperties[0], triangleProperties[1], triangleProperties[2], true);
+	m_globalArea.refineAdvanced(&params);
 
 	pBoundedZone->show("lul.ps", false, true);
 
 
-//	globalArea.show("kek.ps");
+//	m_globalArea.show("kek.ps");
 
 
 	std::vector<GEOM_FADE2D::Triangle2*> vTriangles2;

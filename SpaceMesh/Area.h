@@ -32,7 +32,7 @@ namespace euler
 		const bool m_isInside;
 
 
-		const std::function<std::array<double, 4>(GEOM_FADE2D::Point2)> m_boundaryConditions; //returns {ro, u, v, P}
+//		const std::function<std::array<double, 4>(GEOM_FADE2D::Point2)> m_boundaryConditions; //returns {ro, u, v, P}
 
 	public:
 		Zone(ConstraintFunction const& func, bool isInside, std::array<double, 4> const& initState): m_function(func),
@@ -58,7 +58,7 @@ namespace euler
 	{
 		std::vector<Zone> m_zones;
 
-		GEOM_FADE2D::Fade_2D globalArea;
+		GEOM_FADE2D::Fade_2D m_globalArea;
 
 	public:
 

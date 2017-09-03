@@ -19,7 +19,21 @@ namespace euler
 
 	protected:
 
-		virtual Vec4 CalculateFlux(Vec4 const& qVec, int triangleNumber, int edgeNumber) const;
+		/**@brief Calculates a LaxFriedrich numerical flux
+		 *
+		 * @param qVec current qvector corresponding to this triangle
+		 * @param triangleNumber
+		 * @param edgeNumber
+		 * @return Numerical flux vector
+		 */
+		Vec4 CalculateFlux(Vec4 const& qVec, int triangleNumber, int edgeNumber) const override;
+
+		virtual Vec4 Reconstruct(Vec4 const& qVec, Triangle const* pTriangle, double x_g, double y_g) const
+		{
+			return qVec;
+		}
+
+
 
 
 	};

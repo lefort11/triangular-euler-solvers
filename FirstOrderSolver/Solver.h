@@ -60,6 +60,16 @@ namespace euler
 		void Calculate(double time) const;
 
 
+	private:
+
+		/**@brief Gaussian quadrature of order 3 for the standard quadrilateral element R = [1;1]x[1;1]
+		 *
+		 * @param f function to be integrated
+		 * @return
+		 */
+		double GaussianQuadrilateralIntegration(std::function<double(double, double)> const& g) const;
+
+
 	protected:
 
 		/**@brief method calculates flux between triangleNumber-th triangle and its edgeNumber-th opposite triangle
@@ -73,7 +83,30 @@ namespace euler
 		**/
 		virtual Vec4 CalculateFlux(Vec4 const& qVec, int triangleNumber, int edgeNumber) const = 0;
 
-//		virtual Vec4 GaussianIntegration(Vec4 const& qVec) const = 0;
+		/**@brief Method reconstructs the q vector at the gaussian point (x_g, y_g)
+		 *
+		 * @param qVec
+		 * @param triangleNumber
+		 * @param x_g
+		 * @param y_g
+		 * @return
+		 */
+
+		virtual Vec4 Reconstruct(Vec4 const& qVec, Triangle const* pTriangle, double x_g, double y_g) const = 0;
+
+
+
+		/**@brief Third-order calculation of an integral of a scalar function
+		 * over the triangle pTriangle according to Gaussian formulae
+		 *
+		 * "Appropriate Gaussian quadrature formulae for triangles" // Farzana Hussain, M. S. Karima, Razwan Ahamada
+		 *
+		 *
+		 * @param func
+		 * @param pTriangle
+		 * @return
+		 */
+		double GaussianIntegration(std::function<double(double, double)> const& func, Triangle const* pTriangle) const;
 
 
 		/**@brief method makes an iteration of Runge Kutta method modernized for TVD schemes
