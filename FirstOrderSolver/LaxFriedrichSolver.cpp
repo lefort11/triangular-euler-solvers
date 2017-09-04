@@ -6,7 +6,7 @@ Vec4 LaxFriedrichSolver::CalculateFlux(Vec4 const &qVec, int triangleNumber, int
 {
 	//preparing q_minus and q_plus vectors
 
-	/****** Calculating gaussian point ********/
+	//****** Calculating gaussian point ********//
 
 	double x_g, y_g;
 	auto const firstVertex = m_triangles[triangleNumber]->getCorner((edgeNumber + 1) % 3);
@@ -15,9 +15,9 @@ Vec4 LaxFriedrichSolver::CalculateFlux(Vec4 const &qVec, int triangleNumber, int
 	x_g = (firstVertex->x() + secondVertex->x()) / 2;
 	y_g = (firstVertex->y() + secondVertex->y() / 2);
 
-	/*****************************************/
+	//*****************************************//
 
-	/********** Forming q_minus vector and _minus parameters *******/
+	//********** Forming q_minus vector and _minus parameters *******//
 	auto const q_minus = Reconstruct(qVec, m_triangles[triangleNumber], x_g, y_g);
 
 //	double density_minus, velocityX_minus, velocityY_minus, pressure_minus;
@@ -37,10 +37,10 @@ Vec4 LaxFriedrichSolver::CalculateFlux(Vec4 const &qVec, int triangleNumber, int
 	auto const c_minus = std::sqrt(m_gamma * pressure_minus / density_minus);
 
 
-	/****************************************************************/
+	//****************************************************************//
 
 
-	/********* Forming q_plus vector and _plus parameteres **********/
+	//********* Forming q_plus vector and _plus parameteres **********//
 
 
 	Vec4 q_plus;
@@ -62,10 +62,10 @@ Vec4 LaxFriedrichSolver::CalculateFlux(Vec4 const &qVec, int triangleNumber, int
 
 	q_plus = Reconstruct(q_plus, neighbour_triangle, x_g, y_g);
 
-	/************************************************************************/
+	//************************************************************************//
 
 
-	/****************** Forming flux vectors ********************************/
+	//****************** Forming flux vectors ********************************//
 	//Calculating F_minus
 	Vec4 F_minus = {
 			density_minus * velocityX_minus,
@@ -100,9 +100,9 @@ Vec4 LaxFriedrichSolver::CalculateFlux(Vec4 const &qVec, int triangleNumber, int
 
 	};
 
-	/*********************************************************************/
+	//*********************************************************************//
 
-	/***************** Calculating nu-factor ******************************/
+	//**************** Calculating nu-factor ******************************//
 	//Calculating A_minus norm
 //	auto const A_minus_norm = std::max(std::fabs(velocityX_minus - c_minus),
 //									   std::fabs(velocityX_minus + c_minus));
@@ -129,7 +129,7 @@ Vec4 LaxFriedrichSolver::CalculateFlux(Vec4 const &qVec, int triangleNumber, int
 	auto const norm_plus = std::fabs(sqrt(velocity_sqr_abs_plus) + c_plus);
 	auto const nu = std::max(norm_minus, norm_plus);
 
-	/************************************************************************/
+	//************************************************************************//
 
 
 	auto const normal = CalculateNormal(triangleNumber, edgeNumber);

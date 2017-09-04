@@ -4,6 +4,7 @@
 #include "SpaceMesh/Area.h"
 
 #include "FirstOrderSolver/LaxFriedrichSolver.h"
+#include "WENO/WENOLF.h"
 
 
 
@@ -37,17 +38,17 @@ int main()
 
 
 
-	euler::LaxFriedrichSolver solver(vZone, 1000, trProp);
+	euler::WENOLF solver(vZone, 1000, trProp);
 
 	solver.Init([](GEOM_FADE2D::Point2 point)
 				{
 					if(point.x() < 1.0/2.0)
-						return euler::Vec4({2.0,0.0,0.0,5.0});
-					return euler::Vec4({1.0,0.0,0.0,1.0});
+						return std::array<double, 4>{{2.0,0.0,0.0,5.0}};
+					return std::array<double, 4>{{1.0,0.0,0.0,1.0}};
 
 				});
 
-	solver.Calculate(0.177);
+	solver.Calculate(0.05);
 
 	solver.DebugOutput("results/density.txt");
 

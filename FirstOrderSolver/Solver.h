@@ -199,7 +199,7 @@ namespace euler
 		 * @param qVec Q vector wanted to being formed
 		 * @param triangle
 		 */
-		void FormQVector(Vec4 & qVec, Triangle* const triangle) const
+		void FormQVector(Vec4 & qVec, Triangle const*  triangle) const
 		{
 			auto const density = triangle->density;
 			auto const velocityX = triangle->velocityX;

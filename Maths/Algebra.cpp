@@ -1,6 +1,7 @@
 #include "Algebra.h"
 #include "assert.h"
 
+
 double euler::sgn(double x)
 {
 	if( x > 0 )

@@ -24,9 +24,21 @@ set(FADE2D_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/lib_source/fade2d/include)
 
 include_directories(${FADE2D_INCLUDE_DIRS})
 
+#FIND_LIBRARY(ARMA_LIBRARY armadillo.8.10.0 ${CMAKE_CURRENT_SOURCE_DIR}/lib_source/lib)
+#IF(ARMA_LIBRARY)
+#    message("kekasik")
+#ENDIF(ARMA_LIBRARY)
+
+#set(ARMA_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/lib_source/armadillo-8.100.0/include)
+
+#include_directories(${ARMA_INCLUDE_DIRS})
+
+FIND_PACKAGE(Armadillo REQUIRED)
+INCLUDE_DIRECTORIES(${ARMADILLO_INCLUDE_DIRS})
+
 set(CMAKE_BUILD_TYPE Debug)
 
 
-set(SOURCE_FILES main.cpp SpaceMesh/Area.cpp SpaceMesh/Area.h SpaceMesh/TriangularMesh.cpp SpaceMesh/TriangularMesh.h FirstOrderSolver/Solver.h FirstOrderSolver/Solver.cpp Maths/Algebra.cpp Maths/Algebra.h FirstOrderSolver/LaxFriedrichSolver.cpp FirstOrderSolver/LaxFriedrichSolver.h)
+set(SOURCE_FILES main.cpp SpaceMesh/Area.cpp SpaceMesh/Area.h SpaceMesh/TriangularMesh.cpp SpaceMesh/TriangularMesh.h FirstOrderSolver/Solver.h FirstOrderSolver/Solver.cpp Maths/Algebra.cpp Maths/Algebra.h FirstOrderSolver/LaxFriedrichSolver.cpp FirstOrderSolver/LaxFriedrichSolver.h WENO/WENOLF.cpp WENO/WENOLF.h)
 add_executable(Triangular_Solvers ${SOURCE_FILES})
-target_link_libraries(Triangular_Solvers ${FADE2D_LIBRARY})
+target_link_libraries(Triangular_Solvers ${FADE2D_LIBRARY} ${ARMADILLO_LIBRARIES})

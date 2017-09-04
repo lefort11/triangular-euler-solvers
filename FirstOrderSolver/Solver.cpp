@@ -27,7 +27,8 @@ void Solver::Calculate(double time) const
 
 
 	std::vector<Vec4> nextQs(m_triangles.size());
-	
+
+
 	while(delta_t != 0)
 	{
 
@@ -41,7 +42,7 @@ void Solver::Calculate(double time) const
 			{
 				auto const area = CalculateTriangleArea(trngl_number);
 
-				Vec4 sum = {0.0, 0.0, 0.0, 0.0};
+				Vec4 sum(0.0, 0.0, 0.0, 0.0);
 
 				for(int edge_number = 0; edge_number < 3; ++edge_number)
 				{
