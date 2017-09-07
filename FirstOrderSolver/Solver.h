@@ -264,19 +264,19 @@ namespace euler
 
 			densityResultsFile.open(filename);
 
-			double min_y = 10.0;
+/*			double min_y = 10.0;
 			for(int i = 0; i < m_triangles.size(); ++i)
 			{
 				auto const barycenter = m_triangles[i]->getBarycenter();
 				if(barycenter.y() < min_y)
 					min_y = barycenter.y();
 
-			}
+			} */
 
 			for(int i = 0; i < m_triangles.size(); ++i)
 			{
 				auto const barycenter = m_triangles[i]->getBarycenter();
-				if(std::fabs(barycenter.y() - min_y) < 0.1 )
+				if(std::fabs(barycenter.y() - 0.5) < 0.1 )
 				{
 					densityResultsFile << barycenter.x() << " " << m_triangles[i]->density << std::endl;
 				}

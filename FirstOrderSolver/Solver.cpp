@@ -96,11 +96,11 @@ Vec4 Solver::RungeKuttaTVDStep(Vec4 const& current_q, double delta_t, std::funct
 
 	auto const q_1 = q_0 + delta_t * f(q_0);
 
-	auto const next_q = q_1;
+//	auto const next_q = q_1;
 
-//	auto const q_2 = 3.0/4.0 * q_0 + 1.0/4.0 * q_1 + 1.0/4.0 * delta_t * f(q_1);
+	auto const q_2 = 3.0/4.0 * q_0 + 1.0/4.0 * q_1 + 1.0/4.0 * delta_t * f(q_1);
 
-//	auto const next_q = 1.0/3.0 * q_0 + 2.0/3.0 * q_1 + 2.0/3.0 * delta_t * f(q_2);
+	auto const next_q = 1.0/3.0 * q_0 + 2.0/3.0 * q_1 + 2.0/3.0 * delta_t * f(q_2);
 
 	return next_q;
 

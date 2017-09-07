@@ -50,8 +50,8 @@ int main()
 
 	solver.Calculate(0.177);
 
-	solver.DebugOutput("results/density.txt");
-	solver.Output("results/density2D.txt");
+	solver.DebugOutput("results/densityLF.txt");
+	solver.Output("results/density2DLF.txt");
 
 	return 0;
 }

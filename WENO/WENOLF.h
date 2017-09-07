@@ -13,7 +13,47 @@ namespace euler
 
 		static int const gaussian_points_number = 6;
 
+		struct FOPolynomialCoeffs
+		{
+			std::array<double, 3> c = {0.0, 0.0, 0.0};
+		};
+
+		struct SOPolynomialCoeffs
+		{
+			std::array<double, 9> gammas = {0, 0, 0, 0, 0, 0, 0, 0, 0};
+		};
+
 		struct FOReconstructionPolynomial
+		{
+			std::array<FOPolynomialCoeffs, gaussian_points_number> coeffsAtPoints;
+			std::array<int, 3> stencil = {0, 0, 0};
+		};
+
+		struct SOReconstructionPolynomial
+		{
+			std::array<SOPolynomialCoeffs, gaussian_points_number> coeffsAtPoints;
+
+		};
+
+		struct SmoothIndicatorReconstructionData
+		{
+			std::array<double, 3> alpha = {0.0, 0.0, 0.0};
+			std::array<double, 3> beta = {0.0, 0.0, 0.0};
+		};
+
+		struct TriangleReconstructionData
+		{
+			std::array<FOReconstructionPolynomial, 9> fo_polynomial;
+			std::array<Point2, gaussian_points_number> gaussian_points;
+			SOReconstructionPolynomial so_polynomial;
+			std::array<SmoothIndicatorReconstructionData, 9> smoothIndicatorData;
+		};
+
+		std::vector<TriangleReconstructionData> m_vReconstructionData;
+
+
+
+/*		struct FOReconstructionPolynomial
 		{
 			std::array<double, 3> coeff;
 			std::array<int, 3> stencil;
@@ -32,14 +72,21 @@ namespace euler
 			std::array<double, 9> third_order_coeff; // gammas
 		};
 
+		struct SmoothIndicatorReconstructionData
+		{
+			std::array<double, 3> alpha = {0.0, 0.0, 0.0};
+			std::array<double, 3> beta = {0.0, 0.0, 0.0};
+		};
+
 		struct TriangleReconstructionData: public std::array<OnePointReconstructionData, gaussian_points_number>
 		{
-
-
+			SmoothIndicatorReconstructionData smoothIndicatorData;
 		};
 
 
-		std::vector<TriangleReconstructionData> m_vReconstructionData;
+		std::vector<TriangleReconstructionData> m_vReconstructionData; */
+
+
 
 
 
@@ -65,16 +112,18 @@ namespace euler
 		void FormR_A(Vec4 const& qVec, arma::mat44& R_A) const;
 		void FormR_B(Vec4 const& qVec, arma::mat44& R_B) const;
 
-		void GetPointReconstructionData(OnePointReconstructionData &data,
-										std::array<Triangle const *, 10> const &stencil, Point2 const &gaussian_point) const;
+		/*void GetPointReconstructionData(OnePointReconstructionData &data,
+										std::array<Triangle const *, 10> const &stencil,
+										Point2 const &gaussian_point) const; */
 
 		void GetStencil(Triangle const* pTriangle, std::array<Triangle const*, 10> &stencil) const;
 
 		void CreateBoundingMesh() override;
 
 
-		double CalculateSmoothIndicator(int triangle_number, int pol_number,
-										std::array<Triangle const*, 10> const& stencil) const;
+		void GetSmoothIndicatorData(TriangleReconstructionData& trRecData, Triangle const* pTriangle) const;
+
+		void GetTriangleReconstructionData(TriangleReconstructionData &trRecData, Triangle const* triangle);
 
 	};
 
