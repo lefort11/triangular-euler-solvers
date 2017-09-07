@@ -28,10 +28,14 @@ namespace euler
 		 */
 		Vec4 CalculateFlux(Vec4 const& qVec, int triangleNumber, int edgeNumber) const override;
 
-		virtual Vec4 Reconstruct(Vec4 const& qVec, Triangle const* pTriangle, double x_g, double y_g) const
+		virtual Vec4 Reconstruct(Vec4 const& qVec, Triangle const* pTriangle, Point2 const& gaussianPoint) const
 		{
 			return qVec;
 		}
+
+		void CreateBoundingMesh() override;
+
+		void UpdateBoundingMesh() const override;
 
 
 

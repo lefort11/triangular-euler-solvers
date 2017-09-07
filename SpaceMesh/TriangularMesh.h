@@ -4,6 +4,7 @@
 #include <vector>
 #include <Fade_2D.h>
 #include <array>
+#include "../Maths/Algebra.h"
 
 namespace euler
 {
@@ -13,13 +14,15 @@ namespace euler
 	private:
 		Triangle* m_pOppTriangles[3];
 
+		int m_index;
+
 
 	public:
 		double density = 0, velocityX = 0, velocityY = 0, pressure = 0;
 
 	public:
 
-		Triangle()
+		Triangle():m_index(-1)
 		{
 			m_pOppTriangles[0] = nullptr;
 			m_pOppTriangles[1] = nullptr;
@@ -41,14 +44,80 @@ namespace euler
 			pressure = state[3];
 		}
 
-		void SetOppTriangle(const int ith, Triangle* const pTriangle)
+		void SetIndex(int index)
+		{
+			m_index = index;
+		}
+
+		int Index() const
+		{
+			return m_index;
+		}
+
+		void SetOppTriangle(const int ith, Triangle* pTriangle)
 		{
 			m_pOppTriangles[ith] = pTriangle;
 		}
 
+
 		Triangle* GetOppTriangle(const int ith) const
 		{
 			return m_pOppTriangles[ith];
+		}
+
+		std::array<double, 2> CalculateNormal(int edgeNumber) const
+		{
+			auto const vertex1 = getCorner((edgeNumber + 1) % 3);
+			auto const vertex2 = getCorner((edgeNumber + 2) % 3);
+
+			auto const p_x = vertex2->x() - vertex1->x();
+			auto const p_y = vertex2->y() - vertex1->y();
+
+			auto const p_abs = std::sqrt(p_x * p_x + p_y * p_y);
+
+			return {p_y/p_abs, -p_x/p_abs};
+		};
+
+		Triangle* ReflectTriangle(const int edgeNumber)
+		{
+
+			auto const normal = CalculateNormal(edgeNumber);
+
+			arma::mat22 A;
+			A << normal[0] << normal[1] << arma::endr
+			  << -normal[1] << normal[0] << arma::endr;
+
+			auto const p1 = getCorner((edgeNumber + 1) % 3);
+			auto const p2 = getCorner((edgeNumber + 2) % 3);
+
+			auto const p0 = getCorner(edgeNumber); //point to be reflected
+
+			auto const c = -normal[0] * p1->x() - normal[1] * p1->y();
+
+			auto const d = normal[1] * p0->x() - normal[0] * p0->y();
+
+			arma::vec rightSide;
+			rightSide << -c << -d;
+
+			arma::vec middlePoint = arma::solve(A, rightSide);
+
+			auto reflectedPoint = new GEOM_FADE2D::Point2(2 * middlePoint(0) - p0->x(), 2 * middlePoint(1) - p0->y());
+
+			auto const reflectedTriangle = new Triangle(*this);
+
+			reflectedTriangle->setProperties(p1, reflectedPoint, p2);
+
+			reflectedTriangle->SetOppTriangle(0, nullptr);
+			reflectedTriangle->SetOppTriangle(1, nullptr);
+			reflectedTriangle->SetOppTriangle(2, nullptr);
+
+
+			reflectedTriangle->SetOppTriangle(reflectedTriangle->getIntraTriangleIndex(reflectedPoint), this);
+
+			SetOppTriangle(edgeNumber, reflectedTriangle);
+
+			return reflectedTriangle;
+
 		}
 
 	};

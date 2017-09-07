@@ -24,6 +24,8 @@ namespace euler
 
 		TriangularMesh m_triangles;
 
+		TriangularMesh m_boundingTriangles;
+
 		double const m_gamma;
 
 	public:
@@ -44,11 +46,11 @@ namespace euler
 		 *
 		**/
 
-		void Init(std::function<std::array<double, 4>(GEOM_FADE2D::Point2)> const& initStateFunction)
+		virtual void Init(std::function<std::array<double, 4>(GEOM_FADE2D::Point2)> const& initStateFunction)
 		{
 			m_triangles = m_area.Triangulate(m_discrPointNumber, m_triangularizationProperties, initStateFunction);
 
-//			std::cout<<m_triangles[0]->getCorner(0)->x() << " " << m_triangles[0]->getCorner(0)->y() << std::endl;
+			CreateBoundingMesh();
 		}
 
 		/**@brief method does all calculations
@@ -92,8 +94,18 @@ namespace euler
 		 * @return
 		 */
 
-		virtual Vec4 Reconstruct(Vec4 const& qVec, Triangle const* pTriangle, double x_g, double y_g) const = 0;
+		virtual Vec4 Reconstruct(Vec4 const& qVec, Triangle const* pTriangle, Point2 const& gaussianPoint) const = 0;
 
+
+		/**@brief Method generates bounding mesh
+		 *
+		 */
+		virtual void CreateBoundingMesh() = 0;
+
+		/**@brief
+		 *
+		 */
+		virtual void UpdateBoundingMesh() const = 0;
 
 
 		/**@brief Third-order calculation of an integral of a scalar function
@@ -141,17 +153,9 @@ namespace euler
 		/**
 		 * @return outer normal's coordinates
 		**/
-		std::array<double, 2> CalculateNormal(int triangleNumber, int edgeNumber) const
+		std::array<double, 2> CalculateNormal(Triangle const* pTriangle, int edgeNumber) const
 		{
-			auto const vertex1 = m_triangles[triangleNumber]->getCorner((edgeNumber + 1) % 3);
-			auto const vertex2 = m_triangles[triangleNumber]->getCorner((edgeNumber + 2) % 3);
-
-			auto const p_x = vertex2->x() - vertex1->x();
-			auto const p_y = vertex2->y() - vertex1->y();
-
-			auto const p_abs = std::sqrt(p_x * p_x + p_y * p_y);
-
-			return {p_y/p_abs, -p_x/p_abs};
+			return pTriangle->CalculateNormal(edgeNumber);
 		};
 
 		/**
@@ -181,10 +185,6 @@ namespace euler
 									fabs(velocity_abs + c0) : fabs(velocity_abs - c0); //eigenvalue for each cell
 
 				denominator += longestEdge * lambda;
-
-//				if(area == 0)
-//					double d = 0;
-
 
 			}
 
@@ -276,7 +276,7 @@ namespace euler
 			for(int i = 0; i < m_triangles.size(); ++i)
 			{
 				auto const barycenter = m_triangles[i]->getBarycenter();
-				if(std::fabs(barycenter.y() - min_y) < 0.3 )
+				if(std::fabs(barycenter.y() - min_y) < 0.1 )
 				{
 					densityResultsFile << barycenter.x() << " " << m_triangles[i]->density << std::endl;
 				}
@@ -284,6 +284,22 @@ namespace euler
 
 			densityResultsFile.close();
 
+		}
+
+		void Output(std::string const& filename) const
+		{
+			std::ofstream densityResultsFile;
+
+			densityResultsFile.open(filename);
+
+			for(int i = 0; i < m_triangles.size(); ++i)
+			{
+				auto const barycenter = m_triangles[i]->getBarycenter();
+				densityResultsFile << barycenter.x() << " " << barycenter.y() << " "
+								   << m_triangles[i]->density << std::endl;
+			}
+
+			densityResultsFile.close();
 		}
 
 

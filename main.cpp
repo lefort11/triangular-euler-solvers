@@ -48,9 +48,10 @@ int main()
 
 				});
 
-	solver.Calculate(0.05);
+	solver.Calculate(0.177);
 
 	solver.DebugOutput("results/density.txt");
+	solver.Output("results/density2D.txt");
 
 	return 0;
 }

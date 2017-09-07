@@ -29,7 +29,7 @@ void Solver::Calculate(double time) const
 	std::vector<Vec4> nextQs(m_triangles.size());
 
 
-	while(delta_t != 0)
+	while(delta_t > 0)
 	{
 
 
@@ -55,7 +55,7 @@ void Solver::Calculate(double time) const
 				return sum;
 			});
 
-			double a;
+
 			nextQs[trngl_number] = next_q;
 
 		}
@@ -76,6 +76,11 @@ void Solver::Calculate(double time) const
 		if(currentTime + delta_t > time)
 			delta_t = time - currentTime;
 		currentTime += delta_t;
+
+		UpdateBoundingMesh();
+
+
+		std::cout << currentTime << std::endl;
 
 
 		currentQs = nextQs;

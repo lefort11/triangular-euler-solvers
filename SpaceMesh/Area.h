@@ -113,6 +113,7 @@ namespace euler
 			for(int trngl_cntr = 0; trngl_cntr < source.size(); ++trngl_cntr)
 			{
 				destination[trngl_cntr] = new Triangle((*source[trngl_cntr]));
+				destination[trngl_cntr]->SetIndex(trngl_cntr);
 			}
 			for(int trngl_cntr = 0; trngl_cntr < source.size(); ++trngl_cntr)
 			{
