@@ -29,10 +29,33 @@ void LaxFriedrichSolver::UpdateBoundingMesh() const
 	for(int triangle_counter = 0; triangle_counter < m_boundingTriangles.size(); ++triangle_counter)
 	{
 		auto const index = m_boundingTriangles[triangle_counter]->Index(); //index of the original triangle
-		m_boundingTriangles[triangle_counter]->density = m_triangles[index]->density;
+/*		m_boundingTriangles[triangle_counter]->density = m_triangles[index]->density;
 		m_boundingTriangles[triangle_counter]->velocityX = m_triangles[index]->velocityX;
 		m_boundingTriangles[triangle_counter]->velocityY = m_triangles[index]->velocityY;
-		m_boundingTriangles[triangle_counter]->pressure = m_triangles[index]->pressure;
+		m_boundingTriangles[triangle_counter]->pressure = m_triangles[index]->pressure; */
+
+		if(m_boundingTriangles[triangle_counter]->getBarycenter().x() < -1) //left boundary
+		{
+			m_boundingTriangles[triangle_counter]->density = 1.0;
+			m_boundingTriangles[triangle_counter]->velocityX = 0.0;
+			m_boundingTriangles[triangle_counter]->velocityY = 0.0;
+			m_boundingTriangles[triangle_counter]->pressure = 1.0;
+
+		}
+		else if(m_boundingTriangles[triangle_counter]->getBarycenter().x() > 1) //right boundary
+		{
+			m_boundingTriangles[triangle_counter]->density = m_triangles[index]->density;
+			m_boundingTriangles[triangle_counter]->velocityX = m_triangles[index]->velocityX;
+			m_boundingTriangles[triangle_counter]->velocityY = m_triangles[index]->velocityY;
+			m_boundingTriangles[triangle_counter]->pressure = m_triangles[index]->pressure;
+		}
+		else // circle, lower and upper boundaries ~ walls
+		{
+			m_boundingTriangles[triangle_counter]->density = m_triangles[index]->density;
+			m_boundingTriangles[triangle_counter]->velocityX = -m_triangles[index]->velocityX;
+			m_boundingTriangles[triangle_counter]->velocityY = -m_triangles[index]->velocityY;
+			m_boundingTriangles[triangle_counter]->pressure = m_triangles[index]->pressure;
+		}
 
 	}
 
@@ -108,6 +131,16 @@ Vec4 LaxFriedrichSolver::CalculateFlux(Vec4 const &qVec, int triangleNumber, int
 		auto const c_plus = std::sqrt(m_gamma * pressure_plus / density_plus);
 
 		FormQVector(q_plus, density_plus, velocityX_plus, velocityY_plus, pressure_plus);
+
+/*		//edge_number calculation
+		auto const v0_ind =
+				neighbour_triangle->getIntraTriangleIndex(m_triangles[triangleNumber]->getCorner((edgeNumber + 1)%3));
+		auto const v1_ind =
+				neighbour_triangle->getIntraTriangleIndex(m_triangles[triangleNumber]->getCorner((edgeNumber + 2)%3));
+		int neighbourEdgeNumber = (v0_ind + 1) % 3;
+		if(neighbourEdgeNumber == v1_ind)
+			neighbourEdgeNumber = (v1_ind + 1) % 3; */
+
 
 		q_plus = Reconstruct(q_plus, neighbour_triangle, g_point);
 

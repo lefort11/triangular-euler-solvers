@@ -12,7 +12,7 @@ namespace euler
 	class Triangle: public GEOM_FADE2D::Triangle2
 	{
 	private:
-		Triangle* m_pOppTriangles[3];
+		std::array<Triangle*, 3> m_pOppTriangles;
 
 		int m_index;
 

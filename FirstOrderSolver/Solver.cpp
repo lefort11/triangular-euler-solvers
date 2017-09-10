@@ -15,7 +15,7 @@ void Solver::Calculate(double time) const
 
 	if(delta_t > time)
 		delta_t = time;
-	currentTime += delta_t;
+	//currentTime += delta_t;
 
 	std::vector<Vec4> currentQs(m_triangles.size());
 
@@ -31,6 +31,11 @@ void Solver::Calculate(double time) const
 
 	while(delta_t > 0)
 	{
+
+		UpdateBoundingMesh();
+
+		std::cout << currentTime << std::endl;
+
 
 
 		//trngl_cntr - triangle counter
@@ -72,15 +77,12 @@ void Solver::Calculate(double time) const
 
 		}
 
+		currentTime += delta_t;
+
 		delta_t = CalculateTimeStep();
 		if(currentTime + delta_t > time)
 			delta_t = time - currentTime;
-		currentTime += delta_t;
-
-		UpdateBoundingMesh();
-
-
-		std::cout << currentTime << std::endl;
+		//currentTime += delta_t;
 
 
 		currentQs = nextQs;
@@ -92,15 +94,14 @@ void Solver::Calculate(double time) const
 
 Vec4 Solver::RungeKuttaTVDStep(Vec4 const& current_q, double delta_t, std::function<Vec4(Vec4)> const& f) const
 {
-	auto const q_0 = current_q;
 
-	auto const q_1 = q_0 + delta_t * f(q_0);
+	auto const q_1 = current_q + delta_t * f(current_q);
 
 //	auto const next_q = q_1;
 
-	auto const q_2 = 3.0/4.0 * q_0 + 1.0/4.0 * q_1 + 1.0/4.0 * delta_t * f(q_1);
+	auto const q_2 = 3.0/4.0 * current_q + 1.0/4.0 * q_1 + 1.0/4.0 * delta_t * f(q_1);
 
-	auto const next_q = 1.0/3.0 * q_0 + 2.0/3.0 * q_1 + 2.0/3.0 * delta_t * f(q_2);
+	auto const next_q = 1.0/3.0 * current_q + 2.0/3.0 * q_2 + 2.0/3.0 * delta_t * f(q_2);
 
 	return next_q;
 

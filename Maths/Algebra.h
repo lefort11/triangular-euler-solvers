@@ -70,13 +70,13 @@ namespace euler
 			(*this)(3) = vec[3];
 		}
 
-		/*Vec4& operator=(const std::array<double, 4>& vec) {
-			(*this)(0) = vec[0];
-			(*this)(1) = vec[1];
-			(*this)(2) = vec[2];
-			(*this)(3) = vec[3];
+		Vec4& operator=(arma::vec const& vec) {
+			(*this)(0) = vec(0);
+			(*this)(1) = vec(1);
+			(*this)(2) = vec(2);
+			(*this)(3) = vec(3);
 			return (*this);
-		} */
+		}
 
 		Vec4(double x = 0.0, double y = 0.0, double z = 0.0, double w = 0.0)
 		{

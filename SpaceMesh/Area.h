@@ -11,15 +11,16 @@ namespace euler
 
 	class ConstraintFunction: public std::function<GEOM_FADE2D::Point2(double)> // function of argument t from 0 to 1
 	{
+		unsigned m_discrPointNumber;
 
 	public:
 
-		explicit ConstraintFunction(std::function<GEOM_FADE2D::Point2(double)> const& func):
-				std::function<GEOM_FADE2D::Point2(double)>(func)
+		explicit ConstraintFunction(std::function<GEOM_FADE2D::Point2(double)> const& func, unsigned discrPointNumber):
+				std::function<GEOM_FADE2D::Point2(double)>(func), m_discrPointNumber(discrPointNumber)
 		{}
 
 
-		std::vector<GEOM_FADE2D::Point2> Discretize(int pointNumber) const;
+		std::vector<GEOM_FADE2D::Point2> Discretize() const;
 
 
 	};
@@ -35,14 +36,14 @@ namespace euler
 //		const std::function<std::array<double, 4>(GEOM_FADE2D::Point2)> m_boundaryConditions; //returns {ro, u, v, P}
 
 	public:
-		Zone(ConstraintFunction const& func, bool isInside, std::array<double, 4> const& initState): m_function(func),
-																									 m_isInside(isInside)
+		Zone(ConstraintFunction const& func, bool isInside): m_function(func),
+															 m_isInside(isInside)
 		{}
 
 
-		std::vector<GEOM_FADE2D::Point2> Discretize(int const pointNumber) const
+		std::vector<GEOM_FADE2D::Point2> Discretize() const
 		{
-			return m_function.Discretize(pointNumber);
+			return m_function.Discretize();
 		}
 
 		bool IsInside() const
@@ -71,8 +72,7 @@ namespace euler
 		 * @param discrPointNumber - point number of constraint function discretezation
 		 * @param initStateFunc - initial function of the problem
 		**/
-		TriangularMesh Triangulate(int discrPointNumber,
-								   std::array<double, 3> const& triangleProperties,
+		TriangularMesh Triangulate(std::array<double, 3> const& triangleProperties,
 								   std::function<std::array<double, 4>(GEOM_FADE2D::Point2)> const& initStateFunc);
 
 	private:

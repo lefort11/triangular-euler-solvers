@@ -13,7 +13,6 @@ namespace euler
 	{
 		Area m_area;
 
-		int m_discrPointNumber;
 
 		std::array<double, 3> m_triangularizationProperties;
 
@@ -32,10 +31,9 @@ namespace euler
 
 
 
-		explicit Solver(std::vector<Zone> const& constraints, int const discrPointNumber = 0,
-			   std::array<double, 3> const& triangleProp = {0.0, 0.0, 0.0},
+		explicit Solver(std::vector<Zone> const& constraints,
+						std::array<double, 3> const& triangleProp = {0.0, 0.0, 0.0},
 						double gamma = 5.0/3.0): m_area(constraints),
-												 m_discrPointNumber(discrPointNumber),
 												 m_triangularizationProperties(triangleProp),
 												 m_gamma(gamma)
 		{}
@@ -48,7 +46,7 @@ namespace euler
 
 		virtual void Init(std::function<std::array<double, 4>(GEOM_FADE2D::Point2)> const& initStateFunction)
 		{
-			m_triangles = m_area.Triangulate(m_discrPointNumber, m_triangularizationProperties, initStateFunction);
+			m_triangles = m_area.Triangulate(m_triangularizationProperties, initStateFunction);
 
 			CreateBoundingMesh();
 		}
@@ -93,7 +91,6 @@ namespace euler
 		 * @param y_g
 		 * @return
 		 */
-
 		virtual Vec4 Reconstruct(Vec4 const& qVec, Triangle const* pTriangle, Point2 const& gaussianPoint) const = 0;
 
 
@@ -172,7 +169,7 @@ namespace euler
 			auto denominator = 0.0;
 			for(int i = 0; i < m_triangles.size(); ++i)
 			{
-				//lookin' for smallest area
+				//lookin' for the smallest area
 				auto const area = m_triangles[i]->getArea2D();
 				if(min_area > area)
 					min_area = area;
@@ -276,7 +273,7 @@ namespace euler
 			for(int i = 0; i < m_triangles.size(); ++i)
 			{
 				auto const barycenter = m_triangles[i]->getBarycenter();
-				if(std::fabs(barycenter.y() - 0.5) < 0.1 )
+				if(std::fabs(barycenter.y() - 0.0) < 0.1 )
 				{
 					densityResultsFile << barycenter.x() << " " << m_triangles[i]->density << std::endl;
 				}
@@ -286,20 +283,27 @@ namespace euler
 
 		}
 
-		void Output(std::string const& filename) const
+		void Output(std::string const& densityFilename, std::string const& velocityFilename) const
 		{
-			std::ofstream densityResultsFile;
+			std::ofstream densityResultsFile, velocityResultsFile;
 
-			densityResultsFile.open(filename);
+			densityResultsFile.open(densityFilename);
+			velocityResultsFile.open(velocityFilename);
 
 			for(int i = 0; i < m_triangles.size(); ++i)
 			{
 				auto const barycenter = m_triangles[i]->getBarycenter();
 				densityResultsFile << barycenter.x() << " " << barycenter.y() << " "
 								   << m_triangles[i]->density << std::endl;
+
+				auto const velocityAbs = std::sqrt(sqr(m_triangles[i]->velocityX) + sqr(m_triangles[i]->velocityY));
+				velocityResultsFile << barycenter.x() << " " << barycenter.y() << " "
+								   << m_triangles[i]->velocityX / (10 * velocityAbs)
+									<< " " << m_triangles[i]->velocityY / (10 * velocityAbs) << std::endl;
 			}
 
 			densityResultsFile.close();
+			velocityResultsFile.close();
 		}
 
 

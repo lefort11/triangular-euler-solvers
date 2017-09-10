@@ -3,12 +3,12 @@
 using namespace euler;
 
 
-std::vector<GEOM_FADE2D::Point2> ConstraintFunction::Discretize(int const pointNumber) const
+std::vector<GEOM_FADE2D::Point2> ConstraintFunction::Discretize() const
 {
-	auto const h = 1.0 / pointNumber;
+	auto const h = 1.0 / (m_discrPointNumber);
 	std::vector<GEOM_FADE2D::Point2> vPoints;
 
-	for(int i = 0; i < pointNumber; ++i)
+	for(int i = 0; i < m_discrPointNumber; ++i)
 	{
 		auto point = (*this)(i*h);
 		vPoints.push_back(point);
@@ -21,13 +21,12 @@ std::vector<GEOM_FADE2D::Point2> ConstraintFunction::Discretize(int const pointN
 
 
 
-TriangularMesh Area::Triangulate(int const discrPointNumber,
-								 std::array<double, 3> const& triangleProperties,
+TriangularMesh Area::Triangulate(std::array<double, 3> const& triangleProperties,
 								 std::function<std::array<double, 4>(GEOM_FADE2D::Point2)> const &initStateFunc)
 {
 
 	//making bounding rectangle
-	GEOM_FADE2D::Point2 p1(0.0, 0.0), p2(0.0, 1.0), p3(1.0, 0.0), p4(1.0, 1.0);
+	GEOM_FADE2D::Point2 p1(-1.0, -1.0), p2(-1.0, 1.0), p3(1.0, -1.0), p4(1.0, 1.0);
 	m_globalArea.insert(p1);
 	m_globalArea.insert(p2);
 	m_globalArea.insert(p3);
@@ -41,7 +40,7 @@ TriangularMesh Area::Triangulate(int const discrPointNumber,
 	for (int i = 0; i < m_zones.size(); ++i)
 	{
 		//discretizing zone's constraints
-		auto vPoints = m_zones[i].Discretize(discrPointNumber);
+		auto vPoints = m_zones[i].Discretize();
 
 		//creating segments
 		for (int j = 0; j < vPoints.size(); ++j)
@@ -59,7 +58,6 @@ TriangularMesh Area::Triangulate(int const discrPointNumber,
 
 
 	}
-
 
 	auto pGrowZone = m_globalArea.createZone(vCSG, GEOM_FADE2D::ZL_GROW, p1);
 
