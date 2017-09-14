@@ -4,8 +4,8 @@
 #include "SpaceMesh/Area.h"
 
 #include "FirstOrderSolver/LaxFriedrichSolver.h"
-#include "WENO/WENOLF.h"
-
+#include "WENO/WENOSolver.h"
+#include "FirstOrderSolver/HLLC.h"
 
 
 int main()
@@ -68,7 +68,7 @@ int main()
 
 
 
-	euler::LaxFriedrichSolver
+	euler::HLLC
 			solver(vZone, [](euler::TriangularMesh const& bcmesh, euler::TriangularMesh const& mainMesh)
 	{
 

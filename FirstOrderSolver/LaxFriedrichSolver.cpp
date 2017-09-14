@@ -83,15 +83,10 @@ Vec4 LaxFriedrichSolver::CalculateFlux(Vec4 const &qVec, int triangleNumber, int
 //		if (neighbour_triangle == nullptr)
 //			neighbour_triangle = m_triangles[triangleNumber];
 
-		auto const density_plus = neighbour_triangle->density;
-		auto const velocityX_plus = neighbour_triangle->velocityX;
-		auto const velocityY_plus = neighbour_triangle->velocityY;
-		auto const velocity_sqr_abs_plus = sqr(velocityX_plus) + sqr(velocityY_plus);
-		auto const pressure_plus = neighbour_triangle->pressure;
-		auto const eps_plus = pressure_plus / (density_plus * (m_gamma - 1.0));
-//	auto const E_plus = eps_plus + 0.5 * (velocity_sqr_abs_plus); // E = eps + 1/2 * |v|^2
-		auto const H_plus = eps_plus + pressure_plus / density_plus + 0.5 * velocity_sqr_abs_plus;
-		auto const c_plus = std::sqrt(m_gamma * pressure_plus / density_plus);
+		auto density_plus = neighbour_triangle->density;
+		auto velocityX_plus = neighbour_triangle->velocityX;
+		auto velocityY_plus = neighbour_triangle->velocityY;
+		auto pressure_plus = neighbour_triangle->pressure;
 
 		FormQVector(q_plus, density_plus, velocityX_plus, velocityY_plus, pressure_plus);
 
@@ -106,6 +101,20 @@ Vec4 LaxFriedrichSolver::CalculateFlux(Vec4 const &qVec, int triangleNumber, int
 
 
 		q_plus = Reconstruct(q_plus, neighbour_triangle, g_point);
+
+
+		//Updating plus values
+		density_plus = q_plus[0];
+		velocityX_plus = q_plus[1] / density_plus;
+		velocityY_plus = q_plus[2] / density_plus;
+		auto const E_plus = q_plus[3] / density_plus;
+		auto const velocity_sqr_abs_plus = sqr(velocityX_plus) + sqr(velocityY_plus);
+		auto const eps_plus = E_plus - 0.5 * velocity_sqr_abs_plus;
+		pressure_plus = (m_gamma - 1.0) * eps_plus * density_plus;
+		auto const H_plus = eps_plus + pressure_plus / density_plus + 0.5 * velocity_sqr_abs_plus;
+		auto const c_plus = std::sqrt(m_gamma * pressure_plus / density_plus);
+
+
 
 		//************************************************************************//
 

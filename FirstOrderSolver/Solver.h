@@ -35,7 +35,7 @@ namespace euler
 
 
 		explicit Solver(std::vector<Zone> const& constraints,
-						std::function<void(TriangularMesh const&, TriangularMesh const&)> bcFunc,
+						std::function<void(TriangularMesh const&, TriangularMesh const&)>  const& bcFunc,
 						std::array<double, 3> const& triangleProp = {0.0, 0.0, 0.0},
 						double gamma = 5.0/3.0): m_area(constraints),
 												 m_triangularizationProperties(triangleProp),
