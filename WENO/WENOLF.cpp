@@ -6,7 +6,6 @@ using namespace euler;
 
 
 
-
 void WENOLF::CreateBoundingMesh()
 {
 
@@ -66,7 +65,6 @@ void WENOLF::CreateBoundingMesh()
 }
 
 
-
 void WENOLF::GetStencil(Triangle const* pTriangle, std::array<Triangle const*, 10> & stencil) const
 {
 
@@ -97,10 +95,9 @@ void WENOLF::GetStencil(Triangle const* pTriangle, std::array<Triangle const*, 1
 }
 
 
-
 void WENOLF::Init(std::function<std::array<double, 4>(GEOM_FADE2D::Point2)> const &initStateFunction)
 {
-	Solver::Init(initStateFunction);
+	Init(initStateFunction);
 
 	m_vReconstructionData.resize(m_triangles.size());
 
@@ -246,8 +243,15 @@ void WENOLF::GetTriangleReconstructionData(TriangleReconstructionData &trRecData
 		arma::vec9 gammas = arma::solve(M, d);
 
 		for(int i = 0; i < 9; ++i)
+		{
 			trRecData.so_polynomial.coeffsAtPoints[g_point_number].gammas[i] = gammas[i];
+#ifdef MY_STABILITY_FIX
+			if(gammas[i] < 0)
+				trRecData.so_polynomial.coeffsAtPoints[g_point_number].stability_fixed = true;
+#endif
 
+
+		}
 
 
 	}
@@ -502,7 +506,8 @@ Vec4 WENOLF::Reconstruct(Vec4 const &qVec, Triangle const *pTriangle, Point2 con
 
 
 	std::array<Vec4, 9> omega, omega_waved;
-	//@todo calculate omega waved here
+	Vec4 o_wave_sum(0.0, 0.0, 0.0, 0.0);
+
 
 	auto const h = std::sqrt(pTriangle->getArea2D());
 	auto const x_0 = pTriangle->getBarycenter().x();
@@ -511,11 +516,10 @@ Vec4 WENOLF::Reconstruct(Vec4 const &qVec, Triangle const *pTriangle, Point2 con
 
 	Vec4 smoothIndicator(0.0, 0.0, 0.0, 0.0);
 
+
 	static Vec4 const eps(m_eps, m_eps, m_eps, m_eps);
 	for(int i = 0; i < 9; ++i)
 	{
-
-
 
 
 		auto const ind_0 = triangleReconstructionData.fo_polynomial[i].stencil[0];
@@ -528,6 +532,11 @@ Vec4 WENOLF::Reconstruct(Vec4 const &qVec, Triangle const *pTriangle, Point2 con
 							+ sqr(triangleReconstructionData.smoothIndicatorData[i].beta[0] * q[ind_0]
 								  + triangleReconstructionData.smoothIndicatorData[i].beta[1] * q[ind_1]
 								  + triangleReconstructionData.smoothIndicatorData[i].beta[2] * q[ind_2]));
+#ifdef MY_STABILITY_FIX
+
+		if(triangleReconstructionData.so_polynomial.coeffsAtPoints[curr_g_point_n].stability_fixed)
+			smoothIndicator = 2 * smoothIndicator;
+#endif
 
 
 /*		for(int k = 0; k < 10; ++k)
@@ -544,22 +553,20 @@ Vec4 WENOLF::Reconstruct(Vec4 const &qVec, Triangle const *pTriangle, Point2 con
 		}
 */
 
+
 		omega_waved[i] = Vec4(triangleReconstructionData.so_polynomial.coeffsAtPoints[curr_g_point_n].gammas[i],
 							  triangleReconstructionData.so_polynomial.coeffsAtPoints[curr_g_point_n].gammas[i],
 							  triangleReconstructionData.so_polynomial.coeffsAtPoints[curr_g_point_n].gammas[i],
 							  triangleReconstructionData.so_polynomial.coeffsAtPoints[curr_g_point_n].gammas[i]);
 
 		omega_waved[i] = omega_waved[i] / (eps + smoothIndicator);
-
+		o_wave_sum += omega_waved[i];
 
 
 	}
 
 
 
-	Vec4 o_wave_sum(0.0, 0.0, 0.0, 0.0);
-	for(int i = 0; i < 9; ++i)
-		o_wave_sum += omega_waved[i];
 
 	for(int i = 0; i < 9; ++i)
 	{
@@ -571,12 +578,14 @@ Vec4 WENOLF::Reconstruct(Vec4 const &qVec, Triangle const *pTriangle, Point2 con
 		auto const ind_1 = triangleReconstructionData.fo_polynomial[i].stencil[1];
 		auto const ind_2 = triangleReconstructionData.fo_polynomial[i].stencil[2];
 
-		omega[i] = omega_waved[i] / o_wave_sum;
 
+		omega[i] = omega_waved[i] / o_wave_sum;
 
 
 		q_reconstructed += omega[i] *
 						   (c_0 * q[ind_0] + c_1 * q[ind_1] + c_2 * q[ind_2]);
+
+
 
 	}
 

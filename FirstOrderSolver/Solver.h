@@ -27,14 +27,19 @@ namespace euler
 
 		double const m_gamma;
 
+		std::function<void(TriangularMesh const& boundaryMesh, TriangularMesh const& mainMesh)>
+																					m_boundaryConditionFunction;
+
 	public:
 
 
 
 		explicit Solver(std::vector<Zone> const& constraints,
+						std::function<void(TriangularMesh const&, TriangularMesh const&)> bcFunc,
 						std::array<double, 3> const& triangleProp = {0.0, 0.0, 0.0},
 						double gamma = 5.0/3.0): m_area(constraints),
 												 m_triangularizationProperties(triangleProp),
+												 m_boundaryConditionFunction(bcFunc),
 												 m_gamma(gamma)
 		{}
 
@@ -99,10 +104,13 @@ namespace euler
 		 */
 		virtual void CreateBoundingMesh() = 0;
 
-		/**@brief
+		/**@brief Method updates bounding triangles according to boundary conditions
 		 *
 		 */
-		virtual void UpdateBoundingMesh() const = 0;
+		void UpdateBoundingMesh() const
+		{
+			m_boundaryConditionFunction(m_boundingTriangles, m_triangles);
+		}
 
 
 		/**@brief Third-order calculation of an integral of a scalar function
@@ -148,7 +156,7 @@ namespace euler
 
 
 		/**
-		 * @return outer normal's coordinates
+		 * @return outward normal's coordinates
 		**/
 		std::array<double, 2> CalculateNormal(Triangle const* pTriangle, int edgeNumber) const
 		{
@@ -283,12 +291,23 @@ namespace euler
 
 		}
 
-		void Output(std::string const& densityFilename, std::string const& velocityFilename) const
+		void Output(std::string const& densityFilename, std::string const& velocityFilename,
+					std::string const& pressureFilename) const
 		{
-			std::ofstream densityResultsFile, velocityResultsFile;
+			std::ofstream densityResultsFile, velocityResultsFile, pressureResultsFile;
 
 			densityResultsFile.open(densityFilename);
 			velocityResultsFile.open(velocityFilename);
+			pressureResultsFile.open(pressureFilename);
+
+			double maxVelocityAbs = 0.0;
+
+			for(int i = 0; i < m_triangles.size(); ++i)
+			{
+				auto const velocityAbs = std::sqrt(sqr(m_triangles[i]->velocityX) + sqr(m_triangles[i]->velocityY));
+				if(maxVelocityAbs < velocityAbs)
+					maxVelocityAbs = velocityAbs;
+			}
 
 			for(int i = 0; i < m_triangles.size(); ++i)
 			{
@@ -296,10 +315,11 @@ namespace euler
 				densityResultsFile << barycenter.x() << " " << barycenter.y() << " "
 								   << m_triangles[i]->density << std::endl;
 
-				auto const velocityAbs = std::sqrt(sqr(m_triangles[i]->velocityX) + sqr(m_triangles[i]->velocityY));
 				velocityResultsFile << barycenter.x() << " " << barycenter.y() << " "
-								   << m_triangles[i]->velocityX / (10 * velocityAbs)
-									<< " " << m_triangles[i]->velocityY / (10 * velocityAbs) << std::endl;
+								   << m_triangles[i]->velocityX / (10 * maxVelocityAbs)
+									<< " " << m_triangles[i]->velocityY / (10 * maxVelocityAbs) << std::endl;
+				pressureResultsFile << barycenter.x() << " " << barycenter.y() << " "
+								   << m_triangles[i]->pressure << std::endl;
 			}
 
 			densityResultsFile.close();

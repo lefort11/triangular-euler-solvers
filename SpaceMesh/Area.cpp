@@ -21,12 +21,14 @@ std::vector<GEOM_FADE2D::Point2> ConstraintFunction::Discretize() const
 
 
 
+
+
 TriangularMesh Area::Triangulate(std::array<double, 3> const& triangleProperties,
 								 std::function<std::array<double, 4>(GEOM_FADE2D::Point2)> const &initStateFunc)
 {
 
 	//making bounding rectangle
-	GEOM_FADE2D::Point2 p1(-1.0, -1.0), p2(-1.0, 1.0), p3(1.0, -1.0), p4(1.0, 1.0);
+	GEOM_FADE2D::Point2 p1(-1.0, -1.0), p2(-1.0, 1.0), p3(2.0, -1.0), p4(2.0, 1.0);
 	m_globalArea.insert(p1);
 	m_globalArea.insert(p2);
 	m_globalArea.insert(p3);

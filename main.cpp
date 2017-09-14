@@ -14,8 +14,8 @@ int main()
 
 	euler::ConstraintFunction circle1([](double t)
 	{
-		auto x = 0.5 * cos(2.0 *M_PI * t);
-		auto y = 0.5 * sin(2.0 *M_PI * t);
+		auto x = 0.35 * cos(2.0 *M_PI * t);
+		auto y = 0.35 * sin(2.0 *M_PI * t);
 		return GEOM_FADE2D::Point2(x, y);
 	}, 50);
 
@@ -68,7 +68,43 @@ int main()
 
 
 
-	euler::WENOLF solver(vZone, trProp);
+	euler::LaxFriedrichSolver
+			solver(vZone, [](euler::TriangularMesh const& bcmesh, euler::TriangularMesh const& mainMesh)
+	{
+
+		for (int triangle_counter = 0; triangle_counter < bcmesh.size(); ++triangle_counter)
+		{
+			auto const index = bcmesh[triangle_counter]->Index(); //index of the original triangle
+/*			m_boundingTriangles[triangle_counter]->density = m_triangles[index]->density;
+			m_boundingTriangles[triangle_counter]->velocityX = m_triangles[index]->velocityX;
+			m_boundingTriangles[triangle_counter]->velocityY = m_triangles[index]->velocityY;
+			m_boundingTriangles[triangle_counter]->pressure = m_triangles[index]->pressure; */
+
+			if (bcmesh[triangle_counter]->getBarycenter().x() < -1) //left boundary
+			{
+				bcmesh[triangle_counter]->density = 1.0;
+				bcmesh[triangle_counter]->velocityX = 0.8 * sqrt(5.0 / 3.0);
+				bcmesh[triangle_counter]->velocityY = 0.0;
+				bcmesh[triangle_counter]->pressure = 1.0;
+
+			} else if (bcmesh[triangle_counter]->getBarycenter().x() > 2) //right boundary
+			{
+				bcmesh[triangle_counter]->density = mainMesh[index]->density;
+				bcmesh[triangle_counter]->velocityX = mainMesh[index]->velocityX;
+				bcmesh[triangle_counter]->velocityY = mainMesh[index]->velocityY;
+				bcmesh[triangle_counter]->pressure = mainMesh[index]->pressure;
+			} else // circle, lower and upper boundaries ~ walls
+			{
+				bcmesh[triangle_counter]->density = mainMesh[index]->density;
+				bcmesh[triangle_counter]->velocityX = -mainMesh[index]->velocityX;
+				bcmesh[triangle_counter]->velocityY = -mainMesh[index]->velocityY;
+				bcmesh[triangle_counter]->pressure = mainMesh[index]->pressure;
+			}
+
+		}
+
+
+	}, trProp);
 
 /*	solver.Init([](GEOM_FADE2D::Point2 point)
 				{
@@ -80,13 +116,13 @@ int main()
 
 	solver.Init([](GEOM_FADE2D::Point2 point)
 				{
-					return std::array<double, 4>{{1.0, 1.0, 0.0, 1.0}};
+					return std::array<double, 4>{{1.0, 0.8 * sqrt(5.0 / 3.0), 0.0, 1.0}};
 				});
 
-	solver.Calculate(0.1);
+	solver.Calculate(0.10);
 
 	solver.DebugOutput("results/densityLF.txt");
-	solver.Output("results/density2D.txt", "results/velocity2D.txt");
+	solver.Output("results/density2D.txt", "results/velocity2D.txt", "results/pressure2D.txt");
 
 
 

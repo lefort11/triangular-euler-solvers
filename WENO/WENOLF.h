@@ -5,13 +5,15 @@
 
 
 
+
 namespace euler
 {
+
 	class WENOLF : public LaxFriedrichSolver
 	{
 	private:
 
-		double const m_eps = 1e-4;
+		double const m_eps = 1e-2;
 
 		static int const gaussian_points_number = 6;
 
@@ -23,6 +25,11 @@ namespace euler
 		struct SOPolynomialCoeffs
 		{
 			std::array<double, 9> gammas = {0, 0, 0, 0, 0, 0, 0, 0, 0};
+
+#ifdef MY_STABILITY_FIX
+			bool stability_fixed = false;
+#endif
+
 		};
 
 		struct FOReconstructionPolynomial
@@ -61,9 +68,9 @@ namespace euler
 	public:
 
 		explicit WENOLF(std::vector<Zone> const &constraints,
+						std::function<void(TriangularMesh const&, TriangularMesh const&)> bcFunc,
 						std::array<double, 3> const &triangleProp = {0.0, 0.0, 0.0},
-						double gamma = 5.0 / 3.0) : LaxFriedrichSolver(constraints, triangleProp,
-																	   gamma)
+						double gamma = 5.0 / 3.0) : LaxFriedrichSolver(constraints, bcFunc, triangleProp, gamma)
 		{}
 
 		void Init(std::function<std::array<double, 4>(GEOM_FADE2D::Point2)> const& initStateFunction) override;
