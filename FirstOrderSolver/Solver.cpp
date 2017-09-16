@@ -55,12 +55,15 @@ void Solver::Calculate(double time) const
 				{
 					auto const edge_length = CalculateTriangleEdgeLength(trngl_number, edge_number);
 					sum += edge_length * CalculateFlux(qVec, trngl_number, edge_number);
+
+
 				}
 
 				sum = (-1.0)/area * sum;
 
 				return sum;
 			});
+
 
 
 			nextQs[trngl_number] = next_q;
@@ -90,6 +93,13 @@ void Solver::Calculate(double time) const
 
 
 		currentQs = nextQs;
+
+		std::string velocityPath("results/manyfiles/VELOCITY-" + std::to_string(timeLayersNumber) + ".dat");
+		std::string densityPath("results/manyfiles/DENSITY-" + std::to_string(timeLayersNumber) + ".dat");
+		std::string pressurePath("resutls/manyfiles/PRESSURE-" + std::to_string(timeLayersNumber) + ".dat");
+
+
+		Output(densityPath, velocityPath, pressurePath);
 
 	}
 

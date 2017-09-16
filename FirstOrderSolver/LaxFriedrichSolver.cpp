@@ -51,7 +51,7 @@ Vec4 LaxFriedrichSolver::CalculateFlux(Vec4 const &qVec, int triangleNumber, int
 		//*****************************************//
 
 		//********** Forming q_minus vector and _minus parameters *******//
-		auto const q_minus = Reconstruct(qVec, m_triangles[triangleNumber], g_point);
+		auto const q_minus = Reconstruct(qVec, m_triangles[triangleNumber], g_point, edgeNumber);
 
 //	double density_minus, velocityX_minus, velocityY_minus, pressure_minus;
 
@@ -88,17 +88,17 @@ Vec4 LaxFriedrichSolver::CalculateFlux(Vec4 const &qVec, int triangleNumber, int
 
 		FormQVector(q_plus, density_plus, velocityX_plus, velocityY_plus, pressure_plus);
 
-/*		//edge_number calculation
+		//edge_number calculation
 		auto const v0_ind =
 				neighbour_triangle->getIntraTriangleIndex(m_triangles[triangleNumber]->getCorner((edgeNumber + 1)%3));
 		auto const v1_ind =
 				neighbour_triangle->getIntraTriangleIndex(m_triangles[triangleNumber]->getCorner((edgeNumber + 2)%3));
 		int neighbourEdgeNumber = (v0_ind + 1) % 3;
 		if(neighbourEdgeNumber == v1_ind)
-			neighbourEdgeNumber = (v1_ind + 1) % 3; */
+			neighbourEdgeNumber = (v1_ind + 1) % 3;
 
 
-		q_plus = Reconstruct(q_plus, neighbour_triangle, g_point);
+		q_plus = Reconstruct(q_plus, neighbour_triangle, g_point, neighbourEdgeNumber);
 
 
 		//Updating plus values
@@ -194,8 +194,8 @@ Vec4 LaxFriedrichSolver::CalculateFlux(Vec4 const &qVec, int triangleNumber, int
 		flux += normal[0] * x_Flux + normal[1] * y_Flux - 0.5 * nu * (q_plus - q_minus);
 	}
 
-	if(triangleNumber == 64)
-		double a = 0;
+
+
 
 	return 0.5 * flux;
 

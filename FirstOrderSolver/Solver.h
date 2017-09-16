@@ -96,7 +96,8 @@ namespace euler
 		 * @param y_g
 		 * @return
 		 */
-		virtual Vec4 Reconstruct(Vec4 const& qVec, Triangle const* pTriangle, Point2 const& gaussianPoint) const = 0;
+		virtual Vec4
+		Reconstruct(Vec4 const &qVec, Triangle const *pTriangle, Point2 const &gaussianPoint, int edgeNumber) const = 0;
 
 
 		/**@brief Method generates bounding mesh
