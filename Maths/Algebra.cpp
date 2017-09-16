@@ -83,6 +83,14 @@ euler::Vec4& euler::operator+=(euler::Vec4 &left, euler::Vec4 const &right)
 	left[3] += right[3];
 	return left;
 }
+euler::Vec4& euler::operator-=(euler::Vec4 &left, euler::Vec4 const &right)
+{
+	left[0] -= right[0];
+	left[1] -= right[1];
+	left[2] -= right[2];
+	left[3] -= right[3];
+	return left;
+}
 
 euler::Matrix4x4& euler::operator*=(Matrix4x4 &mat, double alpha)
 {
@@ -100,12 +108,7 @@ double euler::sqr(double x)
 
 euler::Vec4 euler::sqr(euler::Vec4 const& vec)
 {
-	euler::Vec4 result;
-	for(int i = 0; i < 4; ++i)
-	{
-		result[i] = euler::sqr(vec[i]);
-	}
-	return result;
+	return Vec4(sqr(vec[0]), sqr(vec[1]), sqr(vec[2]), sqr(vec[3]));
 }
 
 

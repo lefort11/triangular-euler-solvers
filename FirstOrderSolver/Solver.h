@@ -171,29 +171,26 @@ namespace euler
 		virtual double CalculateTimeStep() const
 		{
 
-			double const sigma = 0.1;
-
+			double const sigma = 0.01;
 			auto min_area = m_triangles[0]->getArea2D();
-			auto denominator = 0.0;
-			for(int i = 0; i < m_triangles.size(); ++i)
+
+			auto lambda_max = 0.0;
+
+			for(int i =0; i < m_triangles.size(); ++i)
 			{
-				//lookin' for the smallest area
-				auto const area = m_triangles[i]->getArea2D();
-				if(min_area > area)
-					min_area = area;
 
-				auto const longestEdge = sqrt(m_triangles[i]->getSquaredEdgeLength(m_triangles[i]->getMaxIndex()));
-				auto const c0 = sqrt(m_gamma * m_triangles[i]->pressure / m_triangles[i]->density);
-				auto const velocity_abs = sqrt(sqr(m_triangles[i]->velocityX) + sqr(m_triangles[i]->velocityY));
+				if(min_area > m_triangles[i]->getArea2D())
+					min_area = m_triangles[i]->getArea2D();
 
-				auto const lambda = fabs(velocity_abs + c0) > fabs(velocity_abs - c0) ?
-									fabs(velocity_abs + c0) : fabs(velocity_abs - c0); //eigenvalue for each cell
+				auto const velocity_sqr_abs = std::sqrt(sqr(m_triangles[i]->velocityX) + sqr(m_triangles[i]->velocityY));
+				auto const sound_speed = std::sqrt(m_gamma * m_triangles[i]->pressure / m_triangles[i]->density);
+				if(lambda_max < std::fabs(velocity_sqr_abs + sound_speed))
+					lambda_max = std::fabs(velocity_sqr_abs + sound_speed);
 
-				denominator += longestEdge * lambda;
 
 			}
 
-			return sigma * min_area / denominator;
+			return sigma * std::sqrt(min_area) / (2 * lambda_max);
 
 		}
 

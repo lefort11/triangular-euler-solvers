@@ -36,9 +36,9 @@ include_directories(${FADE2D_INCLUDE_DIRS})
 FIND_PACKAGE(Armadillo REQUIRED)
 INCLUDE_DIRECTORIES(${ARMADILLO_INCLUDE_DIRS})
 
-set(CMAKE_BUILD_TYPE Debug)
+set(CMAKE_BUILD_TYPE Release)
 
 
-set(SOURCE_FILES main.cpp SpaceMesh/Area.cpp SpaceMesh/Area.h SpaceMesh/TriangularMesh.cpp SpaceMesh/TriangularMesh.h FirstOrderSolver/Solver.h FirstOrderSolver/Solver.cpp Maths/Algebra.cpp Maths/Algebra.h FirstOrderSolver/LaxFriedrichSolver.cpp FirstOrderSolver/LaxFriedrichSolver.h WENO/WENOSolver.cpp WENO/WENOSolver.h FirstOrderSolver/HLLC.h FirstOrderSolver/HLLC.cpp)
+set(SOURCE_FILES main.cpp SpaceMesh/Area.cpp SpaceMesh/Area.h SpaceMesh/TriangularMesh.cpp SpaceMesh/TriangularMesh.h FirstOrderSolver/Solver.h FirstOrderSolver/Solver.cpp Maths/Algebra.cpp Maths/Algebra.h FirstOrderSolver/LaxFriedrichSolver.cpp FirstOrderSolver/LaxFriedrichSolver.h WENO/WENOSolver.cpp WENO/WENOSolver.h)
 add_executable(Triangular_Solvers ${SOURCE_FILES})
 target_link_libraries(Triangular_Solvers ${FADE2D_LIBRARY} ${ARMADILLO_LIBRARIES})

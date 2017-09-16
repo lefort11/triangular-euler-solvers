@@ -14,7 +14,6 @@ void LaxFriedrichSolver::CreateBoundingMesh()
 			if(m_triangles[triangle_counter]->GetOppTriangle(edge_number) == nullptr)
 			{
 				auto const reflectedTriangle = m_triangles[triangle_counter]->ReflectTriangle(edge_number);
-				m_triangles[triangle_counter]->SetOppTriangle(edge_number, reflectedTriangle);
 				m_boundingTriangles.push_back(reflectedTriangle);
 			}
 		}
@@ -30,18 +29,17 @@ Vec4 LaxFriedrichSolver::CalculateFlux(Vec4 const &qVec, int triangleNumber, int
 
 	//****** Calculating gaussian points ********//
 
-	static auto const c = 1 / 2 + sqrt(3) / 6;
-	//static auto const c = 1 / 2;
+	static auto const gaussian_weight = 1.0 / 2.0 + sqrt(3.0) / 6.0;
 
 	Point2  gaussian_p_1, gaussian_p_2;
 	auto const firstVertex = m_triangles[triangleNumber]->getCorner((edgeNumber + 1) % 3);
 	auto const secondVertex = m_triangles[triangleNumber]->getCorner((edgeNumber + 2) % 3);
 
-	gaussian_p_1.x = c * firstVertex->x() + (1 - c) * secondVertex->x();
-	gaussian_p_1.y = c * firstVertex->y() + (1 - c) * secondVertex->y();
+	gaussian_p_1.x = gaussian_weight * firstVertex->x() + (1 - gaussian_weight) * secondVertex->x();
+	gaussian_p_1.y = gaussian_weight * firstVertex->y() + (1 - gaussian_weight) * secondVertex->y();
 
-	gaussian_p_2.x = c * secondVertex->x() + (1 - c) * firstVertex->x();
-	gaussian_p_2.y = c * secondVertex->y() + (1 - c) * firstVertex->y();
+	gaussian_p_2.x = gaussian_weight * secondVertex->x() + (1 - gaussian_weight) * firstVertex->x();
+	gaussian_p_2.y = gaussian_weight * secondVertex->y() + (1 - gaussian_weight) * firstVertex->y();
 
 	Vec4 flux(0.0, 0.0, 0.0, 0.0);
 

@@ -26,9 +26,15 @@ namespace euler
 		{
 			std::array<double, 9> gammas = {0, 0, 0, 0, 0, 0, 0, 0, 0};
 
-#ifdef MY_STABILITY_FIX
-			bool stability_fixed = false;
-#endif
+			bool weights_to_be_treated = false;
+			std::array<double, 9> gammas_plus = {0, 0, 0, 0, 0, 0, 0, 0, 0};
+			std::array<double, 9> gammas_minus = {0, 0, 0, 0, 0, 0, 0, 0, 0};
+
+			double sigma_plus = 0.0;
+			double sigma_minus = 0.0;
+
+			double const theta = 3.0;
+
 
 		};
 
@@ -110,21 +116,19 @@ namespace euler
 			{
 				if(T::m_triangles[triangle_counter]->GetOppTriangle(edge_number) == nullptr)
 				{
-					auto const reflectedTriangle0 = T::m_triangles[triangle_counter]->ReflectTriangle(edge_number);
-//				m_triangles[triangle_counter]->SetOppTriangle(edge_number, reflectedTriangle0);
+
+					Triangle* pTriangle = T::m_triangles[triangle_counter];
+
+					auto const reflectedTriangle0 = pTriangle->ReflectTriangle(edge_number);
 					T::m_boundingTriangles.push_back(reflectedTriangle0);
 
-
-					auto const p1 = T::m_triangles[triangle_counter]->getCorner((edge_number + 1) % 3);
-					auto const p2 = T::m_triangles[triangle_counter]->getCorner((edge_number + 2) % 3);
-					auto const ind_1 = reflectedTriangle0->getIntraTriangleIndex(p1);
-					auto const ind_2 = reflectedTriangle0->getIntraTriangleIndex(p2);
-
+					auto const ind_1 =
+							reflectedTriangle0->getIntraTriangleIndex(pTriangle->getCorner((edge_number + 1) % 3));
+					auto const ind_2 =
+							reflectedTriangle0->getIntraTriangleIndex(pTriangle->getCorner((edge_number + 2) % 3));
 
 					auto const reflectedTriangle1 = reflectedTriangle0->ReflectTriangle(ind_1);
-//				reflectedTriangle0->SetOppTriangle(ind_1, reflectedTriangle1);
 					auto const reflectedTriangle2 = reflectedTriangle0->ReflectTriangle(ind_2);
-//				reflectedTriangle0->SetOppTriangle(ind_2, reflectedTriangle2);
 					T::m_boundingTriangles.push_back(reflectedTriangle1);
 					T::m_boundingTriangles.push_back(reflectedTriangle2);
 
@@ -161,8 +165,6 @@ namespace euler
 	template<class T>
 	inline void WENOSolver<T>::GetStencil(Triangle const* pTriangle, std::array<Triangle const*, 10> & stencil) const
 	{
-
-		//@todo boundary !!!
 		stencil[0] = pTriangle;
 
 		stencil[1] = stencil[0]->GetOppTriangle(0);
@@ -179,7 +181,6 @@ namespace euler
 
 		stencil[7] = stencil[3]->GetOppTriangle(stencil[3]->getIntraTriangleIndex(stencil[0]->getCorner(0)));
 
-//	stencil[7] = stencil[4]->GetOppTriangle(stencil[4]->getIntraTriangleIndex(stencil[0]->getCorner(1)));
 
 		stencil[8] = stencil[2]->GetOppTriangle(stencil[2]->getIntraTriangleIndex(stencil[0]->getCorner(0)));
 
@@ -216,7 +217,7 @@ namespace euler
 		trRecData.fo_polynomial[7].stencil = {0, 2, 8};
 		trRecData.fo_polynomial[8].stencil = {0, 2, 9};
 
-		static auto const c = 1 / 2 + sqrt(3) / 6;
+		static auto const gaussian_weight = 1.0 / 2.0 + sqrt(3.0) / 6.0;
 
 		auto const first_vertex = pTriangle->getCorner(0);
 		auto const second_vertex = pTriangle->getCorner(1);
@@ -224,23 +225,23 @@ namespace euler
 
 		std::vector<Point2> gaussian_points(gaussian_points_number);
 
-		gaussian_points[0].x = c * first_vertex->x() + (1 - c) * second_vertex->x();
-		gaussian_points[0].y = c * first_vertex->y() + (1 - c) * second_vertex->y();
+		gaussian_points[0].x = gaussian_weight * first_vertex->x() + (1 - gaussian_weight) * second_vertex->x();
+		gaussian_points[0].y = gaussian_weight * first_vertex->y() + (1 - gaussian_weight) * second_vertex->y();
 
-		gaussian_points[1].x = c * second_vertex->x() + (1 - c) * first_vertex->x();
-		gaussian_points[1].y = c * second_vertex->y() + (1 - c) * first_vertex->y();
+		gaussian_points[1].x = gaussian_weight * second_vertex->x() + (1 - gaussian_weight) * first_vertex->x();
+		gaussian_points[1].y = gaussian_weight * second_vertex->y() + (1 - gaussian_weight) * first_vertex->y();
 
-		gaussian_points[2].x = c * second_vertex->x() + (1 - c) * third_vertex->x();
-		gaussian_points[2].y = c * second_vertex->y() + (1 - c) * third_vertex->y();
+		gaussian_points[2].x = gaussian_weight * second_vertex->x() + (1 - gaussian_weight) * third_vertex->x();
+		gaussian_points[2].y = gaussian_weight * second_vertex->y() + (1 - gaussian_weight) * third_vertex->y();
 
-		gaussian_points[3].x = c * third_vertex->x() + (1 - c) * second_vertex->x();
-		gaussian_points[3].y = c * third_vertex->y() + (1 - c) * second_vertex->y();
+		gaussian_points[3].x = gaussian_weight * third_vertex->x() + (1 - gaussian_weight) * second_vertex->x();
+		gaussian_points[3].y = gaussian_weight * third_vertex->y() + (1 - gaussian_weight) * second_vertex->y();
 
-		gaussian_points[4].x = c * third_vertex->x() + (1 - c) * first_vertex->x();
-		gaussian_points[4].y = c * third_vertex->y() + (1 - c) * first_vertex->y();
+		gaussian_points[4].x = gaussian_weight * third_vertex->x() + (1 - gaussian_weight) * first_vertex->x();
+		gaussian_points[4].y = gaussian_weight * third_vertex->y() + (1 - gaussian_weight) * first_vertex->y();
 
-		gaussian_points[5].x = c * first_vertex->x() + (1 - c) * third_vertex->x();
-		gaussian_points[5].y = c * first_vertex->y() + (1 - c) * third_vertex->y();
+		gaussian_points[5].x = gaussian_weight * first_vertex->x() + (1 - gaussian_weight) * third_vertex->x();
+		gaussian_points[5].y = gaussian_weight * first_vertex->y() + (1 - gaussian_weight) * third_vertex->y();
 
 		std::array<Triangle const*, 10> stencil;
 
@@ -260,25 +261,25 @@ namespace euler
 		for(int i = 0; i < 10; ++i)
 		{
 			auto const area = stencil[i]->getArea2D();
-			ksi_average[i] = 1 / area * T::GaussianIntegration([h, x_0](double x, double y)
+			ksi_average[i] = 1.0 / area * T::GaussianIntegration([h, x_0](double x, double y)
 															{
 																return (x - x_0) / h;
 															}, stencil[i]);
 
-			eta_average[i] = 1 / area * T::GaussianIntegration([h, y_0](double x, double y)
+			eta_average[i] = 1.0 / area * T::GaussianIntegration([h, y_0](double x, double y)
 															{
 																return (y - y_0) / h;
 															}, stencil[i]);
 
-			ksi_square_average[i] = 1 / area * T::GaussianIntegration([h, x_0](double x, double y)
+			ksi_square_average[i] = 1.0 / area * T::GaussianIntegration([h, x_0](double x, double y)
 																   {
 																	   return sqr(x-x_0) / sqr(h);
 																   }, stencil[i]);
-			eta_square_average[i] = 1 / area * T::GaussianIntegration([h, y_0](double x, double y)
+			eta_square_average[i] = 1.0 / area * T::GaussianIntegration([h, y_0](double x, double y)
 																   {
 																	   return sqr(y-y_0) / sqr(h);
 																   }, stencil[i]);
-			ksi_eta_average[i] = 1 / area * T::GaussianIntegration([h, x_0, y_0](double x, double y)
+			ksi_eta_average[i] = 1.0 / area * T::GaussianIntegration([h, x_0, y_0](double x, double y)
 																{
 																	return (x - x_0) * (y - y_0)  / sqr(h);
 																}, stencil[i]);
@@ -340,98 +341,50 @@ namespace euler
 			d *= 1000;
 			arma::vec9 gammas = arma::solve(M, d);
 
-
-
 			for(int i = 0; i < 9; ++i)
 			{
 				trRecData.so_polynomial.coeffsAtPoints[g_point_number].gammas[i] = gammas[i];
-#ifdef MY_STABILITY_FIX
 				if(gammas[i] < 0)
-				trRecData.so_polynomial.coeffsAtPoints[g_point_number].stability_fixed = true;
-#endif
+					trRecData.so_polynomial.coeffsAtPoints[g_point_number].weights_to_be_treated = true;
 
+			}
+
+			if(trRecData.so_polynomial.coeffsAtPoints[g_point_number].weights_to_be_treated)
+			{
+
+				for(int i = 0; i < 9; ++i)
+				{
+					trRecData.so_polynomial.coeffsAtPoints[g_point_number].gammas_plus[i] =
+							0.5 * (gammas[i] + trRecData.so_polynomial.coeffsAtPoints[g_point_number].theta * gammas[i]);
+					trRecData.so_polynomial.coeffsAtPoints[g_point_number].gammas_minus[i] =
+							trRecData.so_polynomial.coeffsAtPoints[g_point_number].gammas_plus[i] - gammas[i];
+
+					trRecData.so_polynomial.coeffsAtPoints[g_point_number].sigma_plus
+							+= trRecData.so_polynomial.coeffsAtPoints[g_point_number].gammas_plus[i];
+
+					trRecData.so_polynomial.coeffsAtPoints[g_point_number].sigma_minus
+							+= trRecData.so_polynomial.coeffsAtPoints[g_point_number].gammas_minus[i];
+
+
+				}
+
+				for(int i = 0; i < 9; ++i)
+				{
+
+					trRecData.so_polynomial.coeffsAtPoints[g_point_number].gammas_plus[i]
+							/= trRecData.so_polynomial.coeffsAtPoints[g_point_number].sigma_plus;
+
+					trRecData.so_polynomial.coeffsAtPoints[g_point_number].gammas_minus[i]
+							/= trRecData.so_polynomial.coeffsAtPoints[g_point_number].sigma_minus;
+
+
+				}
 
 			}
 
 
 		}
 
-
-#if 0
-		for(int g_point_number = 0; g_point_number < gaussian_points_number; ++g_point_number)
-	{
-		auto& currGPoint = gaussian_points[g_point_number];
-		trRecData.gaussian_points[g_point_number] = currGPoint;
-
-		arma::vec3 b;
-		b << 1 << (currGPoint.x - x_0) / h << (currGPoint.y - y_0) / h;
-
-		for(int polyn_number = 0; polyn_number < 9; ++polyn_number)
-		{
-			auto& currPolynomial = trRecData.fo_polynomial[polyn_number];
-
-
-			arma::mat33 A;
-
-			A << 1 << 1 << 1 << arma::endr
-			  << ksi_average[currPolynomial.stencil[0]] << ksi_average[currPolynomial.stencil[1]]
-			  								<< ksi_average[currPolynomial.stencil[2]] << arma::endr
-			  << eta_average[currPolynomial.stencil[0]] << eta_average[currPolynomial.stencil[1]]
-			  								<< eta_average[currPolynomial.stencil[2]] << arma::endr;
-
-
-			arma::vec3 coeffs = arma::solve(A, b);
-
-			currPolynomial.coeffsAtPoints[g_point_number].c[0] = coeffs[0];
-			currPolynomial.coeffsAtPoints[g_point_number].c[1] = coeffs[1];
-			currPolynomial.coeffsAtPoints[g_point_number].c[2] = coeffs[2];
-
-
-		}
-
-		double p_ksi_square[9];
-		double p_eta_square[9];
-		double p_ksi_eta[9];
-
-		arma::mat M(4, 9);
-		M.fill(1.0);
-
-		for(int i = 0; i < 9; ++i)
-		{
-			auto const c_0 = trRecData.fo_polynomial[i].coeffsAtPoints[g_point_number].c[0];
-			auto const c_1 = trRecData.fo_polynomial[i].coeffsAtPoints[g_point_number].c[1];;
-			auto const c_2 = trRecData.fo_polynomial[i].coeffsAtPoints[g_point_number].c[2];;
-
-			auto const ind_0 = trRecData.fo_polynomial[i].stencil[0];
-			auto const ind_1 = trRecData.fo_polynomial[i].stencil[1];
-			auto const ind_2 = trRecData.fo_polynomial[i].stencil[2];
-
-			p_ksi_square[i] = c_0 * ksi_square_average[ind_0] + c_1 * ksi_square_average[ind_1]
-							  + c_2 * ksi_square_average[ind_2];
-			p_eta_square[i] = c_0 * eta_square_average[ind_0] + c_1 * eta_square_average[ind_1]
-							  + c_2 * eta_square_average[ind_2];
-			p_ksi_eta[i] = c_0 * ksi_eta_average[ind_0] + c_1 * ksi_eta_average[ind_1]
-						   + c_2 * ksi_eta_average[ind_2];
-
-			M(1, i) = p_ksi_square[i];
-			M(2, i) = p_eta_square[i];
-			M(3, i) = p_ksi_eta[i];
-
-		}
-
-		arma::vec4 c;
-		c << 1 << sqr(currGPoint.x - x_0) / sqr(h) << sqr(currGPoint.y - y_0) / sqr(h)
-		  << (currGPoint.x - x_0) * (currGPoint.y - y_0) / sqr(h);
-
-		arma::vec gammas = solve(M, c);
-
-		for(int i = 0; i < 9; ++i)
-		{
-			trRecData.so_polynomial.coeffsAtPoints[g_point_number].gammas[i] = gammas[i];
-		}
-	}
-
-#endif
 
 
 		GetSmoothIndicatorData(trRecData, pTriangle);
@@ -458,12 +411,12 @@ namespace euler
 		for(int i = 0; i < 10; ++i)
 		{
 			auto const area = stencil[i]->getArea2D();
-			ksi_average[i] = 1 / area * T::GaussianIntegration([h, x_0](double x, double y)
+			ksi_average[i] = 1.0 / area * T::GaussianIntegration([h, x_0](double x, double y)
 															{
 																return (x - x_0) / h;
 															}, stencil[i]);
 
-			eta_average[i] = 1 / area * T::GaussianIntegration([h, y_0](double x, double y)
+			eta_average[i] = 1.0 / area * T::GaussianIntegration([h, y_0](double x, double y)
 															{
 																return (y - y_0) / h;
 															}, stencil[i]);
@@ -571,30 +524,8 @@ namespace euler
 			T::FormQVector(q[i], stencil[i]);
 		}
 
-/*	std::array<Vec4, 10> w_x;
-	std::array<Vec4, 10> w_y;
-
-	arma::mat44 L_A, R_A, L_B, R_B;
-	Vec4 q_avrg = 0.1 * (q[0] + q[1] + q[2] + q[3] + q[4] + q[5] + q[6] + q[7] + q[8] + q[9]);
-	FormL_A(q_avrg, L_A);
-	FormL_B(q_avrg, L_B);
-	FormR_A(q_avrg, R_A);
-	FormR_B(q_avrg, R_B);
-	auto const n = CalculateNormal(pTriangle, edgeNumber);
-	arma::mat44 L = std::fabs(n[0]) * L_A + std::fabs(n[1]) * L_B;
-	arma::mat44 R = std::fabs(n[0]) * R_A + std::fabs(n[1]) * R_B;
-
-	for(int i = 0; i < 10; ++i)
-	{
-		w_x[i] = L_A * q[i];
-		w_y[i] = L_B * q[i];
-	}
-
-
-*/
 		//Reconstruction!
 		Vec4 q_reconstructed(0.0, 0.0, 0.0, 0.0);
-		//Vec4 w_reconstructed(0.0, 0.0, 0.0, 0.0);
 
 		auto const triangleReconstructionData = m_vReconstructionData[pTriangle->Index()];
 
@@ -605,10 +536,24 @@ namespace euler
 			if(triangleReconstructionData.gaussian_points[curr_g_point_n] == gaussianPoint)
 				break;
 		}
+		if(curr_g_point_n == gaussian_points_number)
+			throw 1;
 
 
 		std::array<Vec4, 9> omega, omega_waved;
 		Vec4 o_wave_sum(0.0, 0.0, 0.0, 0.0);
+
+
+		std::array<Vec4, 9> omega_plus, omega_waved_plus;
+		Vec4 o_wave_sum_plus(0.0, 0.0, 0.0, 0.0);
+
+		std::array<Vec4, 9> omega_minus, omega_waved_minus;
+		Vec4 o_wave_sum_minus(0.0, 0.0, 0.0, 0.0);
+
+		bool weights_to_be_treated =
+				triangleReconstructionData.so_polynomial.coeffsAtPoints[curr_g_point_n].weights_to_be_treated;
+
+
 
 
 		auto const h = std::sqrt(pTriangle->getArea2D());
@@ -634,36 +579,38 @@ namespace euler
 							   + sqr(triangleReconstructionData.smoothIndicatorData[i].beta[0] * q[ind_0]
 									 + triangleReconstructionData.smoothIndicatorData[i].beta[1] * q[ind_1]
 									 + triangleReconstructionData.smoothIndicatorData[i].beta[2] * q[ind_2]));
-#ifdef MY_STABILITY_FIX
-
-			if(triangleReconstructionData.so_polynomial.coeffsAtPoints[curr_g_point_n].stability_fixed)
-			smoothIndicator = 2 * smoothIndicator;
-#endif
 
 
-/*		for(int k = 0; k < 10; ++k)
-		{
-			smoothIndicator += (sqr(triangleReconstructionData.smoothIndicatorData[i].alpha[0] * q[ind_0]
-								  + triangleReconstructionData.smoothIndicatorData[i].alpha[1] * q[ind_1]
-								  + triangleReconstructionData.smoothIndicatorData[i].alpha[2] * q[ind_2])
-							  + sqr(triangleReconstructionData.smoothIndicatorData[i].beta[0] * q[ind_0]
-									+ triangleReconstructionData.smoothIndicatorData[i].beta[1] * q[ind_1]
-									+ triangleReconstructionData.smoothIndicatorData[i].beta[2] * q[ind_2]))
-							  * stencil[k]->getArea2D();
+			if(!weights_to_be_treated)
+			{
+				omega_waved[i] = Vec4(triangleReconstructionData.so_polynomial.coeffsAtPoints[curr_g_point_n].gammas[i],
+									  triangleReconstructionData.so_polynomial.coeffsAtPoints[curr_g_point_n].gammas[i],
+									  triangleReconstructionData.so_polynomial.coeffsAtPoints[curr_g_point_n].gammas[i],
+									  triangleReconstructionData.so_polynomial.coeffsAtPoints[curr_g_point_n].gammas[i])
+								 / sqr(eps + smoothIndicator);
 
-			smoothIndicator = 1 / sqr(h) * smoothIndicator;
-		}
-*/
+				o_wave_sum += omega_waved[i];
+			}
+			else // weights to be treated
+			{
+				omega_waved_plus[i] =
+						Vec4(triangleReconstructionData.so_polynomial.coeffsAtPoints[curr_g_point_n].gammas_plus[i],
+							 triangleReconstructionData.so_polynomial.coeffsAtPoints[curr_g_point_n].gammas_plus[i],
+							 triangleReconstructionData.so_polynomial.coeffsAtPoints[curr_g_point_n].gammas_plus[i],
+							 triangleReconstructionData.so_polynomial.coeffsAtPoints[curr_g_point_n].gammas_plus[i])
+						/ sqr(eps + smoothIndicator);
 
+				omega_waved_minus[i] =
+						Vec4(triangleReconstructionData.so_polynomial.coeffsAtPoints[curr_g_point_n].gammas_minus[i],
+							 triangleReconstructionData.so_polynomial.coeffsAtPoints[curr_g_point_n].gammas_minus[i],
+							 triangleReconstructionData.so_polynomial.coeffsAtPoints[curr_g_point_n].gammas_minus[i],
+							 triangleReconstructionData.so_polynomial.coeffsAtPoints[curr_g_point_n].gammas_minus[i])
+						/ sqr(eps + smoothIndicator);
 
-			omega_waved[i] = Vec4(triangleReconstructionData.so_polynomial.coeffsAtPoints[curr_g_point_n].gammas[i],
-								  triangleReconstructionData.so_polynomial.coeffsAtPoints[curr_g_point_n].gammas[i],
-								  triangleReconstructionData.so_polynomial.coeffsAtPoints[curr_g_point_n].gammas[i],
-								  triangleReconstructionData.so_polynomial.coeffsAtPoints[curr_g_point_n].gammas[i]);
+				o_wave_sum_plus += omega_waved_plus[i];
+				o_wave_sum_minus += omega_waved_minus[i];
 
-			omega_waved[i] = omega_waved[i] / (eps + smoothIndicator);
-			o_wave_sum += omega_waved[i];
-
+			}
 
 		}
 
@@ -680,20 +627,31 @@ namespace euler
 			auto const ind_2 = triangleReconstructionData.fo_polynomial[i].stencil[2];
 
 
-			omega[i] = omega_waved[i] / o_wave_sum;
+			if(!weights_to_be_treated)
+			{
+				omega[i] = omega_waved[i] / o_wave_sum;
 
 
-			q_reconstructed += omega[i] *
-							   (c_0 * q[ind_0] + c_1 * q[ind_1] + c_2 * q[ind_2]);
+				q_reconstructed += omega[i] *
+								   (c_0 * q[ind_0] + c_1 * q[ind_1] + c_2 * q[ind_2]);
+			}
+			else //weights to be treated
+			{
+				omega_plus[i] = omega_waved_plus[i] / o_wave_sum_plus;
+				omega_minus[i] = omega_waved_minus[i] / o_wave_sum_minus;
 
+
+				q_reconstructed +=
+						(triangleReconstructionData.so_polynomial.coeffsAtPoints[curr_g_point_n].sigma_plus
+						 * omega_plus[i]
+						 - triangleReconstructionData.so_polynomial.coeffsAtPoints[curr_g_point_n].sigma_minus
+						   * omega_minus[i]) * (c_0 * q[ind_0] + c_1 * q[ind_1] + c_2 * q[ind_2]);
+			}
 
 
 		}
 
-		//Vec4 q_reconstructed(0.0, 0.0, 0.0, 0.0);
-		//q_reconstructed = R * w_reconstructed;
-
-		if(q_reconstructed(3) <= 0)
+		if((q_reconstructed(3) <= 0) || (q_reconstructed(0) <= 0))
 			throw 1;
 
 
@@ -708,30 +666,30 @@ namespace euler
 		double density, velocityX, velocityY, pressure;
 		T::GetGasParamsFromQ(qVec, density, velocityX, velocityY, pressure);
 
-		auto const c = std::sqrt(T::m_gamma * pressure / density);
+		auto const sound_speed = std::sqrt(T::m_gamma * pressure / density);
 		auto const velocity_sqr_abs = sqr(velocityX) + sqr(velocityY);
 
-		L_A(0, 0) = velocity_sqr_abs / 2 + velocityX * c / (T::m_gamma - 1);
-		L_A(0, 1) = -velocityX - c / (T::m_gamma - 1);
+		L_A(0, 0) = velocity_sqr_abs / 2 + velocityX * sound_speed / (T::m_gamma - 1);
+		L_A(0, 1) = -velocityX - sound_speed / (T::m_gamma - 1);
 		L_A(0, 2) = -velocityY;
 		L_A(0, 3) = 1;
 
-		L_A(1, 0) = c * c / (T::m_gamma - 1) - velocity_sqr_abs / 2 - velocityY * c /(T::m_gamma - 1);
+		L_A(1, 0) = sound_speed * sound_speed / (T::m_gamma - 1) - velocity_sqr_abs / 2 - velocityY * sound_speed /(T::m_gamma - 1);
 		L_A(1, 1) = velocityX;
-		L_A(1, 2) = velocityY + c / (T::m_gamma - 1);
+		L_A(1, 2) = velocityY + sound_speed / (T::m_gamma - 1);
 		L_A(1, 3) = -1;
 
-		L_A(2, 0) = c * c / (T::m_gamma - 1) - velocity_sqr_abs / 2 + velocityY * c /(T::m_gamma - 1);
+		L_A(2, 0) = sound_speed * sound_speed / (T::m_gamma - 1) - velocity_sqr_abs / 2 + velocityY * sound_speed /(T::m_gamma - 1);
 		L_A(2, 1) = velocityX;
-		L_A(2, 2) = velocityY - c / (T::m_gamma - 1);
+		L_A(2, 2) = velocityY - sound_speed / (T::m_gamma - 1);
 		L_A(2, 3) = -1;
 
-		L_A(3, 0) = velocity_sqr_abs / 2 - velocityX * c / (T::m_gamma - 1);
-		L_A(3, 1) = -velocityX + c / (T::m_gamma - 1);
+		L_A(3, 0) = velocity_sqr_abs / 2 - velocityX * sound_speed / (T::m_gamma - 1);
+		L_A(3, 1) = -velocityX + sound_speed / (T::m_gamma - 1);
 		L_A(3, 2) = -velocityY;
 		L_A(3, 3) = 1;
 
-		L_A *= (T::m_gamma - 1) / (2 * c * c);
+		L_A *= (T::m_gamma - 1) / (2 * sound_speed * sound_speed);
 
 	}
 
@@ -742,30 +700,30 @@ namespace euler
 		double density, velocityX, velocityY, pressure;
 		T::GetGasParamsFromQ(qVec, density, velocityX, velocityY, pressure);
 
-		auto const c = std::sqrt(T::m_gamma * pressure / density);
+		auto const sound_speed = std::sqrt(T::m_gamma * pressure / density);
 		auto const velocity_sqr_abs = sqr(velocityX) + sqr(velocityY);
 
-		L_B(0, 0) = velocity_sqr_abs / 2 + velocityY * c / (T::m_gamma - 1);
+		L_B(0, 0) = velocity_sqr_abs / 2 + velocityY * sound_speed / (T::m_gamma - 1);
 		L_B(0, 1) = -velocityX;
-		L_B(0, 2) = -velocityY - c / (T::m_gamma - 1);
+		L_B(0, 2) = -velocityY - sound_speed / (T::m_gamma - 1);
 		L_B(0, 3) = 1;
 
-		L_B(1, 0) = c * c / (T::m_gamma - 1) - velocity_sqr_abs / 2 - velocityX * c / (T::m_gamma - 1);
-		L_B(1, 1) = velocityX + c / (T::m_gamma - 1);
+		L_B(1, 0) = sound_speed * sound_speed / (T::m_gamma - 1) - velocity_sqr_abs / 2 - velocityX * sound_speed / (T::m_gamma - 1);
+		L_B(1, 1) = velocityX + sound_speed / (T::m_gamma - 1);
 		L_B(1, 2) = velocityY;
 		L_B(1, 3) = -1;
 
-		L_B(2, 0) = c * c / (T::m_gamma - 1) - velocity_sqr_abs / 2 + velocityX * c / (T::m_gamma - 1);
-		L_B(2, 1) = velocityX - c / (T::m_gamma - 1);
+		L_B(2, 0) = sound_speed * sound_speed / (T::m_gamma - 1) - velocity_sqr_abs / 2 + velocityX * sound_speed / (T::m_gamma - 1);
+		L_B(2, 1) = velocityX - sound_speed / (T::m_gamma - 1);
 		L_B(2, 2) = velocityY;
 		L_B(2, 3) = -1;
 
-		L_B(3, 0) = velocity_sqr_abs / 2 - velocityY * c / (T::m_gamma - 1);
+		L_B(3, 0) = velocity_sqr_abs / 2 - velocityY * sound_speed / (T::m_gamma - 1);
 		L_B(3, 1) = -velocityX;
-		L_B(3, 2) = -velocityY + c / (T::m_gamma - 1);
+		L_B(3, 2) = -velocityY + sound_speed / (T::m_gamma - 1);
 		L_B(3, 3) = 1;
 
-		L_B *= (T::m_gamma - 1) / (2 * c * c);
+		L_B *= (T::m_gamma - 1) / (2 * sound_speed * sound_speed);
 
 	}
 
@@ -776,7 +734,7 @@ namespace euler
 		double density, velocityX, velocityY, pressure;
 		T::GetGasParamsFromQ(qVec, density, velocityX, velocityY, pressure);
 
-		auto const c = std::sqrt(T::m_gamma * pressure / density);
+		auto const sound_speed = std::sqrt(T::m_gamma * pressure / density);
 		auto const velocity_sqr_abs = sqr(velocityX) + sqr(velocityY);
 
 		auto const eps = pressure / (density * (T::m_gamma - 1));
@@ -788,20 +746,20 @@ namespace euler
 		R_A(0, 2) = 1;
 		R_A(0, 3) = 1;
 
-		R_A(1, 0) = velocityX - c;
+		R_A(1, 0) = velocityX - sound_speed;
 		R_A(1, 1) = velocityX;
 		R_A(1, 2) = velocityX;
-		R_A(1, 3) = velocityX + c;
+		R_A(1, 3) = velocityX + sound_speed;
 
 		R_A(2, 0) = velocityY;
-		R_A(2, 1) = velocityY + c;
-		R_A(2, 2) = velocityY - c;
+		R_A(2, 1) = velocityY + sound_speed;
+		R_A(2, 2) = velocityY - sound_speed;
 		R_A(2, 3) = velocityY;
 
-		R_A(3, 0) = H - velocityX * c;
-		R_A(3, 1) = velocity_sqr_abs / 2 + velocityY * c;
-		R_A(3, 2) = velocity_sqr_abs / 2 - velocityY * c;
-		R_A(3, 3) = H + velocityX * c;
+		R_A(3, 0) = H - velocityX * sound_speed;
+		R_A(3, 1) = velocity_sqr_abs / 2 + velocityY * sound_speed;
+		R_A(3, 2) = velocity_sqr_abs / 2 - velocityY * sound_speed;
+		R_A(3, 3) = H + velocityX * sound_speed;
 
 
 	}
@@ -812,7 +770,7 @@ namespace euler
 		double density, velocityX, velocityY, pressure;
 		T::GetGasParamsFromQ(qVec, density, velocityX, velocityY, pressure);
 
-		auto const c = std::sqrt(T::m_gamma * pressure / density);
+		auto const sound_speed = std::sqrt(T::m_gamma * pressure / density);
 		auto const velocity_sqr_abs = sqr(velocityX) + sqr(velocityY);
 
 		auto const eps = pressure / (density * (T::m_gamma - 1));
@@ -825,19 +783,19 @@ namespace euler
 		R_B(0, 3) = 1;
 
 		R_B(1, 0) = velocityX;
-		R_B(1, 1) = velocityX + c;
-		R_B(1, 2) = velocityX - c;
+		R_B(1, 1) = velocityX + sound_speed;
+		R_B(1, 2) = velocityX - sound_speed;
 		R_B(1, 3) = velocityX;
 
-		R_B(2, 0) = velocityY - c;
+		R_B(2, 0) = velocityY - sound_speed;
 		R_B(2, 1) = velocityY;
 		R_B(2, 2) = velocityY;
-		R_B(2, 3) = velocityY + c;
+		R_B(2, 3) = velocityY + sound_speed;
 
-		R_B(3, 0) = H - velocityY * c;
-		R_B(3, 1) = velocity_sqr_abs / 2 + velocityX * c;
-		R_B(3, 2) = velocity_sqr_abs / 2 - velocityX * c;
-		R_B(3, 3) = H + velocityY * c;
+		R_B(3, 0) = H - velocityY * sound_speed;
+		R_B(3, 1) = velocity_sqr_abs / 2 + velocityX * sound_speed;
+		R_B(3, 2) = velocity_sqr_abs / 2 - velocityX * sound_speed;
+		R_B(3, 3) = H + velocityY * sound_speed;
 
 	}
 

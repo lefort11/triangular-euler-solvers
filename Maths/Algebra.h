@@ -117,6 +117,8 @@ namespace euler
 		friend Vec4 operator*(Vec4 const& vec, double alpha);
 
 		friend euler::Vec4& operator+=(euler::Vec4& first, euler::Vec4 const& right);
+		friend euler::Vec4& operator-=(euler::Vec4& first, euler::Vec4 const& right);
+
 
 	};
 
@@ -168,6 +170,7 @@ namespace euler
 //	euler::Vec4 operator*(Matrix4x4 const& mat, euler::Vec4 const& vec4);
 
 	euler::Vec4& operator+=(euler::Vec4& first, euler::Vec4 const& right);
+	euler::Vec4& operator-=(euler::Vec4& first, euler::Vec4 const& right);
 
 	Vec4 operator+(Vec4 const& left, Vec4 const& right);
 

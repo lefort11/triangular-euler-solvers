@@ -28,6 +28,8 @@ void Solver::Calculate(double time) const
 
 	std::vector<Vec4> nextQs(m_triangles.size());
 
+	int timeLayersNumber = 0;
+
 
 	while(delta_t > 0)
 	{
@@ -84,10 +86,14 @@ void Solver::Calculate(double time) const
 			delta_t = time - currentTime;
 		//currentTime += delta_t;
 
+		++timeLayersNumber;
+
 
 		currentQs = nextQs;
 
 	}
+
+	std::cout<<timeLayersNumber << std::endl;
 
 }
 
@@ -112,9 +118,9 @@ Vec4 Solver::RungeKuttaTVDStep(Vec4 const& current_q, double delta_t, std::funct
 double Solver::GaussianQuadrilateralIntegration(std::function<double(double, double)> const &g) const
 {
 	double ksi[3] = {
-			- sqrt(3)/sqrt(5),
+			- sqrt(3.0)/sqrt(5.0),
 			0.0,
-			sqrt(3)/sqrt(5)
+			sqrt(3.0)/sqrt(5.0)
 	};
 
 	double omega[3] = {
