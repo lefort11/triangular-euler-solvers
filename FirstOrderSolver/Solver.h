@@ -5,12 +5,34 @@
 
 #include "../Maths/Algebra.h"
 
+#include <iostream>
+#include <fstream>
+
 
 namespace euler
 {
 
 	class Solver
 	{
+
+		struct CartesianMesh
+		{
+			static int const NX = 100;
+			static int const NY = 100;
+			double const X1 = -1.0;
+			double const X2 = 2.0;
+			double const Y1 = -1.0;
+			double const Y2 = 1.0;
+			double const HX = (X2 - X1) / NX;
+			double const HY = (Y2 - Y1) / NX;
+			std::array<double, NX> X;
+			std::array<double, NY> Y;
+			std::array<std::array<Triangle const*, NY>, NX> triangles;
+
+
+
+		} m_cartesianMesh;
+
 		Area m_area;
 
 
@@ -54,6 +76,8 @@ namespace euler
 			m_triangles = m_area.Triangulate(m_triangularizationProperties, initStateFunction);
 
 			CreateBoundingMesh();
+
+			InitCartesianMesh();
 		}
 
 		/**@brief method does all calculations
@@ -326,52 +350,150 @@ namespace euler
 		}
 
 
+
+
+		double sign(GEOM_FADE2D::Point2 const& p1, GEOM_FADE2D::Point2 const& p2, GEOM_FADE2D::Point2 const& p3) const
+		{
+			return (p1.x() - p3.x()) * (p2.y() - p3.y()) - (p2.x() - p3.x()) * (p1.y() - p3.y());
+		}
+
+		bool PointInTriangle(GEOM_FADE2D::Point2 const& pt, GEOM_FADE2D::Point2 const& v1,
+							  GEOM_FADE2D::Point2 const& v2, GEOM_FADE2D::Point2 const& v3) const
+		{
+			bool b1, b2, b3;
+
+			b1 = sign(pt, v1, v2) <= 0.0;
+			b2 = sign(pt, v2, v3) <= 0.0;
+			b3 = sign(pt, v3, v1) <= 0.0;
+
+			return ((b1 == b2) && (b2 == b3));
+		}
+
+
+
+
+		void InitCartesianMesh()
+		{
+			for(int i = 0; i < m_cartesianMesh.NX; ++i)
+			{
+				m_cartesianMesh.X[i] = m_cartesianMesh.X1 + (i + 0.5) * m_cartesianMesh.HX;
+			}
+			for(int j = 0; j < m_cartesianMesh.NY; ++j)
+			{
+				m_cartesianMesh.Y[j] = m_cartesianMesh.Y1 + (j + 0.5) * m_cartesianMesh.HY;
+			}
+			for(int i = 0; i < m_cartesianMesh.NX; ++i)
+			{
+				for(int j = 0; j < m_cartesianMesh.NY; ++j)
+				{
+					auto const point = GEOM_FADE2D::Point2(m_cartesianMesh.X[i], m_cartesianMesh.Y[j]);
+					bool found = false;
+					for(int k = 0; k < m_triangles.size(); ++k)
+					{
+						auto const v1 = m_triangles[k]->getCorner(0);
+						auto const v2 = m_triangles[k]->getCorner(1);
+						auto const v3 = m_triangles[k]->getCorner(2);
+
+						if (PointInTriangle(point, *v1, *v2, *v3))
+						{
+							m_cartesianMesh.triangles[i][j] = m_triangles[k];
+							found = true;
+							break;
+						}
+					}
+					if(!found) // no triangles
+					{
+						m_cartesianMesh.triangles[i][j] = nullptr;
+					}
+
+				}
+			}
+
+		}
+
+
+
 		void ClcOutput(std::string const& filePath, double tau,
-					   double currentTime,  int rSaveStep) const
+					   double currentTime, int timeLayerNumber) const
 		{
-			float const rNX = 100.0f;
-			float const rNY = 100.0f;
+			struct
+			{
+				float rSvStep;
+				float rClcStep;
 
-			float const X1 = -1.0f;
-			float const X2 = 2.0f;
-			float const Y1 = -1.0f;
-			float const Y2 = 1.0f;
+				float rNX;
+				float rNY;
 
-			float const HX = (X2 - X1) / rNX;
-			float const HY = (Y2 - Y1) / rNY;
+				float X1;
+				float X2;
+				float Y1;
+				float Y2;
+
+				float HX;
+				float HY;
+
+				float rTau;
+				float rCurrTime;
+			} buffer;
+
+			buffer.rSvStep = (float) ((timeLayerNumber % 100) + 1);
+			buffer.rClcStep = (float) (timeLayerNumber + 1);
+			buffer.rTau = (float)tau;
+			buffer.rCurrTime = (float) currentTime;
+
+			buffer.rNX = (float)m_cartesianMesh.NX;
+			buffer.rNY = (float)m_cartesianMesh.NY;
+
+			buffer.X1 = (float)m_cartesianMesh.X1;
+			buffer.X2 = (float)m_cartesianMesh.X2;
+			buffer.Y1 = (float)m_cartesianMesh.Y1;
+			buffer.Y2 = (float)m_cartesianMesh.Y2;
+
+			buffer.HX = (float)m_cartesianMesh.HX;
+			buffer.HY = (float)m_cartesianMesh.HY;
 
 
 
+			std::ofstream resultsClcFile(filePath, std::ios::out | std::ios::binary | std::ios::trunc);
+
+			resultsClcFile.write(reinterpret_cast<const char*>(&buffer), sizeof(buffer));
+
+
+			for(int i = 0; i < buffer.rNX; ++i)
+			{
+				for(int j = 0; j < buffer.rNY; ++j)
+				{
+					float rDensity, rVelocityX, rVelocityY, rPressure;
+					if(m_cartesianMesh.triangles[i][j] != nullptr)
+					{
+						rDensity = (float) m_cartesianMesh.triangles[i][j]->density;
+						rVelocityX = (float) m_cartesianMesh.triangles[i][j]->velocityX;
+						rVelocityY = (float) m_cartesianMesh.triangles[i][j]->velocityY;
+						rPressure = (float) m_cartesianMesh.triangles[i][j]->pressure;
+					}
+					else
+					{
+						rDensity = 0.0f;
+						rVelocityX = 0.0f;
+						rVelocityY = 0.0f;
+						rPressure = 0.0f;
+					}
+
+					resultsClcFile.write(reinterpret_cast<const char*>(&rDensity), sizeof(rDensity));
+					resultsClcFile.write(reinterpret_cast<const char*>(&rVelocityX), sizeof(rVelocityX));
+					resultsClcFile.write(reinterpret_cast<const char*>(&rVelocityY), sizeof(rVelocityY));
+					resultsClcFile.write(reinterpret_cast<const char*>(&rPressure), sizeof(rPressure));
+
+
+				}
+			}
+
+			resultsClcFile.close();
 
 
 
 
 		}
-
-
-		double Density(double x, double y) const
-		{
-			auto const pTriangle2 = GEOM_FADE2D::Point2(x, y).getIncidentTriangle();
-
-			return 0;
-
-		}
-
-		double Pressure(double x, double y) const
-		{
-			return 0;
-		}
-
-		double VelocityX(double x, double y) const
-		{
-			return 0;
-		}
-
-		double VelocityY(double x, double y) const
-		{
-			return 0;
-		}
-
 
 	};
 

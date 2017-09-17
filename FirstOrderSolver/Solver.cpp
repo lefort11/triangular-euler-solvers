@@ -83,6 +83,8 @@ void Solver::Calculate(double time) const
 		}
 
 		currentTime += delta_t;
+		std::string clcPath("results/clc/00-" + std::to_string(timeLayersNumber) + ".clc");
+		ClcOutput(clcPath, delta_t, currentTime, timeLayersNumber);
 
 		delta_t = CalculateTimeStep();
 		if(currentTime + delta_t > time)
@@ -102,6 +104,8 @@ void Solver::Calculate(double time) const
 			Output(densityPath, velocityPath, pressurePath);
 
 		} */
+
+
 
 		++timeLayersNumber;
 

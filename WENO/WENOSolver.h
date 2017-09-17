@@ -5,7 +5,7 @@
 
 //#define CHARACTERISTIC_WISE
 
-#define MY_STABILITY_FIX 10
+#define MY_STABILITY_FIX 100.0 //100.0, 1e-6
 
 namespace euler
 {
@@ -14,7 +14,7 @@ namespace euler
 	{
 	private:
 
-		double const m_eps = 1e-5;
+		double const m_eps = 1e-6;
 
 		static int const gaussian_points_number = 6;
 
@@ -544,8 +544,10 @@ namespace euler
 		for(int i = 1; i < 10; ++i)
 		{
 			T::FormQVector(q[i], stencil[i]);
+#ifdef MY_STABILITY_FIX
 			if(max_norm < std::sqrt(sqr(q[i][0]) + sqr(q[i][1]) + sqr(q[i][2]) + sqr(q[i][3])))
 				max_norm = std::sqrt(sqr(q[i][0]) + sqr(q[i][1]) + sqr(q[i][2]) + sqr(q[i][3]));
+#endif
 
 		}
 #ifdef MY_STABILITY_FIX
@@ -617,12 +619,21 @@ namespace euler
 		std::array<Vec4, 10> w;
 		Vec4 w_reconstructed(0.0, 0.0, 0.0, 0.0);
 
+		double max_norm_w = 0.0;
 		if(char_wise)
 		{
 			for (int i = 0; i < 10; ++i)
 			{
 				w[i] = L * q[i];
+#ifdef MY_STABILITY_FIX
+				if(max_norm_w < std::sqrt(sqr(w[i][0]) + sqr(w[i][1]) + sqr(w[i][2]) + sqr(w[i][3])))
+					max_norm_w = std::sqrt(sqr(w[i][0]) + sqr(w[i][1]) + sqr(w[i][2]) + sqr(w[i][3]));
+#endif
 			}
+#ifdef MY_STABILITY_FIX
+			for(int i = 0; i < 10; ++i)
+				w[i] *= 1.0 / (MY_STABILITY_FIX * max_norm_w);
+#endif
 		}
 
 #endif
@@ -813,6 +824,10 @@ namespace euler
 		}
 
 #ifdef CHARACTERISTIC_WISE
+
+#ifdef MY_STABILITY_FIX
+		w_reconstructed *= (MY_STABILITY_FIX * max_norm_w);
+#endif
 
 		if(char_wise)
 		{
