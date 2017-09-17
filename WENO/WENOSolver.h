@@ -295,7 +295,7 @@ namespace euler
 			ksi_eta_average[i] = 1.0 / area * T::GaussianIntegration([h, x_0, y_0](double x, double y)
 																{
 																	return (x - x_0) * (y - y_0)  / sqr(h);
-																}, stencil[i]);  */
+																}, stencil[i]); */
 
 
 
@@ -454,8 +454,9 @@ namespace euler
 			auto const ind_2 = trRecData.fo_polynomial[polynomial_number].stencil[2];
 
 			int i = 0;
-			for (int g_point_number = 0; g_point_number < 3; ++g_point_number)
+			for (int g_point_number = 0; g_point_number < gaussian_points_number; g_point_number+=2)
 			{
+				//@todo check +=2!
 				auto const c_0 = trRecData.fo_polynomial[polynomial_number].coeffsAtPoints[g_point_number].c[0];
 				auto const c_1 = trRecData.fo_polynomial[polynomial_number].coeffsAtPoints[g_point_number].c[1];
 				auto const c_2 = trRecData.fo_polynomial[polynomial_number].coeffsAtPoints[g_point_number].c[2];
@@ -473,9 +474,9 @@ namespace euler
 				A(i, 4) = eta;
 				A(i, 5) = eta;
 
-				A(i, 6) = 1;
-				A(i, 7) = 1;
-				A(i, 8) = 1;
+				A(i, 6) = 1.0;
+				A(i, 7) = 1.0;
+				A(i, 8) = 1.0;
 
 				c(i) = c_0 + c_1 + c_2;
 
@@ -507,8 +508,11 @@ namespace euler
 				A(i + 2, 8) = eta_average[ind_2];
 				c(i + 2) = c_0 * eta_average[ind_0] + c_1 * eta_average[ind_1] + c_2 * eta_average[ind_2];
 
+
+
 				i+=3;
 			}
+
 
 			arma::vec9 solution = arma::solve(A, c);
 

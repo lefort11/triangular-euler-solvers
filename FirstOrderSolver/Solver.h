@@ -17,12 +17,12 @@ namespace euler
 
 		struct CartesianMesh
 		{
-			static int const NX = 100;
-			static int const NY = 100;
-			double const X1 = -1.0;
-			double const X2 = 2.0;
-			double const Y1 = -1.0;
-			double const Y2 = 1.0;
+			static int const NX = 300;
+			static int const NY = 300;
+			double const X1 = -2.0;
+			double const X2 = 8.0;
+			double const Y1 = -4.0;
+			double const Y2 = 4.0;
 			double const HX = (X2 - X1) / NX;
 			double const HY = (Y2 - Y1) / NX;
 			std::array<double, NX> X;
@@ -196,7 +196,7 @@ namespace euler
 		virtual double CalculateTimeStep() const
 		{
 
-			double const sigma = 0.1;
+			double const sigma = 0.5;
 			auto min_area = m_triangles[0]->getArea2D();
 
 			auto lambda_max = 0.0;
@@ -436,10 +436,10 @@ namespace euler
 				float rCurrTime;
 			} buffer;
 
-			buffer.rSvStep = (float) ((timeLayerNumber % 100) + 1);
-			buffer.rClcStep = (float) (timeLayerNumber + 1);
+			buffer.rSvStep = (float)(timeLayerNumber + 1);
+			buffer.rClcStep = (float)(timeLayerNumber + 1);
 			buffer.rTau = (float)tau;
-			buffer.rCurrTime = (float) currentTime;
+			buffer.rCurrTime = (float)currentTime;
 
 			buffer.rNX = (float)m_cartesianMesh.NX;
 			buffer.rNY = (float)m_cartesianMesh.NY;

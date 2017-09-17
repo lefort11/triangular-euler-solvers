@@ -73,15 +73,15 @@ int main()
 			bcmesh[triangle_counter]->velocityY = mainMesh[index]->velocityY;
 			bcmesh[triangle_counter]->pressure = mainMesh[index]->pressure; */
 
-			if (bcmesh[triangle_counter]->getBarycenter().x() < -1) //left boundary
+			if (bcmesh[triangle_counter]->getBarycenter().x() < -2) //left boundary
 			{
-				bcmesh[triangle_counter]->density = 0.2;
-				bcmesh[triangle_counter]->velocityX = 0.8 * std::sqrt(5.0 / 3.0 * 2.0);
+				bcmesh[triangle_counter]->density = 1.0;
+				bcmesh[triangle_counter]->velocityX = 0.9 * sqrt(5.0 / 3.0);
 				bcmesh[triangle_counter]->velocityY = 0.0;
 				bcmesh[triangle_counter]->pressure = 1.0;
 
 			}
-			else if (bcmesh[triangle_counter]->getBarycenter().x() > 2) //right boundary
+			else if (bcmesh[triangle_counter]->getBarycenter().x() > 8) //right boundary
 			{
 				bcmesh[triangle_counter]->density = mainMesh[index]->density;
 				bcmesh[triangle_counter]->velocityX = mainMesh[index]->velocityX;
@@ -104,17 +104,17 @@ int main()
 	solver.Init([](GEOM_FADE2D::Point2 point)
 				{
 
-				//	return std::array<double, 4>{{5.0 / 3.0, 0.9 * 5.0 / 3.0, 0.0, 1.0}};
-					return std::array<double, 4>{{0.2, 0.8 * sqrt(5.0 / 3.0 * 5.0), 0.0, 1.0}};
+//					return std::array<double, 4>{{5.0 / 3.0, 0.8 * 5.0 / 3.0, 0.0, 1.0}};
+					return std::array<double, 4>{{1.0, 0.9 * sqrt(5.0 / 3.0), 0.0, 1.0}};
 //					if(point.x() < -0.5)
-//						return std::array<double, 4>{{0.5, 0.8 * sqrt(5.0/3.0), 0.0, 1.0}};
-//					return std::array<double, 4>{{0.5, 0.0, 0.0, 1.0}};
+//						return std::array<double, 4>{{0.2, 0.8 * sqrt(5.0/3.0 * 2.0), 0.0, 1.0}};
+//					return std::array<double, 4>{{0.2, 0.0, 0.0, 1.0}};
 			//		if(point.x() < 0.0)
 			//			return std::array<double, 4>{{2.0, 0.0, 0.0, 5.0}};
 			//		return std::array<double, 4>{{1.0, 0.0, 0.0, 1.0}};
 				});
 
-	solver.Calculate(0.5);
+	solver.Calculate(60.0);
 
 	solver.Output("results/density2D.txt", "results/velocity2D.txt", "results/pressure2D.txt");
 	solver.ClcOutput("results/test.clc", 0, 0.5, 1);

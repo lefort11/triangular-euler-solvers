@@ -1,6 +1,8 @@
 #include "Solver.h"
 #include <omp.h>
 #include "../Maths/Algebra.h"
+#include <sstream>
+#include <iomanip>
 
 
 using namespace euler;
@@ -83,8 +85,13 @@ void Solver::Calculate(double time) const
 		}
 
 		currentTime += delta_t;
-		std::string clcPath("results/clc/00-" + std::to_string(timeLayersNumber) + ".clc");
-		ClcOutput(clcPath, delta_t, currentTime, timeLayersNumber);
+		if(timeLayersNumber % 10 == 0)
+		{
+			std::stringstream stln;
+			stln << std::setw(10) << std::setfill('0') << timeLayersNumber;
+			std::string clcPath("results/clc/" + stln.str() + ".clc");
+			ClcOutput(clcPath, delta_t, currentTime, timeLayersNumber);
+		}
 
 		delta_t = CalculateTimeStep();
 		if(currentTime + delta_t > time)
