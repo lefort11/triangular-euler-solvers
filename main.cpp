@@ -14,8 +14,8 @@ int main()
 
 	euler::ConstraintFunction circle1([](double t)
 	{
-		auto x = 0.35 * cos(2.0 *M_PI * t);
-		auto y = 0.35 * sin(2.0 *M_PI * t);
+		auto x = 0.25 * cos(2.0 *M_PI * t);
+		auto y = 0.25 * sin(2.0 *M_PI * t);
 		return GEOM_FADE2D::Point2(x, y);
 	}, 60);
 
@@ -75,20 +75,21 @@ int main()
 
 			if (bcmesh[triangle_counter]->getBarycenter().x() < -2) //left boundary
 			{
-				bcmesh[triangle_counter]->density = 1.0;
-				bcmesh[triangle_counter]->velocityX = 0.9 * sqrt(5.0 / 3.0);
+				bcmesh[triangle_counter]->density = 5.0 / 3.0;
+				bcmesh[triangle_counter]->velocityX = 0.9;
 				bcmesh[triangle_counter]->velocityY = 0.0;
 				bcmesh[triangle_counter]->pressure = 1.0;
 
 			}
-			else if (bcmesh[triangle_counter]->getBarycenter().x() > 8) //right boundary
+			else if ( (bcmesh[triangle_counter]->getBarycenter().x() > 8) ||
+					( std::fabs(bcmesh[triangle_counter]->getBarycenter().y()) > 4.0 ) ) //right, upper and lower boundaries
 			{
 				bcmesh[triangle_counter]->density = mainMesh[index]->density;
 				bcmesh[triangle_counter]->velocityX = mainMesh[index]->velocityX;
 				bcmesh[triangle_counter]->velocityY = mainMesh[index]->velocityY;
 				bcmesh[triangle_counter]->pressure = mainMesh[index]->pressure;
 			}
-			else // circle, lower and upper boundaries ~ walls
+			else  // circle ~ wall
 			{
 				bcmesh[triangle_counter]->density = mainMesh[index]->density;
 				bcmesh[triangle_counter]->velocityX = -mainMesh[index]->velocityX;
@@ -104,8 +105,8 @@ int main()
 	solver.Init([](GEOM_FADE2D::Point2 point)
 				{
 
-//					return std::array<double, 4>{{5.0 / 3.0, 0.8 * 5.0 / 3.0, 0.0, 1.0}};
-					return std::array<double, 4>{{1.0, 0.9 * sqrt(5.0 / 3.0), 0.0, 1.0}};
+					return std::array<double, 4>{{5.0 / 3.0, 0.9, 0.0, 1.0}};
+//					return std::array<double, 4>{{1.0, 0.9 * sqrt(5.0 / 3.0), 0.0, 1.0}};
 //					if(point.x() < -0.5)
 //						return std::array<double, 4>{{0.2, 0.8 * sqrt(5.0/3.0 * 2.0), 0.0, 1.0}};
 //					return std::array<double, 4>{{0.2, 0.0, 0.0, 1.0}};
@@ -114,7 +115,7 @@ int main()
 			//		return std::array<double, 4>{{1.0, 0.0, 0.0, 1.0}};
 				});
 
-	solver.Calculate(60.0);
+	solver.Calculate(100.0);
 
 	solver.Output("results/density2D.txt", "results/velocity2D.txt", "results/pressure2D.txt");
 	solver.ClcOutput("results/test.clc", 0, 0.5, 1);
