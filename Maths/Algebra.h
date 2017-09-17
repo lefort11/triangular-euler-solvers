@@ -193,6 +193,8 @@ namespace euler
 
 	Vec4 sqr(euler::Vec4 const& vec);
 
+	Vec4 absv(euler::Vec4 const& vec1);
+
 
 
 }

@@ -122,3 +122,8 @@ euler::Vec4 euler::operator*(euler::Matrix4x4 const &mat, euler::Vec4 const &vec
 	}
 	return result;
 }
+
+euler::Vec4 euler::absv(euler::Vec4 const &vec)
+{
+	return Vec4(std::fabs(vec[0]), std::fabs(vec[1]), std::fabs(vec[2]), std::fabs(vec[3]));
+}

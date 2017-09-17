@@ -5,6 +5,7 @@
 
 //#define CHARACTERISTIC_WISE
 
+#define MY_STABILITY_FIX 10
 
 namespace euler
 {
@@ -13,7 +14,7 @@ namespace euler
 	{
 	private:
 
-		double const m_eps = 1e-3;
+		double const m_eps = 1e-5;
 
 		static int const gaussian_points_number = 6;
 
@@ -263,6 +264,16 @@ namespace euler
 		{
 			auto const area = stencil[i]->getArea2D();
 
+			auto const x = stencil[i]->getBarycenter().x();
+			auto const y = stencil[i]->getBarycenter().y();
+
+			ksi_average[i] = (x - x_0) / h;
+			eta_average[i] = (y - y_0) / h;
+
+			ksi_square_average[i] = sqr(x - x_0) / sqr(h);
+			eta_square_average[i] = sqr(y - y_0) / sqr(h);
+			ksi_eta_average[i] = (x - x_0) * (y - y_0) / sqr(h);
+
 			/*ksi_average[i] = 1.0 / area * T::GaussianIntegration([h, x_0](double x, double y)
 															{
 																return (x - x_0) / h;
@@ -284,17 +295,9 @@ namespace euler
 			ksi_eta_average[i] = 1.0 / area * T::GaussianIntegration([h, x_0, y_0](double x, double y)
 																{
 																	return (x - x_0) * (y - y_0)  / sqr(h);
-																}, stencil[i]); */
+																}, stencil[i]);  */
 
-			auto const x = stencil[i]->getBarycenter().x();
-			auto const y = stencil[i]->getBarycenter().y();
 
-			ksi_average[i] = (x - x_0) / h;
-			eta_average[i] = (y - y_0) / h;
-
-			ksi_square_average[i] = sqr(x - x_0) / sqr(h);
-			eta_square_average[i] = sqr(y - y_0) / sqr(h);
-			ksi_eta_average[i] = (x - x_0) * (y - y_0) / sqr(h);
 
 
 		}
@@ -537,10 +540,20 @@ namespace euler
 
 		std::array<Vec4, 10> q;
 		q[0] = qVec;
+		double max_norm = std::sqrt(sqr(q[0][0]) + sqr(q[0][1]) + sqr(q[0][2]) + sqr(q[0][3]));
 		for(int i = 1; i < 10; ++i)
 		{
 			T::FormQVector(q[i], stencil[i]);
+			if(max_norm < std::sqrt(sqr(q[i][0]) + sqr(q[i][1]) + sqr(q[i][2]) + sqr(q[i][3])))
+				max_norm = std::sqrt(sqr(q[i][0]) + sqr(q[i][1]) + sqr(q[i][2]) + sqr(q[i][3]));
+
 		}
+#ifdef MY_STABILITY_FIX
+		for(int i = 0; i < 10; ++i)
+		{
+			q[i] *= 1.0 / (MY_STABILITY_FIX * max_norm);
+		}
+#endif
 
 
 #ifdef CHARACTERISTIC_WISE
@@ -586,6 +599,8 @@ namespace euler
 
 
 
+//		FormL_A(density_star, velocityX_star, velocityY_star, H_star, L_A);
+//		FormL_B(density_star, velocityX_star, velocityY_star, H_star, L_B);
 		FormR_A(density_star, velocityX_star, velocityY_star, H_star, R_A);
 		FormR_B(density_star, velocityX_star, velocityY_star, H_star, R_B);
 
@@ -594,13 +609,14 @@ namespace euler
 		auto const normal = T::CalculateNormal(pTriangle, edgeNumber);
 		arma::mat44 R = normal[0] * R_A + normal[1] * R_B;
 		arma::mat44 L;
-		if(det(R) > 0.001)
+		if(std::fabs(det(R)) > 0.0001)
 			 L = R.i();
 		else
 			char_wise = false; // then we reconstruct in component-wise way
 
 		std::array<Vec4, 10> w;
 		Vec4 w_reconstructed(0.0, 0.0, 0.0, 0.0);
+
 		if(char_wise)
 		{
 			for (int i = 0; i < 10; ++i)
@@ -635,6 +651,7 @@ namespace euler
 
 		std::array<Vec4, 9> omega_minus, omega_waved_minus;
 		Vec4 o_wave_sum_minus(0.0, 0.0, 0.0, 0.0);
+
 
 		bool weights_to_be_treated =
 				triangleReconstructionData.so_polynomial.coeffsAtPoints[curr_g_point_n].weights_to_be_treated;
@@ -677,10 +694,11 @@ namespace euler
 								   + sqr(triangleReconstructionData.smoothIndicatorData[i].beta[0] * w[ind_0]
 										 + triangleReconstructionData.smoothIndicatorData[i].beta[1] * w[ind_1]
 										 + triangleReconstructionData.smoothIndicatorData[i].beta[2] * w[ind_2]));
+
 			}
 			else
 			{
-				smoothIndicator = (sqr(triangleReconstructionData.smoothIndicatorData[i].alpha[0] * q[ind_0]
+				smoothIndicator =  (sqr(triangleReconstructionData.smoothIndicatorData[i].alpha[0] * q[ind_0]
 									   + triangleReconstructionData.smoothIndicatorData[i].alpha[1] * q[ind_1]
 									   + triangleReconstructionData.smoothIndicatorData[i].alpha[2] * q[ind_2])
 								   + sqr(triangleReconstructionData.smoothIndicatorData[i].beta[0] * q[ind_0]
@@ -699,10 +717,10 @@ namespace euler
 								 / sqr(eps + smoothIndicator);
 
 				o_wave_sum += omega_waved[i];
+
 			}
 			else // weights to be treated
 			{
-
 				omega_waved_plus[i] =
 						Vec4(triangleReconstructionData.so_polynomial.coeffsAtPoints[curr_g_point_n].gammas_plus[i],
 							 triangleReconstructionData.so_polynomial.coeffsAtPoints[curr_g_point_n].gammas_plus[i],
@@ -745,8 +763,12 @@ namespace euler
 				q_reconstructed += omega[i] *
 								   (c_0 * q[ind_0] + c_1 * q[ind_1] + c_2 * q[ind_2]);
 #else
+
 				if(char_wise)
+				{
 					w_reconstructed += omega[i] * (c_0 * w[ind_0] + c_1 * w[ind_1] + c_2 * w[ind_2]);
+
+				}
 				else
 					q_reconstructed += omega[i] *
 									   (c_0 * q[ind_0] + c_1 * q[ind_1] + c_2 * q[ind_2]);
@@ -754,11 +776,13 @@ namespace euler
 			}
 			else //weights to be treated
 			{
+
+
 				omega_plus[i] = omega_waved_plus[i] / o_wave_sum_plus;
 				omega_minus[i] = omega_waved_minus[i] / o_wave_sum_minus;
 
-
 #ifndef CHARACTERISTIC_WISE
+
 				q_reconstructed +=
 						(triangleReconstructionData.so_polynomial.coeffsAtPoints[curr_g_point_n].sigma_plus
 						 * omega_plus[i]
@@ -767,6 +791,7 @@ namespace euler
 #else
 				if(char_wise)
 				{
+
 					w_reconstructed +=
 							(triangleReconstructionData.so_polynomial.coeffsAtPoints[curr_g_point_n].sigma_plus
 							 * omega_plus[i]
@@ -790,9 +815,14 @@ namespace euler
 #ifdef CHARACTERISTIC_WISE
 
 		if(char_wise)
+		{
 			q_reconstructed = R * w_reconstructed;
+		}
 #endif
 
+#ifdef MY_STABILITY_FIX
+		q_reconstructed *= (MY_STABILITY_FIX * max_norm);
+#endif
 		if(!((q_reconstructed(3) > 0) && (q_reconstructed(0) > 0)))
 			throw 1;
 

@@ -89,17 +89,23 @@ void Solver::Calculate(double time) const
 			delta_t = time - currentTime;
 		//currentTime += delta_t;
 
-		++timeLayersNumber;
 
 
 		currentQs = nextQs;
 
-		std::string velocityPath("results/manyfiles/VELOCITY-" + std::to_string(timeLayersNumber) + ".dat");
-		std::string densityPath("results/manyfiles/DENSITY-" + std::to_string(timeLayersNumber) + ".dat");
-		std::string pressurePath("resutls/manyfiles/PRESSURE-" + std::to_string(timeLayersNumber) + ".dat");
+/*		if(timeLayersNumber % 100 == 0)
+		{
+			std::string velocityPath("results/manyfiles/VELOCITY-" + std::to_string(timeLayersNumber) + ".dat");
+			std::string densityPath("results/manyfiles/DENSITY-" + std::to_string(timeLayersNumber) + ".dat");
+			std::string pressurePath("results/manyfiles/PRESSURE-" + std::to_string(timeLayersNumber) + ".dat");
+
+			Output(densityPath, velocityPath, pressurePath);
+
+		} */
+
+		++timeLayersNumber;
 
 
-		Output(densityPath, velocityPath, pressurePath);
 
 	}
 

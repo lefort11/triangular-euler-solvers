@@ -76,7 +76,7 @@ int main()
 			if (bcmesh[triangle_counter]->getBarycenter().x() < -1) //left boundary
 			{
 				bcmesh[triangle_counter]->density = 0.5;
-				bcmesh[triangle_counter]->velocityX = 0.8 * sqrt(5.0/3.0);
+				bcmesh[triangle_counter]->velocityX = 0.8 * sqrt(5.0 / 3.0 * 2.0);
 				bcmesh[triangle_counter]->velocityY = 0.0;
 				bcmesh[triangle_counter]->pressure = 1.0;
 
@@ -103,7 +103,11 @@ int main()
 
 	solver.Init([](GEOM_FADE2D::Point2 point)
 				{
-					return std::array<double, 4>{{0.5, 0.8 * sqrt(5.0/3.0 * 2.0), 0.0, 1.0}};
+
+					return std::array<double, 4>{{0.5, 0.8 * sqrt(5.0 / 3.0 * 2.0), 0.0, 1.0}};
+//					if(point.x() < -0.5)
+//						return std::array<double, 4>{{0.5, 0.8 * sqrt(5.0/3.0), 0.0, 1.0}};
+//					return std::array<double, 4>{{0.5, 0.0, 0.0, 1.0}};
 			//		if(point.x() < 0.0)
 			//			return std::array<double, 4>{{2.0, 0.0, 0.0, 5.0}};
 			//		return std::array<double, 4>{{1.0, 0.0, 0.0, 1.0}};

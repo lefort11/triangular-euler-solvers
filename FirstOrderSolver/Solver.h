@@ -172,7 +172,7 @@ namespace euler
 		virtual double CalculateTimeStep() const
 		{
 
-			double const sigma = 0.01;
+			double const sigma = 0.1;
 			auto min_area = m_triangles[0]->getArea2D();
 
 			auto lambda_max = 0.0;
@@ -322,8 +322,55 @@ namespace euler
 
 			densityResultsFile.close();
 			velocityResultsFile.close();
+			pressureResultsFile.close();
 		}
 
+
+		void ClcOutput(std::string const& filePath, double tau,
+					   double currentTime,  int rSaveStep) const
+		{
+			float const rNX = 100.0f;
+			float const rNY = 100.0f;
+
+			float const X1 = -1.0f;
+			float const X2 = 2.0f;
+			float const Y1 = -1.0f;
+			float const Y2 = 1.0f;
+
+			float const HX = (X2 - X1) / rNX;
+			float const HY = (Y2 - Y1) / rNY;
+
+
+
+
+
+
+
+		}
+
+
+		double Density(double x, double y) const
+		{
+			auto const pTriangle2 = GEOM_FADE2D::Point2(x, y).getIncidentTriangle();
+
+			return 0;
+
+		}
+
+		double Pressure(double x, double y) const
+		{
+			return 0;
+		}
+
+		double VelocityX(double x, double y) const
+		{
+			return 0;
+		}
+
+		double VelocityY(double x, double y) const
+		{
+			return 0;
+		}
 
 
 	};
