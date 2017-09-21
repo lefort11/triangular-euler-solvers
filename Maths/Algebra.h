@@ -64,26 +64,27 @@ namespace euler
 
 		Vec4(std::array<double, 4> const &vec)
 		{
-			(*this)(0) = vec[0];
-			(*this)(1) = vec[1];
-			(*this)(2) = vec[2];
-			(*this)(3) = vec[3];
+			(*this)[0] = vec[0];
+			(*this)[1] = vec[1];
+			(*this)[2] = vec[2];
+			(*this)[3] = vec[3];
 		}
 
 		Vec4& operator=(arma::vec const& vec) {
-			(*this)(0) = vec(0);
-			(*this)(1) = vec(1);
-			(*this)(2) = vec(2);
-			(*this)(3) = vec(3);
+			(*this)[0] = vec(0);
+			(*this)[1] = vec(1);
+			(*this)[2] = vec(2);
+			(*this)[3] = vec(3);
 			return (*this);
 		}
 
+
 		Vec4(double x = 0.0, double y = 0.0, double z = 0.0, double w = 0.0)
 		{
-			(*this)(0) = x;
-			(*this)(1) = y;
-			(*this)(2) = z;
-			(*this)(3) = w;
+			(*this)[0] = x;
+			(*this)[1] = y;
+			(*this)[2] = z;
+			(*this)[3] = w;
 		}
 
 /*		double &operator[](const int i)
@@ -107,6 +108,24 @@ namespace euler
 			return Vec4((*this)[0] * other[0], (*this)[1] * other[1], (*this)[2] * other[2], (*this)[3] * other[3]);
 		}
 
+		Vec4& operator+=(Vec4 const& other)
+		{
+			(*this)[0] += other[0];
+			(*this)[1] += other[1];
+			(*this)[2] += other[2];
+			(*this)[3] += other[3];
+			return (*this);
+		}
+
+		Vec4& operator-=(Vec4 const& other)
+		{
+			(*this)[0] -= other[0];
+			(*this)[1] -= other[1];
+			(*this)[2] -= other[2];
+			(*this)[3] -= other[3];
+			return (*this);
+		}
+
 
 		friend Vec4 operator+(Vec4 const& left, Vec4 const& right);
 
@@ -116,8 +135,8 @@ namespace euler
 
 		friend Vec4 operator*(Vec4 const& vec, double alpha);
 
-		friend euler::Vec4& operator+=(euler::Vec4& first, euler::Vec4 const& right);
-		friend euler::Vec4& operator-=(euler::Vec4& first, euler::Vec4 const& right);
+//		friend euler::Vec4& operator+=(euler::Vec4& first, euler::Vec4 const& right);
+//		friend euler::Vec4& operator-=(euler::Vec4& first, euler::Vec4 const& right);
 
 
 	};
@@ -169,8 +188,8 @@ namespace euler
 
 //	euler::Vec4 operator*(Matrix4x4 const& mat, euler::Vec4 const& vec4);
 
-	euler::Vec4& operator+=(euler::Vec4& first, euler::Vec4 const& right);
-	euler::Vec4& operator-=(euler::Vec4& first, euler::Vec4 const& right);
+//	euler::Vec4& operator+=(euler::Vec4& first, euler::Vec4 const& right);
+//	euler::Vec4& operator-=(euler::Vec4& first, euler::Vec4 const& right);
 
 	Vec4 operator+(Vec4 const& left, Vec4 const& right);
 

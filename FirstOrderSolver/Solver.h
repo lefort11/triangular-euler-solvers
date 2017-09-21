@@ -8,6 +8,7 @@
 #include <iostream>
 #include <fstream>
 
+//#define ABK_FIX
 
 namespace euler
 {
@@ -49,8 +50,12 @@ namespace euler
 
 		double const m_gamma;
 
+		double m_delta_t = 0;
+
 		std::function<void(TriangularMesh const& boundaryMesh, TriangularMesh const& mainMesh)>
 																					m_boundaryConditionFunction;
+
+		double m_lambda_max;
 
 	public:
 
@@ -62,7 +67,9 @@ namespace euler
 						double gamma = 5.0/3.0): m_area(constraints),
 												 m_triangularizationProperties(triangleProp),
 												 m_boundaryConditionFunction(bcFunc),
-												 m_gamma(gamma)
+												 m_gamma(gamma),
+												 m_delta_t(0),
+												 m_lambda_max(0)
 		{}
 
 		/**@brief method initializes the mesh with initial state function
@@ -86,7 +93,7 @@ namespace euler
 		 *
 		**/
 
-		void Calculate(double time) const;
+		void Calculate(double time);
 
 
 	private:
@@ -157,10 +164,9 @@ namespace euler
 		 *
 		 * @param current_q q_0
 		 * @param f	right part of the diff equation
-		 * @param delta_t time step
 		 * @return q-vector at next time layer
 		**/
-		Vec4 RungeKuttaTVDStep(Vec4 const& current_q, double delta_t, std::function<Vec4(Vec4)> const& f) const;
+		Vec4 RungeKuttaTVDStep(Vec4 const& current_q, std::function<Vec4(Vec4)> const& f) const;
 
 		/**
 		 * @return triangleNumber-th triangle's area
@@ -193,13 +199,13 @@ namespace euler
 		 * @return Time step calculated according to Courant criterion
 		 */
 
-		virtual double CalculateTimeStep() const
+		virtual double CalculateTimeStep()
 		{
 
 			double const sigma = 0.5;
 			auto min_area = m_triangles[0]->getArea2D();
 
-			auto lambda_max = 0.0;
+			m_lambda_max = 0.0;
 
 			for(int i =0; i < m_triangles.size(); ++i)
 			{
@@ -207,15 +213,15 @@ namespace euler
 				if(min_area > m_triangles[i]->getArea2D())
 					min_area = m_triangles[i]->getArea2D();
 
-				auto const velocity_sqr_abs = std::sqrt(sqr(m_triangles[i]->velocityX) + sqr(m_triangles[i]->velocityY));
+				auto const velocity_abs = std::sqrt(sqr(m_triangles[i]->velocityX) + sqr(m_triangles[i]->velocityY));
 				auto const sound_speed = std::sqrt(m_gamma * m_triangles[i]->pressure / m_triangles[i]->density);
-				if(lambda_max < std::fabs(velocity_sqr_abs + sound_speed))
-					lambda_max = std::fabs(velocity_sqr_abs + sound_speed);
+				if(m_lambda_max < std::fabs(velocity_abs + sound_speed))
+					m_lambda_max = std::fabs(velocity_abs + sound_speed);
 
 
 			}
 
-			return sigma * std::sqrt(min_area) / (2 * lambda_max);
+			return sigma * std::sqrt(min_area) / (2 * m_lambda_max);
 
 		}
 
@@ -279,7 +285,14 @@ namespace euler
 			auto const E = qVec[3] / density;
 			auto const velocity_sqr_abs = sqr(velocityX) + sqr(velocityY);
 			auto const eps = E - 0.5 * velocity_sqr_abs;
+#ifdef ABK_FIX
+			if(eps < 0.001)
+				pressure = (m_gamma - 1.0) * (eps + 0.001) * density;
+			else
+				pressure = (m_gamma - 1.0) * eps * density;
+#else
 			pressure = (m_gamma - 1.0) * eps * density;
+#endif
 
 		}
 
@@ -382,8 +395,10 @@ namespace euler
 			{
 				m_cartesianMesh.Y[j] = m_cartesianMesh.Y1 + (j + 0.5) * m_cartesianMesh.HY;
 			}
+#pragma omp parallel for
 			for(int i = 0; i < m_cartesianMesh.NX; ++i)
 			{
+#pragma omp parallel for
 				for(int j = 0; j < m_cartesianMesh.NY; ++j)
 				{
 					auto const point = GEOM_FADE2D::Point2(m_cartesianMesh.X[i], m_cartesianMesh.Y[j]);
@@ -414,7 +429,7 @@ namespace euler
 
 
 		void ClcOutput(std::string const& filePath, double tau,
-					   double currentTime, int timeLayerNumber) const
+					   double currentTime, unsigned timeLayerNumber) const
 		{
 			struct
 			{
@@ -436,8 +451,8 @@ namespace euler
 				float rCurrTime;
 			} buffer;
 
-			buffer.rSvStep = (float)(timeLayerNumber + 1);
-			buffer.rClcStep = (float)(timeLayerNumber + 1);
+			buffer.rSvStep = (float)(timeLayerNumber);
+			buffer.rClcStep = (float)(timeLayerNumber);
 			buffer.rTau = (float)tau;
 			buffer.rCurrTime = (float)currentTime;
 

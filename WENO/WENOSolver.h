@@ -674,11 +674,6 @@ namespace euler
 
 
 
-		auto const h = std::sqrt(pTriangle->getArea2D());
-		auto const x_0 = pTriangle->getBarycenter().x();
-		auto const y_0 = pTriangle->getBarycenter().y();
-
-
 		Vec4 smoothIndicator(0.0, 0.0, 0.0, 0.0);
 
 
@@ -842,8 +837,8 @@ namespace euler
 #ifdef MY_STABILITY_FIX
 		q_reconstructed *= (MY_STABILITY_FIX * max_norm);
 #endif
-		if(!((q_reconstructed(3) > 0) && (q_reconstructed(0) > 0)))
-			throw 1;
+//		if(!((q_reconstructed(3) > 0) && (q_reconstructed(0) > 0)))
+//			throw 1;
 
 
 		return q_reconstructed;
@@ -863,22 +858,22 @@ namespace euler
 		L_A(0, 0) = velocity_sqr_abs / 2 + velocityX * sound_speed / (T::m_gamma - 1);
 		L_A(0, 1) = -velocityX - sound_speed / (T::m_gamma - 1);
 		L_A(0, 2) = -velocityY;
-		L_A(0, 3) = 1;
+		L_A(0, 3) = 1.0;
 
 		L_A(1, 0) = sound_speed * sound_speed / (T::m_gamma - 1) - velocity_sqr_abs / 2 - velocityY * sound_speed /(T::m_gamma - 1);
 		L_A(1, 1) = velocityX;
 		L_A(1, 2) = velocityY + sound_speed / (T::m_gamma - 1);
-		L_A(1, 3) = -1;
+		L_A(1, 3) = -1.0;
 
 		L_A(2, 0) = sound_speed * sound_speed / (T::m_gamma - 1) - velocity_sqr_abs / 2 + velocityY * sound_speed /(T::m_gamma - 1);
 		L_A(2, 1) = velocityX;
 		L_A(2, 2) = velocityY - sound_speed / (T::m_gamma - 1);
-		L_A(2, 3) = -1;
+		L_A(2, 3) = -1.0;
 
 		L_A(3, 0) = velocity_sqr_abs / 2 - velocityX * sound_speed / (T::m_gamma - 1);
 		L_A(3, 1) = -velocityX + sound_speed / (T::m_gamma - 1);
 		L_A(3, 2) = -velocityY;
-		L_A(3, 3) = 1;
+		L_A(3, 3) = 1.0;
 
 		L_A *= (T::m_gamma - 1) / (2 * sound_speed * sound_speed);
 
@@ -897,22 +892,22 @@ namespace euler
 		L_B(0, 0) = velocity_sqr_abs / 2 + velocityY * sound_speed / (T::m_gamma - 1);
 		L_B(0, 1) = -velocityX;
 		L_B(0, 2) = -velocityY - sound_speed / (T::m_gamma - 1);
-		L_B(0, 3) = 1;
+		L_B(0, 3) = 1.0;
 
 		L_B(1, 0) = sound_speed * sound_speed / (T::m_gamma - 1) - velocity_sqr_abs / 2 - velocityX * sound_speed / (T::m_gamma - 1);
 		L_B(1, 1) = velocityX + sound_speed / (T::m_gamma - 1);
 		L_B(1, 2) = velocityY;
-		L_B(1, 3) = -1;
+		L_B(1, 3) = -1.0;
 
 		L_B(2, 0) = sound_speed * sound_speed / (T::m_gamma - 1) - velocity_sqr_abs / 2 + velocityX * sound_speed / (T::m_gamma - 1);
 		L_B(2, 1) = velocityX - sound_speed / (T::m_gamma - 1);
 		L_B(2, 2) = velocityY;
-		L_B(2, 3) = -1;
+		L_B(2, 3) = -1.0;
 
 		L_B(3, 0) = velocity_sqr_abs / 2 - velocityY * sound_speed / (T::m_gamma - 1);
 		L_B(3, 1) = -velocityX;
 		L_B(3, 2) = -velocityY + sound_speed / (T::m_gamma - 1);
-		L_B(3, 3) = 1;
+		L_B(3, 3) = 1.0;
 
 		L_B *= (T::m_gamma - 1) / (2 * sound_speed * sound_speed);
 

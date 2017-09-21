@@ -32,20 +32,22 @@ Vec4 RoeSolver::CalculateFlux(Vec4 const &qVec, int triangleNumber, int edgeNumb
 
 	//****** Calculating gaussian points ********//
 
-	static auto const c = 1 / 2 + sqrt(3) / 6;
-	//static auto const c = 1 / 2;
+	static auto const gaussian_weight = 1.0 / 2.0 + sqrt(3.0) / 6.0;
+	//static auto const gaussian_weight = 1 / 2;
 
 	Point2  gaussian_p_1, gaussian_p_2;
 	auto const firstVertex = m_triangles[triangleNumber]->getCorner((edgeNumber + 1) % 3);
 	auto const secondVertex = m_triangles[triangleNumber]->getCorner((edgeNumber + 2) % 3);
 
-	gaussian_p_1.x = c * firstVertex->x() + (1 - c) * secondVertex->x();
-	gaussian_p_1.y = c * firstVertex->y() + (1 - c) * secondVertex->y();
+	gaussian_p_1.x = gaussian_weight * firstVertex->x() + (1 - gaussian_weight) * secondVertex->x();
+	gaussian_p_1.y = gaussian_weight * firstVertex->y() + (1 - gaussian_weight) * secondVertex->y();
 
-	gaussian_p_2.x = c * secondVertex->x() + (1 - c) * firstVertex->x();
-	gaussian_p_2.y = c * secondVertex->y() + (1 - c) * firstVertex->y();
+	gaussian_p_2.x = gaussian_weight * secondVertex->x() + (1 - gaussian_weight) * firstVertex->x();
+	gaussian_p_2.y = gaussian_weight * secondVertex->y() + (1 - gaussian_weight) * firstVertex->y();
 
 	Vec4 flux(0.0, 0.0, 0.0, 0.0);
+
+	auto const normal = CalculateNormal(m_triangles[triangleNumber], edgeNumber);
 
 	for(Point2 g_point: {gaussian_p_1, gaussian_p_2})
 	{
@@ -55,7 +57,7 @@ Vec4 RoeSolver::CalculateFlux(Vec4 const &qVec, int triangleNumber, int edgeNumb
 		//*****************************************//
 
 		//********** Forming q_minus vector and _minus parameters *******//
-		auto const q_minus = Reconstruct(qVec, m_triangles[triangleNumber], g_point);
+		auto const q_minus = Reconstruct(qVec, m_triangles[triangleNumber], g_point, edgeNumber);
 
 //	double density_minus, velocityX_minus, velocityY_minus, pressure_minus;
 
@@ -90,17 +92,17 @@ Vec4 RoeSolver::CalculateFlux(Vec4 const &qVec, int triangleNumber, int edgeNumb
 
 		FormQVector(q_plus, density_plus, velocityX_plus, velocityY_plus, pressure_plus);
 
-/*		//edge_number calculation
+		//edge_number calculation
 		auto const v0_ind =
 				neighbour_triangle->getIntraTriangleIndex(m_triangles[triangleNumber]->getCorner((edgeNumber + 1)%3));
 		auto const v1_ind =
 				neighbour_triangle->getIntraTriangleIndex(m_triangles[triangleNumber]->getCorner((edgeNumber + 2)%3));
 		int neighbourEdgeNumber = (v0_ind + 1) % 3;
 		if(neighbourEdgeNumber == v1_ind)
-			neighbourEdgeNumber = (v1_ind + 1) % 3; */
+			neighbourEdgeNumber = (v1_ind + 1) % 3;
 
 
-		q_plus = Reconstruct(q_plus, neighbour_triangle, g_point);
+		q_plus = Reconstruct(q_plus, neighbour_triangle, g_point, neighbourEdgeNumber);
 
 
 		//Updating plus values
@@ -119,6 +121,7 @@ Vec4 RoeSolver::CalculateFlux(Vec4 const &qVec, int triangleNumber, int edgeNumb
 
 
 		//****************** Forming flux vectors ********************************//
+
 		//Calculating F_minus
 		Vec4 F_minus = {
 				density_minus * velocityX_minus,
@@ -201,6 +204,19 @@ Vec4 RoeSolver::CalculateFlux(Vec4 const &qVec, int triangleNumber, int edgeNumb
 				std::max(lambda_B[3], velocityY_plus + c_plus)
 		};
 
+		std::array<double, 4> lambda = {
+				sqrt(velocity_sqr_abs_star) - c_star,
+				sqrt(velocity_sqr_abs_star),
+				sqrt(velocity_sqr_abs_star),
+				sqrt(velocity_sqr_abs_star) + c_star
+		};
+
+		std::array<double, 4> lambda_waved = {
+				std::min(lambda[0], sqrt(velocity_sqr_abs_minus) - c_minus),
+				lambda[1],
+				lambda[2],
+				std::max(lambda[3], sqrt(velocity_sqr_abs_plus) + c_plus)
+		};
 
 
 		std::array<double, 4> delta_s_A = {
@@ -208,10 +224,10 @@ Vec4 RoeSolver::CalculateFlux(Vec4 const &qVec, int triangleNumber, int edgeNumb
 				/ (2 * sqr(c_star)),
 
 				(sqr(c_star) * (density_plus - density_minus) - (pressure_plus - pressure_minus)
-					+ density_star * c_star * (velocityY_plus - velocityY_minus)) / (2 * sqr(c_star)),
+				 + density_star * c_star * (velocityY_plus - velocityY_minus)) / (2 * sqr(c_star)),
 
 				(sqr(c_star) * (density_plus - density_minus) - (pressure_plus - pressure_minus)
-				 	- density_star * c_star * (velocityY_plus - velocityY_minus)) / (2 * sqr(c_star)),
+				 - density_star * c_star * (velocityY_plus - velocityY_minus)) / (2 * sqr(c_star)),
 
 				((pressure_plus - pressure_minus) + density_star * c_star * (velocityX_plus - velocityX_minus))
 				/ (2 * sqr(c_star))
@@ -251,23 +267,103 @@ Vec4 RoeSolver::CalculateFlux(Vec4 const &qVec, int triangleNumber, int edgeNumb
 
 		};
 
+
 		Vec4 F(0.0, 0.0, 0.0, 0.0), G(0.0, 0.0, 0.0, 0.0);
 
 		F = 0.5 * (F_minus + F_plus);
 		G = 0.5 * (G_minus + G_plus);
 
-		for(int k = 0; k < 4; ++k)
-		{
-			F -= 0.5 * (std::fabs(lambda_A_waved[k]) * delta_s_A[k] * r_A[k]);
-			G -= 0.5 * (std::fabs(lambda_B_waved[k]) * delta_s_B[k] * r_B[k]);
-		}
-
-
-
-
-		auto const normal = CalculateNormal(m_triangles[triangleNumber], edgeNumber);
-
 		flux += normal[0] * F + normal[1] * G;
+
+		std::array<Vec4, 4> l_A = {
+				(m_gamma - 1.0) / (2.0 * sqr(c_star)) *
+						Vec4(velocity_sqr_abs_star / 2 + velocityX_star * c_star / (m_gamma - 1.0),
+							 -velocityX_star - c_star / (m_gamma - 1), -velocityY_star, 1.0),
+				(m_gamma - 1.0) / (2.0 * sqr(c_star)) *
+						Vec4(sqr(c_star) / (m_gamma - 1) -
+									 velocity_sqr_abs_star / 2 - velocityY_star * c_star /(m_gamma - 1),
+							 velocityX_star, velocityY_star + c_star / (m_gamma - 1), -1.0),
+				(m_gamma - 1.0) / (2.0 * sqr(c_star)) *
+						Vec4(sqr(c_star) / (m_gamma - 1) -
+									 velocity_sqr_abs_star / 2 + velocityY_star * c_star /(m_gamma - 1),
+							 velocityX_star, velocityY_star - c_star / (m_gamma - 1), -1.0),
+				(m_gamma - 1.0) / (2.0 * sqr(c_star)) *
+						Vec4(velocity_sqr_abs_star / 2 - velocityX_star * c_star / (m_gamma - 1.0),
+							 -velocityX_star + c_star / (m_gamma - 1), -velocityY_star, 1.0)
+
+		};
+
+		std::array<Vec4, 4> l_B = {
+				(m_gamma - 1.0) / (2.0 * sqr(c_star)) *
+						Vec4(velocity_sqr_abs_star / 2 + velocityY_star * c_star / (m_gamma - 1),
+							 -velocityX_star, -velocityY_star - c_star / (m_gamma - 1), 1.0),
+
+				(m_gamma - 1.0) / (2.0 * sqr(c_star)) *
+						Vec4(sqr(c_star) / (m_gamma - 1) -
+									 velocity_sqr_abs_star / 2 - velocityX_star * c_star / (m_gamma - 1),
+							 velocityX_star + c_star / (m_gamma - 1), velocityY_star, -1.0),
+				(m_gamma - 1.0) / (2.0 * sqr(c_star)) *
+						Vec4(sqr(c_star) / (m_gamma - 1) -
+							 velocity_sqr_abs_star / 2 + velocityX_star * c_star / (m_gamma - 1),
+							 velocityX_star - c_star / (m_gamma - 1), velocityY_star, -1.0),
+
+				(m_gamma - 1.0) / (2.0 * sqr(c_star)) *
+						Vec4(velocity_sqr_abs_star / 2 - velocityY_star * c_star / (m_gamma - 1),
+							 -velocityX_star, -velocityY_star + c_star / (m_gamma - 1), 1.0),
+
+		};
+
+		auto const velocityX_local_minus = normal[0] * velocityX_minus + normal[1] * velocityY_minus;
+		auto const velocityX_local_plus = normal[0] * velocityX_plus + normal[1] * velocityY_plus;
+
+		auto const velocityY_local_minus = -normal[1] * velocityX_minus + normal[0] * velocityY_minus;
+		auto const velocityY_local_plus = -normal[1] * velocityX_plus + normal[0] * velocityY_plus;
+
+		auto const velocityX_local_star = (std::sqrt(density_minus) * velocityX_local_minus
+									 + std::sqrt(density_plus) * velocityX_local_plus)
+									/ (std::sqrt(density_minus) + std::sqrt(density_plus));
+
+		auto const velocityY_local_star = (std::sqrt(density_minus) * velocityY_local_minus
+									 + std::sqrt(density_plus) * velocityY_local_plus)
+									/ (std::sqrt(density_minus) + std::sqrt(density_plus));
+
+
+
+/*		std::array<Vec4, 4> r = {
+				Vec4(1.0, velocityX_local_star - c_star, velocityY_local_star, H_star - velocityX_local_star * c_star),
+				Vec4(1.0, velocityX_local_star, velocityY_local_star + c_star,
+					 0.5 * velocity_sqr_abs_star + velocityY_local_star * c_star),
+
+				Vec4(1.0, velocityX_local_star, velocityY_local_star - c_star, 0.5 * velocity_sqr_abs_star -
+						velocityY_local_star * c_star),
+				Vec4(1.0, velocityX_local_star + c_star, velocityY_local_star, H_star + velocityX_local_star * c_star)
+
+		};
+
+		std::array<double, 4> delta_s= {
+				((pressure_plus - pressure_minus) - density_star * c_star * (velocityX_local_plus - velocityX_local_minus))
+				/ (2 * sqr(c_star)),
+
+				(sqr(c_star) * (density_plus - density_minus) - (pressure_plus - pressure_minus)
+				 + density_star * c_star * (velocityY_local_plus - velocityY_local_minus)) / (2 * sqr(c_star)),
+
+				(sqr(c_star) * (density_plus - density_minus) - (pressure_plus - pressure_minus)
+				 - density_star * c_star * (velocityY_local_plus - velocityY_local_minus)) / (2 * sqr(c_star)),
+
+				((pressure_plus - pressure_minus) + density_star * c_star * (velocityX_local_plus - velocityX_local_minus))
+				/ (2 * sqr(c_star))
+
+
+		};
+*/
+
+
+		for(int k = 0; k < 4; ++k)
+			flux -= (std::fabs(normal[0] * lambda_A_waved[k]) + std::fabs(normal[1] * lambda_B_waved[k])) *
+					(normal[0] * delta_s_A[k] + normal[1] * delta_s_B[k]) *
+					(normal[0] * r_A[k] + normal[1] * r_B[k]);
+
+
 
 	}
 

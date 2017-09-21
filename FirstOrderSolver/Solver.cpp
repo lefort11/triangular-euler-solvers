@@ -7,16 +7,16 @@
 
 using namespace euler;
 
-void Solver::Calculate(double time) const
+void Solver::Calculate(double time)
 {
 
 	std::cout << m_triangles.size() << std::endl;
 
 	auto currentTime = 0.0;
-	auto delta_t = CalculateTimeStep();
+	m_delta_t = CalculateTimeStep();
 
-	if(delta_t > time)
-		delta_t = time;
+	if(m_delta_t > time)
+		m_delta_t = time;
 	//currentTime += delta_t;
 
 	std::vector<Vec4> currentQs(m_triangles.size());
@@ -30,10 +30,10 @@ void Solver::Calculate(double time) const
 
 	std::vector<Vec4> nextQs(m_triangles.size());
 
-	int timeLayersNumber = 0;
+	unsigned timeLayersNumber = 0;
 
 
-	while(delta_t > 0)
+	while(m_delta_t > 0)
 	{
 
 		UpdateBoundingMesh();
@@ -47,7 +47,7 @@ void Solver::Calculate(double time) const
 		for(int trngl_number = 0; trngl_number < m_triangles.size(); ++trngl_number)
 		{
 
-			auto const next_q = RungeKuttaTVDStep(currentQs[trngl_number], delta_t, [this, trngl_number](Vec4 qVec)
+			auto const next_q = RungeKuttaTVDStep(currentQs[trngl_number], [this, trngl_number](Vec4 qVec)
 			{
 				auto const area = CalculateTriangleArea(trngl_number);
 
@@ -57,7 +57,6 @@ void Solver::Calculate(double time) const
 				{
 					auto const edge_length = CalculateTriangleEdgeLength(trngl_number, edge_number);
 					sum += edge_length * CalculateFlux(qVec, trngl_number, edge_number);
-
 
 				}
 
@@ -84,57 +83,47 @@ void Solver::Calculate(double time) const
 
 		}
 
-		currentTime += delta_t;
+		currentTime += m_delta_t;
 		if(timeLayersNumber % 20 == 0)
 		{
 			std::stringstream stln;
 			stln << std::setw(10) << std::setfill('0') << timeLayersNumber;
 			std::string clcPath("results/clc/" + stln.str() + ".clc");
-			ClcOutput(clcPath, delta_t, currentTime, timeLayersNumber);
+			ClcOutput(clcPath, m_delta_t, currentTime, timeLayersNumber);
+			if(currentTime > 12.0)
+				Output("results/manyfiles/density" + std::to_string(timeLayersNumber) + ".txt",
+					   "results/manyfiles/velocity" + std::to_string(timeLayersNumber) + ".txt",
+					   "results/manyfiles/pressure" + std::to_string(timeLayersNumber) + ".txt");
 		}
 
-		delta_t = CalculateTimeStep();
-		if(currentTime + delta_t > time)
-			delta_t = time - currentTime;
-		//currentTime += delta_t;
-
-
+		m_delta_t = CalculateTimeStep();
+		if(currentTime + m_delta_t > time)
+			m_delta_t = time - currentTime;
+		//currentTime += m_delta_t;
 
 		currentQs = nextQs;
-
-/*		if(timeLayersNumber % 100 == 0)
-		{
-			std::string velocityPath("results/manyfiles/VELOCITY-" + std::to_string(timeLayersNumber) + ".dat");
-			std::string densityPath("results/manyfiles/DENSITY-" + std::to_string(timeLayersNumber) + ".dat");
-			std::string pressurePath("results/manyfiles/PRESSURE-" + std::to_string(timeLayersNumber) + ".dat");
-
-			Output(densityPath, velocityPath, pressurePath);
-
-		} */
-
 
 
 		++timeLayersNumber;
 
 
-
 	}
 
-	std::cout<<timeLayersNumber << std::endl;
+	std::cout << timeLayersNumber << std::endl;
 
 }
 
 
-Vec4 Solver::RungeKuttaTVDStep(Vec4 const& current_q, double delta_t, std::function<Vec4(Vec4)> const& f) const
+Vec4 Solver::RungeKuttaTVDStep(Vec4 const& current_q, std::function<Vec4(Vec4)> const& f) const
 {
 
-	auto const q_1 = current_q + delta_t * f(current_q);
+	auto const q_1 = current_q + m_delta_t * f(current_q);
 
 //	auto const next_q = q_1;
 
-	auto const q_2 = 3.0/4.0 * current_q + 1.0/4.0 * q_1 + 1.0/4.0 * delta_t * f(q_1);
+	auto const q_2 = 3.0/4.0 * current_q + 1.0/4.0 * q_1 + 1.0/4.0 * m_delta_t * f(q_1);
 
-	auto const next_q = 1.0/3.0 * current_q + 2.0/3.0 * q_2 + 2.0/3.0 * delta_t * f(q_2);
+	auto const next_q = 1.0/3.0 * current_q + 2.0/3.0 * q_2 + 2.0/3.0 * m_delta_t * f(q_2);
 
 	return next_q;
 

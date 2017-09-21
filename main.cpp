@@ -57,7 +57,7 @@ int main()
 //	vZone.push_back(zone3);
 
 
-	std::array<double, 3> trProp = {30, 0.001, 0.2};
+	std::array<double, 3> trProp = {30, 0.001, 0.25};
 
 
 
@@ -73,7 +73,8 @@ int main()
 			bcmesh[triangle_counter]->velocityY = mainMesh[index]->velocityY;
 			bcmesh[triangle_counter]->pressure = mainMesh[index]->pressure; */
 
-			if (bcmesh[triangle_counter]->getBarycenter().x() < -2) //left boundary
+			if ((bcmesh[triangle_counter]->getBarycenter().x() < -2)
+				&& (std::fabs(bcmesh[triangle_counter]->getBarycenter().y()) < 4.0)) //left boundary
 			{
 				bcmesh[triangle_counter]->density = 5.0 / 3.0;
 				bcmesh[triangle_counter]->velocityX = 0.9;
@@ -105,14 +106,12 @@ int main()
 	solver.Init([](GEOM_FADE2D::Point2 point)
 				{
 
-					return std::array<double, 4>{{5.0 / 3.0, 0.9, 0.0, 1.0}};
+					return std::array<double, 4>{{5.0/3.0, 0.9, 0.0, 1.0}};
 //					return std::array<double, 4>{{1.0, 0.9 * sqrt(5.0 / 3.0), 0.0, 1.0}};
-//					if(point.x() < -0.5)
-//						return std::array<double, 4>{{0.2, 0.8 * sqrt(5.0/3.0 * 2.0), 0.0, 1.0}};
-//					return std::array<double, 4>{{0.2, 0.0, 0.0, 1.0}};
-			//		if(point.x() < 0.0)
-			//			return std::array<double, 4>{{2.0, 0.0, 0.0, 5.0}};
-			//		return std::array<double, 4>{{1.0, 0.0, 0.0, 1.0}};
+
+//					if(point.x() < 0.0)
+//						return std::array<double, 4>{{2.0, 0.0, 0.0, 5.0}};
+//					return std::array<double, 4>{{1.0, 0.0, 0.0, 1.0}};
 				});
 
 	solver.Calculate(100.0);

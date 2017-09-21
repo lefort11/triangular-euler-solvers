@@ -75,7 +75,7 @@ euler::Vec4 euler::operator*(double alpha, Vec4 const &vec)
 	return Vec4(alpha * vec[0], alpha * vec[1], alpha * vec[2], alpha * vec[3]);
 }
 
-euler::Vec4& euler::operator+=(euler::Vec4 &left, euler::Vec4 const &right)
+/*euler::Vec4& euler::operator+=(euler::Vec4 &left, euler::Vec4 const &right)
 {
 	left[0] += right[0];
 	left[1] += right[1];
@@ -90,7 +90,7 @@ euler::Vec4& euler::operator-=(euler::Vec4 &left, euler::Vec4 const &right)
 	left[2] -= right[2];
 	left[3] -= right[3];
 	return left;
-}
+} */
 
 euler::Matrix4x4& euler::operator*=(Matrix4x4 &mat, double alpha)
 {
