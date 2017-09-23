@@ -105,8 +105,6 @@ namespace euler
 
 	};
 
-
-
 	template<class T>
 	inline void WENOSolver<T>::CreateBoundingMesh()
 	{
@@ -124,7 +122,7 @@ namespace euler
 					auto const reflectedTriangle0 = pTriangle->ReflectTriangle(edge_number);
 					T::m_boundingTriangles.push_back(reflectedTriangle0);
 
-					auto const ind_1 =
+/*					auto const ind_1 =
 							reflectedTriangle0->getIntraTriangleIndex(pTriangle->getCorner((edge_number + 1) % 3));
 					auto const ind_2 =
 							reflectedTriangle0->getIntraTriangleIndex(pTriangle->getCorner((edge_number + 2) % 3));
@@ -135,24 +133,23 @@ namespace euler
 					T::m_boundingTriangles.push_back(reflectedTriangle2);
 
 
-/*				auto const p1_1 = reflectedTriangle0->getCorner((ind_1 + 1) % 3);
-				auto const p2_1 = reflectedTriangle0->getCorner((ind_1 + 2) % 3);
-				auto const ind_1_1 = reflectedTriangle1->getIntraTriangleIndex(p1_1);
-				auto const ind_2_1 = reflectedTriangle1->getIntraTriangleIndex(p2_1);
-				auto const reflectedTriangle3 = reflectedTriangle1->ReflectTriangle(ind_1_1);
-				auto const reflectedTriangle4 = reflectedTriangle1->ReflectTriangle(ind_2_1);
-				m_boundingTriangles.push_back(reflectedTriangle3);
-				m_boundingTriangles.push_back(reflectedTriangle4);
+					auto const p1_1 = reflectedTriangle0->getCorner((ind_1 + 1) % 3);
+					auto const p2_1 = reflectedTriangle0->getCorner((ind_1 + 2) % 3);
+					auto const ind_1_1 = reflectedTriangle1->getIntraTriangleIndex(p1_1);
+					auto const ind_2_1 = reflectedTriangle1->getIntraTriangleIndex(p2_1);
+					auto const reflectedTriangle3 = reflectedTriangle1->ReflectTriangle(ind_1_1);
+					auto const reflectedTriangle4 = reflectedTriangle1->ReflectTriangle(ind_2_1);
+					T::m_boundingTriangles.push_back(reflectedTriangle3);
+					T::m_boundingTriangles.push_back(reflectedTriangle4);
 
-				auto const p1_2 = reflectedTriangle0->getCorner((ind_2 + 1) % 3);
-				auto const p2_2 = reflectedTriangle0->getCorner((ind_2 + 2) % 3);
-				auto const ind_1_2 = reflectedTriangle2->getIntraTriangleIndex(p1_2);
-				auto const ind_2_2 = reflectedTriangle2->getIntraTriangleIndex(p2_2);
-				auto const reflectedTriangle5 = reflectedTriangle2->ReflectTriangle(ind_1_2);
-				auto const reflectedTriangle6 = reflectedTriangle2->ReflectTriangle(ind_2_2);
-				m_boundingTriangles.push_back(reflectedTriangle5);
-				m_boundingTriangles.push_back(reflectedTriangle6);
-
+					auto const p1_2 = reflectedTriangle0->getCorner((ind_2 + 1) % 3);
+					auto const p2_2 = reflectedTriangle0->getCorner((ind_2 + 2) % 3);
+					auto const ind_1_2 = reflectedTriangle2->getIntraTriangleIndex(p1_2);
+					auto const ind_2_2 = reflectedTriangle2->getIntraTriangleIndex(p2_2);
+					auto const reflectedTriangle5 = reflectedTriangle2->ReflectTriangle(ind_1_2);
+					auto const reflectedTriangle6 = reflectedTriangle2->ReflectTriangle(ind_2_2);
+					T::m_boundingTriangles.push_back(reflectedTriangle5);
+					T::m_boundingTriangles.push_back(reflectedTriangle6);
 
 */
 
@@ -172,6 +169,8 @@ namespace euler
 		stencil[1] = stencil[0]->GetOppTriangle(0);
 		stencil[2] = stencil[0]->GetOppTriangle(1);
 		stencil[3] = stencil[0]->GetOppTriangle(2);
+		if((stencil[0] == nullptr) || (stencil[2] == nullptr) || stencil[3] == nullptr)
+			return;
 
 
 		stencil[4] = stencil[1]->GetOppTriangle(stencil[1]->getIntraTriangleIndex(stencil[0]->getCorner(2)));
@@ -198,6 +197,7 @@ namespace euler
 
 		m_vReconstructionData.resize(T::m_triangles.size());
 
+#pragma omp parallel for
 		for(int triangle_number = 0; triangle_number < T::m_triangles.size(); ++triangle_number)
 		{
 			GetTriangleReconstructionData(m_vReconstructionData[triangle_number], T::m_triangles[triangle_number]);
@@ -248,6 +248,9 @@ namespace euler
 		std::array<Triangle const*, 10> stencil;
 
 		GetStencil(pTriangle, stencil);
+		for(int i = 0; i < 10; ++i)
+			if(stencil[i] == nullptr)
+				return;
 
 		auto const h = std::sqrt(stencil[0]->getArea2D());
 		auto const x_0 = stencil[0]->getBarycenter().x();

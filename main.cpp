@@ -57,7 +57,7 @@ int main()
 //	vZone.push_back(zone3);
 
 
-	std::array<double, 3> trProp = {30, 0.001, 0.1};
+	std::array<double, 3> trProp = {30, 0.001, 0.25};
 
 
 
@@ -73,8 +73,8 @@ int main()
 			bcmesh[triangle_counter]->velocityY = mainMesh[index]->velocityY;
 			bcmesh[triangle_counter]->pressure = mainMesh[index]->pressure; */
 
-			if ((bcmesh[triangle_counter]->getBarycenter().x() < -2)
-				&& (std::fabs(bcmesh[triangle_counter]->getBarycenter().y()) < 4.0)) //left boundary
+			if ((bcmesh[triangle_counter]->getBarycenter().x() <= -2.0)
+				&& (std::fabs(bcmesh[triangle_counter]->getBarycenter().y()) < 2.0)) //left boundary
 			{
 				bcmesh[triangle_counter]->density = 1.4;
 				bcmesh[triangle_counter]->velocityX = 0.9;
@@ -82,8 +82,8 @@ int main()
 				bcmesh[triangle_counter]->pressure = 1.0;
 
 			}
-			else if ( (bcmesh[triangle_counter]->getBarycenter().x() > 8) ||
-					( std::fabs(bcmesh[triangle_counter]->getBarycenter().y()) > 4.0 ) ) //right, upper and lower boundaries
+			else if ( (bcmesh[triangle_counter]->getBarycenter().x() >= 8.0) ||
+					( std::fabs(bcmesh[triangle_counter]->getBarycenter().y()) >= 2.0 ) ) //right, upper and lower boundaries
 			{
 				bcmesh[triangle_counter]->density = mainMesh[index]->density;
 				bcmesh[triangle_counter]->velocityX = mainMesh[index]->velocityX;

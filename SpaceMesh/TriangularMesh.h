@@ -92,9 +92,10 @@ namespace euler
 
 			auto const p0 = getCorner(edgeNumber); //point to be reflected
 
-			auto const c = -normal[0] * p1->x() - normal[1] * p1->y();
+			auto const c = -(normal[0] * p2->x() + normal[1] * p2->y());
 
-			auto const d = normal[1] * p0->x() - normal[0] * p0->y();
+
+			auto const d = -(-normal[1] * p0->x() + normal[0] * p0->y());
 
 			arma::vec rightSide;
 			rightSide << -c << -d;
@@ -103,9 +104,13 @@ namespace euler
 
 			auto reflectedPoint = new GEOM_FADE2D::Point2(2 * middlePoint(0) - p0->x(), 2 * middlePoint(1) - p0->y());
 
-			auto const reflectedTriangle = new Triangle(*this);
+			auto const reflectedTriangle = new Triangle();
+			reflectedTriangle->SetIndex(Index());
 
-			reflectedTriangle->setProperties(p1, reflectedPoint, p2);
+			//reflectedTriangle->setProperties(p1, reflectedPoint, p2);
+			reflectedTriangle->setVertexPointer(0, p1);
+			reflectedTriangle->setVertexPointer(1, reflectedPoint);
+			reflectedTriangle->setVertexPointer(2, p2);
 
 			reflectedTriangle->SetOppTriangle(0, nullptr);
 			reflectedTriangle->SetOppTriangle(1, nullptr);
