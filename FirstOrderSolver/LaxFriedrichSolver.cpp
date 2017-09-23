@@ -177,8 +177,16 @@ Vec4 LaxFriedrichSolver::CalculateFlux(Vec4 const &qVec, int triangleNumber, int
 
 //		auto const nu_G = std::max(B_minus_norm, B_plus_norm);
 
-		auto const norm_minus = std::fabs(sqrt(velocity_sqr_abs_minus) + c_minus);
+/*		auto const norm_minus = std::fabs(sqrt(velocity_sqr_abs_minus) + c_minus);
 		auto const norm_plus = std::fabs(sqrt(velocity_sqr_abs_plus) + c_plus);
+		auto const nu = std::max(norm_minus, norm_plus); */
+
+		auto const vel_n_minus = normal[0] * velocityX_minus + normal[1] * velocityY_minus;
+		auto const vel_n_plus = normal[0] * velocityX_plus + normal[1] * velocityY_plus;
+		auto const norm_minus = std::max(std::fabs(vel_n_minus - c_minus), std::fabs(vel_n_minus + c_minus));
+		auto const norm_plus = std::max(std::fabs(vel_n_plus - c_plus), std::fabs(vel_n_plus + c_plus));
+
+
 		auto const nu = std::max(norm_minus, norm_plus);
 
 		//************************************************************************//
@@ -188,7 +196,7 @@ Vec4 LaxFriedrichSolver::CalculateFlux(Vec4 const &qVec, int triangleNumber, int
 
 		auto const y_Flux = 0.5 * (G_minus + G_plus); //- nu_G * (q_plus - q_minus));
 
-		flux += normal[0] * x_Flux + normal[1] * y_Flux - 0.5 * m_lambda_max * (q_plus - q_minus);
+		flux += normal[0] * x_Flux + normal[1] * y_Flux - 0.5 * nu * (q_plus - q_minus);
 	}
 
 

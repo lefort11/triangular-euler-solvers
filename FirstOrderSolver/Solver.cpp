@@ -84,16 +84,13 @@ void Solver::Calculate(double time)
 		}
 
 		currentTime += m_delta_t;
-		if(timeLayersNumber % 20 == 0)
+		if(timeLayersNumber % 60 == 0)
 		{
 			std::stringstream stln;
 			stln << std::setw(10) << std::setfill('0') << timeLayersNumber;
 			std::string clcPath("results/clc/" + stln.str() + ".clc");
 			ClcOutput(clcPath, m_delta_t, currentTime, timeLayersNumber);
-			if(currentTime > 12.0)
-				Output("results/manyfiles/density" + std::to_string(timeLayersNumber) + ".txt",
-					   "results/manyfiles/velocity" + std::to_string(timeLayersNumber) + ".txt",
-					   "results/manyfiles/pressure" + std::to_string(timeLayersNumber) + ".txt");
+
 		}
 
 		m_delta_t = CalculateTimeStep();

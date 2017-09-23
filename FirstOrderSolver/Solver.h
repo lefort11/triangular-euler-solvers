@@ -202,7 +202,7 @@ namespace euler
 		virtual double CalculateTimeStep()
 		{
 
-			double const sigma = 0.5;
+			double const sigma = 0.4;
 			auto min_area = m_triangles[0]->getArea2D();
 
 			m_lambda_max = 0.0;
@@ -286,8 +286,8 @@ namespace euler
 			auto const velocity_sqr_abs = sqr(velocityX) + sqr(velocityY);
 			auto const eps = E - 0.5 * velocity_sqr_abs;
 #ifdef ABK_FIX
-			if(eps < 0.001)
-				pressure = (m_gamma - 1.0) * (eps + 0.001) * density;
+			if(eps < 0.0001)
+				pressure = (m_gamma - 1.0) * (eps + 0.0001) * density;
 			else
 				pressure = (m_gamma - 1.0) * eps * density;
 #else
