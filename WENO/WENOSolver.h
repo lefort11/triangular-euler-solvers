@@ -122,7 +122,7 @@ namespace euler
 					auto const reflectedTriangle0 = pTriangle->ReflectTriangle(edge_number);
 					T::m_boundingTriangles.push_back(reflectedTriangle0);
 
-/*					auto const ind_1 =
+					auto const ind_1 =
 							reflectedTriangle0->getIntraTriangleIndex(pTriangle->getCorner((edge_number + 1) % 3));
 					auto const ind_2 =
 							reflectedTriangle0->getIntraTriangleIndex(pTriangle->getCorner((edge_number + 2) % 3));
@@ -133,7 +133,7 @@ namespace euler
 					T::m_boundingTriangles.push_back(reflectedTriangle2);
 
 
-					auto const p1_1 = reflectedTriangle0->getCorner((ind_1 + 1) % 3);
+/*					auto const p1_1 = reflectedTriangle0->getCorner((ind_1 + 1) % 3);
 					auto const p2_1 = reflectedTriangle0->getCorner((ind_1 + 2) % 3);
 					auto const ind_1_1 = reflectedTriangle1->getIntraTriangleIndex(p1_1);
 					auto const ind_2_1 = reflectedTriangle1->getIntraTriangleIndex(p2_1);
@@ -169,8 +169,8 @@ namespace euler
 		stencil[1] = stencil[0]->GetOppTriangle(0);
 		stencil[2] = stencil[0]->GetOppTriangle(1);
 		stencil[3] = stencil[0]->GetOppTriangle(2);
-		if((stencil[0] == nullptr) || (stencil[2] == nullptr) || stencil[3] == nullptr)
-			return;
+//		if((stencil[0] == nullptr) || (stencil[2] == nullptr) || stencil[3] == nullptr)
+//			return;
 
 
 		stencil[4] = stencil[1]->GetOppTriangle(stencil[1]->getIntraTriangleIndex(stencil[0]->getCorner(2)));
@@ -680,7 +680,7 @@ namespace euler
 		Vec4 smoothIndicator(0.0, 0.0, 0.0, 0.0);
 
 
-		static Vec4 const eps(m_eps, m_eps, m_eps, m_eps);
+		static Vec4 const eps(1e-3, m_eps, m_eps, 1e-3);
 		for(int i = 0; i < 9; ++i)
 		{
 
