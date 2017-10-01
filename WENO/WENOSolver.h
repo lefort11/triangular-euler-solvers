@@ -647,7 +647,7 @@ namespace euler
 
 #endif
 		//Reconstruction!
-		Vec4 q_reconstructed(0.0, 0.0, 0.0, 0.0);
+		Vec4 q_reconstructed{0.0, 0.0, 0.0, 0.0};
 
 		auto const triangleReconstructionData = m_vReconstructionData[pTriangle->Index()];
 
@@ -663,14 +663,14 @@ namespace euler
 
 
 		std::array<Vec4, 9> omega, omega_waved;
-		Vec4 o_wave_sum(0.0, 0.0, 0.0, 0.0);
+		Vec4 o_wave_sum{0.0, 0.0, 0.0, 0.0};
 
 
 		std::array<Vec4, 9> omega_plus, omega_waved_plus;
-		Vec4 o_wave_sum_plus(0.0, 0.0, 0.0, 0.0);
+		Vec4 o_wave_sum_plus{0.0, 0.0, 0.0, 0.0};
 
 		std::array<Vec4, 9> omega_minus, omega_waved_minus;
-		Vec4 o_wave_sum_minus(0.0, 0.0, 0.0, 0.0);
+		Vec4 o_wave_sum_minus{0.0, 0.0, 0.0, 0.0};
 
 
 		bool const weights_to_be_treated =
@@ -678,7 +678,7 @@ namespace euler
 
 
 
-		static Vec4 const eps(m_eps, m_eps, m_eps, m_eps);
+		static Vec4 const eps{m_eps, m_eps, m_eps, m_eps};
 
 		for(int i = 0; i < 9; ++i)
 		{
@@ -692,10 +692,10 @@ namespace euler
 
 			
 
-			Vec4 const smoothIndicator = (sqr(triangleReconstructionData.smoothIndicatorData[i].alpha[0] * q[ind_0]
+			Vec4 const smoothIndicator = (arma::square(triangleReconstructionData.smoothIndicatorData[i].alpha[0] * q[ind_0]
 								   + triangleReconstructionData.smoothIndicatorData[i].alpha[1] * q[ind_1]
 								   + triangleReconstructionData.smoothIndicatorData[i].alpha[2] * q[ind_2])
-							   + sqr(triangleReconstructionData.smoothIndicatorData[i].beta[0] * q[ind_0]
+							   + arma::square(triangleReconstructionData.smoothIndicatorData[i].beta[0] * q[ind_0]
 									 + triangleReconstructionData.smoothIndicatorData[i].beta[1] * q[ind_1]
 									 + triangleReconstructionData.smoothIndicatorData[i].beta[2] * q[ind_2])); 
 
@@ -725,11 +725,11 @@ namespace euler
 
 			if(!weights_to_be_treated)
 			{
-				omega_waved[i] = Vec4(triangleReconstructionData.so_polynomial.coeffsAtPoints[curr_g_point_n].gammas[i],
+				omega_waved[i] = Vec4{triangleReconstructionData.so_polynomial.coeffsAtPoints[curr_g_point_n].gammas[i],
 									  triangleReconstructionData.so_polynomial.coeffsAtPoints[curr_g_point_n].gammas[i],
 									  triangleReconstructionData.so_polynomial.coeffsAtPoints[curr_g_point_n].gammas[i],
-									  triangleReconstructionData.so_polynomial.coeffsAtPoints[curr_g_point_n].gammas[i])
-								 / sqr(eps + smoothIndicator);
+									  triangleReconstructionData.so_polynomial.coeffsAtPoints[curr_g_point_n].gammas[i]}
+								 / arma::square(eps + smoothIndicator);
 
 				o_wave_sum += omega_waved[i];
 
@@ -737,18 +737,18 @@ namespace euler
 			else // weights to be treated
 			{
 				omega_waved_plus[i] =
-						Vec4(triangleReconstructionData.so_polynomial.coeffsAtPoints[curr_g_point_n].gammas_plus[i],
+						Vec4{triangleReconstructionData.so_polynomial.coeffsAtPoints[curr_g_point_n].gammas_plus[i],
 							 triangleReconstructionData.so_polynomial.coeffsAtPoints[curr_g_point_n].gammas_plus[i],
 							 triangleReconstructionData.so_polynomial.coeffsAtPoints[curr_g_point_n].gammas_plus[i],
-							 triangleReconstructionData.so_polynomial.coeffsAtPoints[curr_g_point_n].gammas_plus[i])
-						/ sqr(eps + smoothIndicator);
+							 triangleReconstructionData.so_polynomial.coeffsAtPoints[curr_g_point_n].gammas_plus[i]}
+						/ arma::square(eps + smoothIndicator);
 
 				omega_waved_minus[i] =
-						Vec4(triangleReconstructionData.so_polynomial.coeffsAtPoints[curr_g_point_n].gammas_minus[i],
+						Vec4{triangleReconstructionData.so_polynomial.coeffsAtPoints[curr_g_point_n].gammas_minus[i],
 							 triangleReconstructionData.so_polynomial.coeffsAtPoints[curr_g_point_n].gammas_minus[i],
 							 triangleReconstructionData.so_polynomial.coeffsAtPoints[curr_g_point_n].gammas_minus[i],
-							 triangleReconstructionData.so_polynomial.coeffsAtPoints[curr_g_point_n].gammas_minus[i])
-						/ sqr(eps + smoothIndicator);
+							 triangleReconstructionData.so_polynomial.coeffsAtPoints[curr_g_point_n].gammas_minus[i]}
+						/ arma::square(eps + smoothIndicator);
 
 				o_wave_sum_plus += omega_waved_plus[i];
 				o_wave_sum_minus += omega_waved_minus[i];
@@ -775,7 +775,7 @@ namespace euler
 				omega[i] = omega_waved[i] / o_wave_sum;
 
 #ifndef CHARACTERISTIC_WISE
-				q_reconstructed += omega[i] *
+				q_reconstructed += omega[i] %
 								   (c_0 * q[ind_0] + c_1 * q[ind_1] + c_2 * q[ind_2]);
 #else
 
@@ -802,7 +802,7 @@ namespace euler
 						(triangleReconstructionData.so_polynomial.coeffsAtPoints[curr_g_point_n].sigma_plus
 						 * omega_plus[i]
 						 - triangleReconstructionData.so_polynomial.coeffsAtPoints[curr_g_point_n].sigma_minus
-						   * omega_minus[i]) * (c_0 * q[ind_0] + c_1 * q[ind_1] + c_2 * q[ind_2]);
+						   * omega_minus[i]) % (c_0 * q[ind_0] + c_1 * q[ind_1] + c_2 * q[ind_2]);
 #else
 				if(char_wise)
 				{

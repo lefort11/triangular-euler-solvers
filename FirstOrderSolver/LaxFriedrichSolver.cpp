@@ -41,7 +41,7 @@ Vec4 LaxFriedrichSolver::CalculateFlux(Vec4 const &qVec, int triangleNumber, int
 	gaussian_p_2.x = gaussian_weight * secondVertex->x() + (1 - gaussian_weight) * firstVertex->x();
 	gaussian_p_2.y = gaussian_weight * secondVertex->y() + (1 - gaussian_weight) * firstVertex->y();
 
-	Vec4 flux(0.0, 0.0, 0.0, 0.0);
+	Vec4 flux{0.0, 0.0, 0.0, 0.0};
 
 	auto const normal = CalculateNormal(m_triangles[triangleNumber], edgeNumber);
 
@@ -51,7 +51,7 @@ Vec4 LaxFriedrichSolver::CalculateFlux(Vec4 const &qVec, int triangleNumber, int
 		//*****************************************//
 
 		//********** Forming q_minus vector and _minus parameters *******//
-		auto const q_minus = Reconstruct(qVec, m_triangles[triangleNumber], g_point, edgeNumber);
+		Vec4 const q_minus = Reconstruct(qVec, m_triangles[triangleNumber], g_point, edgeNumber);
 
 		//	double density_minus, velocityX_minus, velocityY_minus, pressure_minus;
 
@@ -119,38 +119,38 @@ Vec4 LaxFriedrichSolver::CalculateFlux(Vec4 const &qVec, int triangleNumber, int
 
 		//****************** Forming flux vectors ********************************//
 		//Calculating F_minus
-		Vec4 const F_minus(
+		Vec4 const F_minus{
 				density_minus * velocityX_minus,
 				density_minus * sqr(velocityX_minus) + pressure_minus,
 				density_minus * velocityX_minus * velocityY_minus,
 				density_minus * velocityX_minus * H_minus
-		);
+		};
 
 		//Calculating G_Minus
-		Vec4 const G_minus(
+		Vec4 const G_minus{
 				density_minus * velocityY_minus,
 				density_minus * velocityY_minus * velocityX_minus,
 				density_minus * sqr(velocityY_minus) + pressure_minus,
 				density_minus * velocityY_minus * H_minus
 
-		);
+		};
 
 		//Calculating F_plus
-		Vec4 const F_plus(
+		Vec4 const F_plus{
 				density_plus * velocityX_plus,
 				density_plus * sqr(velocityX_plus) + pressure_plus,
 				density_plus * velocityX_plus * velocityY_plus,
 				density_plus * velocityX_plus * H_plus
-		);
+		};
 
 		//Calculating G_plus
-		Vec4 const G_plus(
+		Vec4 const G_plus{
 				density_plus * velocityY_plus,
 				density_plus * velocityY_plus * velocityX_plus,
 				density_plus * sqr(velocityY_plus) + pressure_plus,
 				density_plus * velocityY_plus * H_plus
 
-		);
+		};
 
 		//*********************************************************************//
 

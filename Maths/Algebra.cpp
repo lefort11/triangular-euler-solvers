@@ -20,7 +20,13 @@ double euler::minmod(double x, double y)
 	return 0.5 * (sgn(x) + sgn(y)) * std::min(fabs(x), fabs(y));
 }
 
+double euler::sqr(double x)
+{
+	return x*x;
+}
 
+
+/*
 euler::Vec4 euler::minmod(euler::Vec4 const &x, euler::Vec4 const &y)
 {
 	return euler::Vec4(euler::minmod(x[0], y[0]), euler::minmod(x[1], y[1]), euler::minmod(x[2], y[2]),
@@ -44,10 +50,6 @@ euler::Matrix4x4& euler::operator*=(Matrix4x4 &mat, double alpha)
 	return mat;
 }
 
-double euler::sqr(double x)
-{
-	return x*x;
-}
 
 
 euler::Vec4 euler::sqr(euler::Vec4 const& vec)
@@ -71,3 +73,4 @@ euler::Vec4 euler::absv(euler::Vec4 const &vec)
 {
 	return Vec4(std::fabs(vec[0]), std::fabs(vec[1]), std::fabs(vec[2]), std::fabs(vec[3]));
 }
+*/

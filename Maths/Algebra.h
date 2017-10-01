@@ -44,7 +44,8 @@ namespace euler
 
 
 
-	class Vec4: public arma::vec4
+	typedef arma::vec4 Vec4;
+/*	class Vec4: public arma::vec4
 	{
 
 	public:
@@ -130,9 +131,10 @@ namespace euler
 		
 
 
-	}; 
+	};
+ */
 
-	class Matrix4x4
+/*	class Matrix4x4
 	{
 		class Row
 		{
@@ -179,19 +181,19 @@ namespace euler
 
 
 	double dot(Vec4 const &first, Vec4 const &second);
-
+*/
 
 	double sgn(double x);
 
 	double minmod(double x, double y);
 
-	Vec4 minmod(euler::Vec4 const& x, euler::Vec4 const& y);
+//	Vec4 minmod(euler::Vec4 const& x, euler::Vec4 const& y);
 
 	double sqr(double x);
 
-	Vec4 sqr(euler::Vec4 const& vec);
+//	Vec4 sqr(euler::Vec4 const& vec);
 
-	Vec4 absv(euler::Vec4 const& vec1);
+//	Vec4 absv(euler::Vec4 const& vec1);
 
 
 

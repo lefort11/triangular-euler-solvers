@@ -7,7 +7,6 @@
 
 #include "FirstOrderSolver/LaxFriedrichSolver.h"
 #include "WENO/WENOSolver.h"
-#include "FirstOrderSolver/RoeSolver.h"
 
 
 int main()

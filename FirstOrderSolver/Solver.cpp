@@ -51,7 +51,7 @@ void Solver::Calculate(double time)
 			{
 				auto const area = CalculateTriangleArea(trngl_number);
 
-				Vec4 sum(0.0, 0.0, 0.0, 0.0);
+				Vec4 sum{0.0, 0.0, 0.0, 0.0};
 
 				for(int edge_number = 0; edge_number < 3; ++edge_number)
 				{

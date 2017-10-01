@@ -83,7 +83,7 @@ ENDIF()
 set(CMAKE_BUILD_TYPE Release)
 
 
-set(SOURCE_FILES main.cpp SpaceMesh/Area.cpp SpaceMesh/Area.h SpaceMesh/TriangularMesh.cpp SpaceMesh/TriangularMesh.h FirstOrderSolver/Solver.h FirstOrderSolver/Solver.cpp Maths/Algebra.cpp Maths/Algebra.h FirstOrderSolver/LaxFriedrichSolver.cpp FirstOrderSolver/LaxFriedrichSolver.h WENO/WENOSolver.cpp WENO/WENOSolver.h FirstOrderSolver/RoeSolver.h FirstOrderSolver/RoeSolver.cpp)
+set(SOURCE_FILES main.cpp SpaceMesh/Area.cpp SpaceMesh/Area.h SpaceMesh/TriangularMesh.cpp SpaceMesh/TriangularMesh.h FirstOrderSolver/Solver.h FirstOrderSolver/Solver.cpp Maths/Algebra.cpp Maths/Algebra.h FirstOrderSolver/LaxFriedrichSolver.cpp FirstOrderSolver/LaxFriedrichSolver.h WENO/WENOSolver.cpp WENO/WENOSolver.h)
 add_executable(Triangular_Solvers ${SOURCE_FILES})
 IF(APPLE)
     target_link_libraries(Triangular_Solvers ${FADE2D_LIBRARY} ${ARMADILLO_LIBRARIES})

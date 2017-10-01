@@ -313,7 +313,7 @@ Vec4 RoeSolver::CalculateFlux(Vec4 const &qVec, int triangleNumber, int edgeNumb
 
 		};
 
-		auto const velocityX_local_minus = normal[0] * velocityX_minus + normal[1] * velocityY_minus;
+/*		auto const velocityX_local_minus = normal[0] * velocityX_minus + normal[1] * velocityY_minus;
 		auto const velocityX_local_plus = normal[0] * velocityX_plus + normal[1] * velocityY_plus;
 
 		auto const velocityY_local_minus = -normal[1] * velocityX_minus + normal[0] * velocityY_minus;
@@ -329,7 +329,7 @@ Vec4 RoeSolver::CalculateFlux(Vec4 const &qVec, int triangleNumber, int edgeNumb
 
 
 
-/*		std::array<Vec4, 4> r = {
+		std::array<Vec4, 4> r = {
 				Vec4(1.0, velocityX_local_star - c_star, velocityY_local_star, H_star - velocityX_local_star * c_star),
 				Vec4(1.0, velocityX_local_star, velocityY_local_star + c_star,
 					 0.5 * velocity_sqr_abs_star + velocityY_local_star * c_star),
