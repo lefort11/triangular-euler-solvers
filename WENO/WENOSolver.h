@@ -128,11 +128,9 @@ namespace euler
 							reflectedTriangle0->getIntraTriangleIndex(pTriangle->getCorner((edge_number + 2) % 3));
 
 					Triangle* const reflectedTriangle1 = reflectedTriangle0->ReflectTriangle(ind_1);
-					if (pTriangle->GetOppTriangle((edge_number + 1) % 3) != nullptr)
-						reflectedTriangle1->SetIndex(pTriangle->GetOppTriangle((edge_number + 1) % 3)->Index());
+					
 					Triangle* const reflectedTriangle2 = reflectedTriangle0->ReflectTriangle(ind_2);
-					if (pTriangle->GetOppTriangle((edge_number + 2) % 3) != nullptr)
-						reflectedTriangle1->SetIndex(pTriangle->GetOppTriangle((edge_number + 2) % 3)->Index());
+					
 					T::m_boundingTriangles.push_back(reflectedTriangle1);
 					T::m_boundingTriangles.push_back(reflectedTriangle2);
 
@@ -680,11 +678,8 @@ namespace euler
 
 
 
-
-		Vec4 smoothIndicator(0.0, 0.0, 0.0, 0.0);
-
-
 		static Vec4 const eps(m_eps, m_eps, m_eps, m_eps);
+
 		for(int i = 0; i < 9; ++i)
 		{
 
@@ -697,7 +692,7 @@ namespace euler
 
 			
 
-			smoothIndicator = (sqr(triangleReconstructionData.smoothIndicatorData[i].alpha[0] * q[ind_0]
+			Vec4 const smoothIndicator = (sqr(triangleReconstructionData.smoothIndicatorData[i].alpha[0] * q[ind_0]
 								   + triangleReconstructionData.smoothIndicatorData[i].alpha[1] * q[ind_1]
 								   + triangleReconstructionData.smoothIndicatorData[i].alpha[2] * q[ind_2])
 							   + sqr(triangleReconstructionData.smoothIndicatorData[i].beta[0] * q[ind_0]

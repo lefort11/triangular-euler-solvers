@@ -47,7 +47,7 @@ void Solver::Calculate(double time)
 		for(int trngl_number = 0; trngl_number < m_triangles.size(); ++trngl_number)
 		{
 
-			auto const next_q = RungeKuttaTVDStep(currentQs[trngl_number], [this, trngl_number](Vec4 qVec)
+			auto const next_q = RungeKuttaTVDStep(currentQs[trngl_number], [this, trngl_number](Vec4 const &qVec)
 			{
 				auto const area = CalculateTriangleArea(trngl_number);
 
@@ -112,7 +112,7 @@ void Solver::Calculate(double time)
 }
 
 
-Vec4 Solver::RungeKuttaTVDStep(Vec4 const& current_q, std::function<Vec4(Vec4)> const& f) const
+Vec4 Solver::RungeKuttaTVDStep(Vec4 const& current_q, std::function<Vec4(Vec4 const&)> const& f) const
 {
 
 	auto const q_1 = current_q + m_delta_t * f(current_q);

@@ -166,7 +166,7 @@ namespace euler
 		 * @param f	right part of the diff equation
 		 * @return q-vector at next time layer
 		**/
-		Vec4 RungeKuttaTVDStep(Vec4 const& current_q, std::function<Vec4(Vec4)> const& f) const;
+		Vec4 RungeKuttaTVDStep(Vec4 const& current_q, std::function<Vec4(Vec4 const&)> const& f) const;
 
 		/**
 		 * @return triangleNumber-th triangle's area
