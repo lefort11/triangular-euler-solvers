@@ -18,11 +18,22 @@ namespace euler
 		Point2(double _x = 0.0, double _y = 0.0): x(_x), y(_y)
 		{}
 
-		friend Point2 operator+(Point2 const& left, Point2 const& right);
+		friend Point2 operator+(Point2 const& left, Point2 const& right)
+		{
+			return Point2(left.x + right.x, left.y + right.y);
+		}
 
-		friend Point2 operator-(Point2 const& left, Point2 const& right);
+		friend Point2 operator-(Point2 const& left, Point2 const& right)
+		{
+			return Point2(left.x - right.x, left.y - right.y);
 
-		friend Point2 operator*(double alpha, Point2 const& vec);
+		}
+
+		friend Point2 operator*(double alpha, Point2 const& point)
+		{
+			return Point2(alpha * point.x, alpha * point.y);
+
+		}
 
 		bool operator==(Point2 const& other) const
 		{
@@ -32,35 +43,12 @@ namespace euler
 	};
 
 
-	Point2 operator+(Point2 const& left, Point2 const& right);
-	Point2 operator-(Point2 const& left, Point2 const& right);
 
-	Point2 operator*(double alpha, Point2 const& vec);
-
-
- /*	class Vec4: public arma::vec::fixed<4>
-	{
-	public:
-		Vec4(std::array<double, 4> const& vec)
-		{
-			(*this)(0) = vec[0];
-			(*this)(1) = vec[1];
-			(*this)(2) = vec[2];
-			(*this)(3) = vec[3];
-		}
-
-
-	}; */
-
-
-	class Vec4: public arma::vec::fixed<4>
+	class Vec4: public arma::vec4
 	{
 
 	public:
 
-/*		Vec4(double x = 0.0, double y = 0.0, double z = 0.0, double w = 0.0): std::array<double, 4>({x,y,z,w})
-		{
-		} */
 
 		Vec4(std::array<double, 4> const &vec)
 		{
@@ -70,14 +58,15 @@ namespace euler
 			(*this)[3] = vec[3];
 		}
 
-		Vec4& operator=(arma::vec const& vec) {
+		Vec4& operator=(arma::vec const& vec)
+		{
 			(*this)[0] = vec(0);
 			(*this)[1] = vec(1);
 			(*this)[2] = vec(2);
 			(*this)[3] = vec(3);
 			return (*this);
 		}
-
+		
 
 		Vec4(double x = 0.0, double y = 0.0, double z = 0.0, double w = 0.0)
 		{
@@ -87,15 +76,6 @@ namespace euler
 			(*this)[3] = w;
 		}
 
-/*		double &operator[](const int i)
-		{
-			return (*this)(i);
-		}
-
-		double const& operator[](const int i) const
-		{
-			return (*this)(i);
-		} */
 
 
 		Vec4 operator/ (Vec4 const& other) const
@@ -124,23 +104,33 @@ namespace euler
 			(*this)[2] -= other[2];
 			(*this)[3] -= other[3];
 			return (*this);
+		} 
+
+
+		friend Vec4 operator+(Vec4 const& left, Vec4 const& right)
+		{
+			return Vec4(left[0] + right[0], left[1] + right[1], left[2] + right[2], left[3] + right[3]);
 		}
 
+		friend Vec4 operator-(Vec4 const& left, Vec4 const& right)
+		{
+			return Vec4(left[0] - right[0], left[1] - right[1], left[2] - right[2], left[3] - right[3]);
+		}
 
-		friend Vec4 operator+(Vec4 const& left, Vec4 const& right);
+		friend Vec4 operator*(double alpha, Vec4 const& vec)
+		{
+			return Vec4(alpha * vec[0], alpha * vec[1], alpha * vec[2], alpha * vec[3]);
+		}
 
-		friend Vec4 operator-(Vec4 const& left, Vec4 const& right);
+		friend Vec4 operator*(Vec4 const& vec, double alpha)
+		{
+			return Vec4(alpha * vec[0], alpha * vec[1], alpha * vec[2], alpha * vec[3]);
 
-		friend Vec4 operator*(double alpha, Vec4 const& vec);
-
-		friend Vec4 operator*(Vec4 const& vec, double alpha);
-
-//		friend euler::Vec4& operator+=(euler::Vec4& first, euler::Vec4 const& right);
-//		friend euler::Vec4& operator-=(euler::Vec4& first, euler::Vec4 const& right);
+		}
+		
 
 
-	};
-
+	}; 
 
 	class Matrix4x4
 	{
@@ -186,18 +176,7 @@ namespace euler
 
 	Matrix4x4& operator*=(Matrix4x4& mat, double alpha);
 
-//	euler::Vec4 operator*(Matrix4x4 const& mat, euler::Vec4 const& vec4);
 
-//	euler::Vec4& operator+=(euler::Vec4& first, euler::Vec4 const& right);
-//	euler::Vec4& operator-=(euler::Vec4& first, euler::Vec4 const& right);
-
-	Vec4 operator+(Vec4 const& left, Vec4 const& right);
-
-	Vec4 operator-(Vec4 const& left, Vec4 const& right);
-
-	Vec4 operator*(double alpha, Vec4 const& vec);
-
-	Vec4 operator*(Vec4 const& vec, double alpha);
 
 	double dot(Vec4 const &first, Vec4 const &second);
 

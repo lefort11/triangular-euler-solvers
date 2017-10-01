@@ -16,8 +16,8 @@ int main()
 
 	euler::ConstraintFunction circle1([](double t)
 	{
-		auto x = 0.25 * cos(2.0 *M_PI * t);
-		auto y = 0.25 * sin(2.0 *M_PI * t);
+		auto x = 0.2 * cos(2.0 *M_PI * t);
+		auto y = 0.2 * sin(2.0 *M_PI * t);
 		return GEOM_FADE2D::Point2(x, y);
 	}, 60);
 
@@ -75,8 +75,8 @@ int main()
 			bcmesh[triangle_counter]->velocityY = mainMesh[index]->velocityY;
 			bcmesh[triangle_counter]->pressure = mainMesh[index]->pressure; */
 
-			if ( (std::fabs(-2.0 - mainMesh[index]->getBarycenter().x()) < 0.1) && 
-				(std::fabs(-4.0 - mainMesh[index]->getBarycenter().y()) > 0.01) && (std::fabs(4.0 - mainMesh[index]->getBarycenter().y()) > 0.01) )//left boundary
+			if ( (std::fabs(-2.0 - mainMesh[index]->getBarycenter().x()) < 0.2) && 
+				(std::fabs(-4.0 - mainMesh[index]->getBarycenter().y()) > 0.02) && (std::fabs(4.0 - mainMesh[index]->getBarycenter().y()) > 0.02) )//left boundary
 			{
 				bcmesh[triangle_counter]->density = 1.4;
 				bcmesh[triangle_counter]->velocityX = 0.9;
@@ -84,9 +84,9 @@ int main()
 				bcmesh[triangle_counter]->pressure = 1.0;
 
 			}
-			else if ( (std::fabs(8.0 - mainMesh[index]->getBarycenter().x()) < 0.1) ||
-					(std::fabs(4.0 - mainMesh[index]->getBarycenter().y()) < 0.1) || 
-					(std::fabs(-4.0 - mainMesh[index]->getBarycenter().y()) < 0.1) )//right, upper and lower boundaries
+			else if ( (std::fabs(8.0 - mainMesh[index]->getBarycenter().x()) < 0.2) ||
+					(std::fabs(4.0 - mainMesh[index]->getBarycenter().y()) < 0.2) || 
+					(std::fabs(-4.0 - mainMesh[index]->getBarycenter().y()) < 0.2) )//right, upper and lower boundaries
 			{
 				bcmesh[triangle_counter]->density = mainMesh[index]->density;
 				bcmesh[triangle_counter]->velocityX = mainMesh[index]->velocityX;
@@ -122,7 +122,8 @@ int main()
 	solver.Output("results/density2D.txt", "results/velocity2D.txt", "results/pressure2D.txt");
 	solver.ClcOutput("results/test.clc", 0, 0.5, 1);
 
-
+	double a;
+	std::cin >> a;
 
 	return 0;
 }

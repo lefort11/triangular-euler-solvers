@@ -84,7 +84,8 @@ void Solver::Calculate(double time)
 		}
 
 		currentTime += m_delta_t;
-		if(timeLayersNumber % 60 == 0)
+
+		if(timeLayersNumber % 20 == 0)
 		{
 			std::stringstream stln;
 			stln << std::setw(10) << std::setfill('0') << timeLayersNumber;

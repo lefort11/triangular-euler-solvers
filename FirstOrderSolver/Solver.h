@@ -202,7 +202,7 @@ namespace euler
 		virtual double CalculateTimeStep()
 		{
 
-			double const sigma = 0.4;
+			double const sigma = 0.5;
 			auto min_area = m_triangles[0]->getArea2D();
 
 			m_lambda_max = 0.0;
@@ -221,7 +221,7 @@ namespace euler
 
 			}
 
-			return sigma * std::sqrt(min_area) / (2 * m_lambda_max);
+			return sigma * std::sqrt(min_area) / (2.0 * m_lambda_max);
 
 		}
 
@@ -286,10 +286,23 @@ namespace euler
 			auto const velocity_sqr_abs = sqr(velocityX) + sqr(velocityY);
 			auto const eps = E - 0.5 * velocity_sqr_abs;
 #ifdef ABK_FIX
-			if(eps < 0.0001)
-				pressure = (m_gamma - 1.0) * (eps + 0.0001) * density;
+			if (eps < 0.001)
+			{
+				std::cout << eps << std::endl;
+				pressure = (m_gamma - 1.0) * (eps + 0.001) * density;
+			}
 			else
 				pressure = (m_gamma - 1.0) * eps * density;
+
+
+			if (density <= 0)
+			{
+				std::cout << "density <= 0" << std::endl;
+			}
+			if(pressure <= 0)
+			{
+				std::cout << "pressure <= 0" << std::endl;
+			}
 #else
 			pressure = (m_gamma - 1.0) * eps * density;
 #endif
@@ -505,11 +518,61 @@ namespace euler
 
 			resultsClcFile.close();
 
-
-
-
 		}
 
+/*		
+		void ClcInit(std::string const& filepath)
+		{
+			std::vector<double> X(m_cartesianMesh.NX);
+			std::vector<double> Y(m_cartesianMesh.NY);
+
+			std::ifstream resultsClcFile(filepath, std::ios::in | std::ios::binary);
+
+			struct
+			{
+				float rSvStep;
+				float rClcStep;
+
+				float rNX;
+				float rNY;
+
+				float X1;
+				float X2;
+				float Y1;
+				float Y2;
+
+				float HX;
+				float HY;
+
+				float rTau;
+				float rCurrTime;
+			} buffer;
+
+			auto memblock = new char[sizeof(buffer)];
+			resultsClcFile.read(memblock, sizeof(buffer));
+
+			for (int i = 0; i < m_cartesianMesh.NX; ++i)
+			{
+				X[i] = m_cartesianMesh.X1 + (i + 0.5) * m_cartesianMesh.HX;
+			}
+			for (int j = 0; j < m_cartesianMesh.NY; ++j)
+			{
+				Y[j] = m_cartesianMesh.Y1 + (j + 0.5) * m_cartesianMesh.HY;
+			}
+
+
+
+			m_triangles = m_area.Triangulate(m_triangularizationProperties, [](GEOM_FADE2D::Point2 point)
+			{
+				
+			});
+
+			CreateBoundingMesh();
+
+			InitCartesianMesh();
+		} 
+
+		*/
 	};
 
 
