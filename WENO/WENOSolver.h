@@ -103,7 +103,140 @@ namespace euler
 
 		void GetTriangleReconstructionData(TriangleReconstructionData &trRecData, Triangle const* triangle);
 
+		double CalculateKsiAverage(Triangle const* pTriangle, double x_0, double y_0, double h) const;
+		double CalculateEtaAverage(Triangle const* pTriangle, double x_0, double y_0, double h) const;
+		double CalculateKsiSquareAverage(Triangle const* pTriangle, double x_0, double y_0, double h) const;
+		double CalculateEtaSquareAverage(Triangle const* pTriangle, double x_0, double y_0, double h) const;
+		double CalculateKsiEtaAverage(Triangle const* pTriangle, double x_0, double y_0, double h) const;
+
+
+
 	};
+
+
+	template<class T>
+	inline double WENOSolver<T>::CalculateKsiAverage(Triangle const *pTriangle, double x_0, double y_0, double h) const
+	{
+		double area = pTriangle->getArea2D();
+		auto const x_1 = pTriangle->getCorner(0)->x();
+		auto const y_1 = pTriangle->getCorner(0)->y();
+		auto const x_2 = pTriangle->getCorner(1)->x();
+		auto const y_2 = pTriangle->getCorner(1)->y();
+		auto const x_3 = pTriangle->getCorner(2)->x();
+		auto const y_3 = pTriangle->getCorner(2)->y();
+
+
+		return 1.0 / (6.0 * area * h) * ( (y_2 - y_1) * (sqr(x_2 - x_0) + (x_2 - x_0) * (x_1 - x_0) + sqr(x_1 - x_0)) +
+				(y_3 - y_2) * (sqr(x_3 - x_0) + (x_3 - x_0) * (x_2 - x_0) + sqr(x_2 - x_0)) +
+				(y_1 - y_3) * (sqr(x_1 - x_0) + (x_1 - x_0) * (x_3 - x_0) + sqr(x_3 - x_0)));
+
+
+	}
+
+	template<class T>
+	inline double WENOSolver<T>::CalculateEtaAverage(Triangle const *pTriangle, double x_0, double y_0, double h) const
+	{
+		double area = pTriangle->getArea2D();
+		auto const x_1 = pTriangle->getCorner(0)->x();
+		auto const y_1 = pTriangle->getCorner(0)->y();
+		auto const x_2 = pTriangle->getCorner(1)->x();
+		auto const y_2 = pTriangle->getCorner(1)->y();
+		auto const x_3 = pTriangle->getCorner(2)->x();
+		auto const y_3 = pTriangle->getCorner(2)->y();
+
+
+		return -1.0 / (6.0 * area * h) * ( (x_2 - x_1) * (sqr(y_2 - y_0) + (y_2 - y_0) * (y_1 - y_0) + sqr(y_1 - y_0)) +
+										  (x_3 - x_2) * (sqr(y_3 - y_0) + (y_3 - y_0) * (y_2 - y_0) + sqr(y_2 - y_0)) +
+										  (x_1 - x_3) * (sqr(y_1 - y_0) + (y_1 - y_0) * (y_3 - y_0) + sqr(y_3 - y_0)));
+
+	}
+
+	template<class T>
+	inline double WENOSolver<T>::CalculateKsiSquareAverage(Triangle const *pTriangle,
+														   double x_0, double y_0, double h) const
+	{
+		double area = pTriangle->getArea2D();
+		auto const x_1 = pTriangle->getCorner(0)->x();
+		auto const y_1 = pTriangle->getCorner(0)->y();
+		auto const x_2 = pTriangle->getCorner(1)->x();
+		auto const y_2 = pTriangle->getCorner(1)->y();
+		auto const x_3 = pTriangle->getCorner(2)->x();
+		auto const y_3 = pTriangle->getCorner(2)->y();
+
+		return 1.0 / (12.0 * area * sqr(h)) * ( (y_2 - y_1) * (x_2 + x_1 - 2 * x_0) * (sqr(x_2 - x_0) + sqr(x_1 - x_0)) +
+				(y_3 - y_2) * (x_3 + x_2 - 2 * x_0) * (sqr(x_3 - x_0) + sqr(x_2 - x_0)) +
+				(y_1 - y_3) * (x_1 + x_3 - 2 * x_0) * (sqr(x_1 - x_0) + sqr(x_3 - x_0)));
+
+	}
+
+
+	template<class T>
+	inline double WENOSolver<T>::CalculateEtaSquareAverage(Triangle const *pTriangle,
+														   double x_0, double y_0, double h) const
+	{
+		double area = pTriangle->getArea2D();
+		auto const x_1 = pTriangle->getCorner(0)->x();
+		auto const y_1 = pTriangle->getCorner(0)->y();
+		auto const x_2 = pTriangle->getCorner(1)->x();
+		auto const y_2 = pTriangle->getCorner(1)->y();
+		auto const x_3 = pTriangle->getCorner(2)->x();
+		auto const y_3 = pTriangle->getCorner(2)->y();
+
+		return -1.0 / (12.0 * area * sqr(h)) * ( (x_2 - x_1) * (y_2 + y_1 - 2 * y_0) * (sqr(y_2 - y_0) + sqr(y_1 - y_0)) +
+												(x_3 - x_2) * (y_3 + y_2 - 2 * y_0) * (sqr(y_3 - y_0) + sqr(y_2 - y_0)) +
+												(x_1 - x_3) * (y_1 + y_3 - 2 * y_0) * (sqr(y_1 - y_0) + sqr(y_3 - y_0)));
+	}
+
+
+	template<class T>
+	inline double WENOSolver<T>::CalculateKsiEtaAverage(Triangle const *pTriangle, double x_0, double y_0, double h) const
+	{
+
+		double area = pTriangle->getArea2D();
+		auto const x_1 = pTriangle->getCorner(0)->x();
+		auto const y_1 = pTriangle->getCorner(0)->y();
+		auto const x_2 = pTriangle->getCorner(1)->x();
+		auto const y_2 = pTriangle->getCorner(1)->y();
+		auto const x_3 = pTriangle->getCorner(2)->x();
+		auto const y_3 = pTriangle->getCorner(2)->y();
+
+		double result = 0.0;
+
+		std::array<double, 3> delta_x = {
+				x_2 - x_1,
+				x_3 - x_2,
+				x_1 - x_3
+		};
+
+		std::array<double, 3> delta_y = {
+				y_2 - y_1,
+				y_3 - y_2,
+				y_1 - y_3
+		};
+
+		std::array<double, 3> delta_x_waved = {
+				x_1 - x_0,
+				x_2 - x_0,
+				x_3 - x_0
+		};
+
+		std::array<double, 3> delta_y_waved = {
+				y_1 - y_0,
+				y_2 - y_0,
+				y_3 - y_0
+		};
+
+		for(int i = 0; i < 3; ++i)
+		{
+			result += (0.25 * sqr(delta_x[i]) * delta_y[i] + 1.0 / 3.0 * sqr(delta_x[i]) * delta_y_waved[i]
+					  + 2.0 / 3.0 * delta_x[i] * delta_y[i] * delta_x_waved[i]
+					  + delta_x[i] * delta_x_waved[i] * delta_y_waved[i]
+					  + 0.5 * delta_y[i] * sqr(delta_x_waved[i]) + delta_y_waved[i] * sqr(delta_x_waved[i])) * delta_y[i];
+		}
+
+		return result * 1.0 / (2.0 * sqr(h) * area);
+
+	}
 
 	template<class T>
 	inline void WENOSolver<T>::CreateBoundingMesh()
@@ -119,7 +252,14 @@ namespace euler
 
 					Triangle* pTriangle = T::m_triangles[triangle_counter];
 
-					auto const reflectedTriangle0 = pTriangle->ReflectTriangle(edge_number);
+					auto const stencil_triangles = pTriangle->SummonThreeTriangles(edge_number);
+
+					T::m_boundingTriangles.push_back(stencil_triangles[0]);
+					T::m_boundingTriangles.push_back(stencil_triangles[1]);
+					T::m_boundingTriangles.push_back(stencil_triangles[2]);
+
+
+/*					auto const reflectedTriangle0 = pTriangle->ReflectTriangle(edge_number);
 					T::m_boundingTriangles.push_back(reflectedTriangle0);
 
 					auto const ind_1 =
@@ -133,7 +273,7 @@ namespace euler
 					
 					T::m_boundingTriangles.push_back(reflectedTriangle1);
 					T::m_boundingTriangles.push_back(reflectedTriangle2);
-
+*/
 
 /*					auto const p1_1 = reflectedTriangle0->getCorner((ind_1 + 1) % 3);
 					auto const p2_1 = reflectedTriangle0->getCorner((ind_1 + 2) % 3);
@@ -272,14 +412,21 @@ namespace euler
 			auto const x = stencil[i]->getBarycenter().x();
 			auto const y = stencil[i]->getBarycenter().y();
 
-			ksi_average[i] = (x - x_0) / h;
+/*			ksi_average[i] = (x - x_0) / h;
 			eta_average[i] = (y - y_0) / h;
 
 			ksi_square_average[i] = sqr(x - x_0) / sqr(h);
 			eta_square_average[i] = sqr(y - y_0) / sqr(h);
-			ksi_eta_average[i] = (x - x_0) * (y - y_0) / sqr(h);
+			ksi_eta_average[i] = (x - x_0) * (y - y_0) / sqr(h); */
 
-			/*ksi_average[i] = 1.0 / area * T::GaussianIntegration([h, x_0](double x, double y)
+			ksi_average[i] = CalculateKsiAverage(stencil[i], x_0, y_0, h);
+			eta_average[i] = CalculateEtaAverage(stencil[i], x_0, y_0, h);
+			ksi_square_average[i] = CalculateKsiSquareAverage(stencil[i], x_0, y_0, h);
+			eta_square_average[i] = CalculateEtaSquareAverage(stencil[i], x_0, y_0, h);
+			ksi_eta_average[i] = CalculateKsiEtaAverage(stencil[i], x_0, y_0, h);
+
+
+/*			ksi_average[i] = 1.0 / area * T::GaussianIntegration([h, x_0](double x, double y)
 															{
 																return (x - x_0) / h;
 															}, stencil[i]);
@@ -296,11 +443,11 @@ namespace euler
 			eta_square_average[i] = 1.0 / area * T::GaussianIntegration([h, y_0](double x, double y)
 																   {
 																	   return sqr(y-y_0) / sqr(h);
-																   }, stencil[i]);
-			ksi_eta_average[i] = 1.0 / area * T::GaussianIntegration([h, x_0, y_0](double x, double y)
+																   }, stencil[i]); */
+/*			ksi_eta_average[i] = 1.0 / area * T::GaussianIntegration([h, x_0, y_0](double x, double y)
 																{
 																	return (x - x_0) * (y - y_0)  / sqr(h);
-																}, stencil[i]); */
+																}, stencil[i]) */;
 
 
 
@@ -431,9 +578,9 @@ namespace euler
 
 		for(int i = 0; i < 10; ++i)
 		{
-			auto const area = stencil[i]->getArea2D();
-			auto const x = stencil[i]->getBarycenter().x();
-			auto const y = stencil[i]->getBarycenter().y();
+//			auto const area = stencil[i]->getArea2D();
+//			auto const x = stencil[i]->getBarycenter().x();
+//			auto const y = stencil[i]->getBarycenter().y();
 /*			ksi_average[i] = 1.0 / area * T::GaussianIntegration([h, x_0](double x, double y)
 															{
 																return (x - x_0) / h;
@@ -443,8 +590,11 @@ namespace euler
 															{
 																return (y - y_0) / h;
 															}, stencil[i]); */
-			ksi_average[i] = (x - x_0) / h;
-			eta_average[i] = (y - y_0) / h;
+//			ksi_average[i] = (x - x_0) / h;
+//			eta_average[i] = (y - y_0) / h;
+
+			ksi_average[i] = CalculateKsiAverage(stencil[i], x_0, y_0, h);
+			eta_average[i] = CalculateEtaAverage(stencil[i], x_0, y_0, h);
 
 		}
 
@@ -845,8 +995,8 @@ namespace euler
 		if (!((q_reconstructed(3) > 0) && (q_reconstructed(0) > 0)))
 		{
 			std::cout << "kek" << std::endl;
-			return qVec;
-//			throw 1;
+//			return qVec;
+			throw 1;
 		}
 
 
