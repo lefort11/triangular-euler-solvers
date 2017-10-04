@@ -88,12 +88,13 @@ namespace euler
 		Vec4 Reconstruct(Vec4 const &qVec, Triangle const *pTriangle,
 						 Point2 const& gaussianPoint, int edgeNumber) const override;
 
-
+#ifdef CHARACTERISTIC_WISE
 		void FormL_A(double density, double velX, double velY, double H, arma::mat44& L_A) const;
 		void FormL_B(double density, double velX, double velY, double H, arma::mat44& L_B) const;
 
 		void FormR_A(double density, double velX, double velY, double H, arma::mat44& R_A) const;
 		void FormR_B(double density, double velX, double velY, double H, arma::mat44& R_B) const;
+#endif
 
 		void GetStencil(Triangle const* pTriangle, std::array<Triangle const*, 10> &stencil) const;
 
@@ -259,42 +260,6 @@ namespace euler
 					T::m_boundingTriangles.push_back(stencil_triangles[2]);
 
 
-/*					auto const reflectedTriangle0 = pTriangle->ReflectTriangle(edge_number);
-					T::m_boundingTriangles.push_back(reflectedTriangle0);
-
-					auto const ind_1 =
-							reflectedTriangle0->getIntraTriangleIndex(pTriangle->getCorner((edge_number + 1) % 3));
-					auto const ind_2 =
-							reflectedTriangle0->getIntraTriangleIndex(pTriangle->getCorner((edge_number + 2) % 3));
-
-					Triangle* const reflectedTriangle1 = reflectedTriangle0->ReflectTriangle(ind_1);
-					
-					Triangle* const reflectedTriangle2 = reflectedTriangle0->ReflectTriangle(ind_2);
-					
-					T::m_boundingTriangles.push_back(reflectedTriangle1);
-					T::m_boundingTriangles.push_back(reflectedTriangle2);
-*/
-
-/*					auto const p1_1 = reflectedTriangle0->getCorner((ind_1 + 1) % 3);
-					auto const p2_1 = reflectedTriangle0->getCorner((ind_1 + 2) % 3);
-					auto const ind_1_1 = reflectedTriangle1->getIntraTriangleIndex(p1_1);
-					auto const ind_2_1 = reflectedTriangle1->getIntraTriangleIndex(p2_1);
-					auto const reflectedTriangle3 = reflectedTriangle1->ReflectTriangle(ind_1_1);
-					auto const reflectedTriangle4 = reflectedTriangle1->ReflectTriangle(ind_2_1);
-					T::m_boundingTriangles.push_back(reflectedTriangle3);
-					T::m_boundingTriangles.push_back(reflectedTriangle4);
-
-					auto const p1_2 = reflectedTriangle0->getCorner((ind_2 + 1) % 3);
-					auto const p2_2 = reflectedTriangle0->getCorner((ind_2 + 2) % 3);
-					auto const ind_1_2 = reflectedTriangle2->getIntraTriangleIndex(p1_2);
-					auto const ind_2_2 = reflectedTriangle2->getIntraTriangleIndex(p2_2);
-					auto const reflectedTriangle5 = reflectedTriangle2->ReflectTriangle(ind_1_2);
-					auto const reflectedTriangle6 = reflectedTriangle2->ReflectTriangle(ind_2_2);
-					T::m_boundingTriangles.push_back(reflectedTriangle5);
-					T::m_boundingTriangles.push_back(reflectedTriangle6);
-
-*/
-
 				}
 			}
 
@@ -407,48 +372,12 @@ namespace euler
 
 		for(int i = 0; i < 10; ++i)
 		{
-			auto const area = stencil[i]->getArea2D();
-
-			auto const x = stencil[i]->getBarycenter().x();
-			auto const y = stencil[i]->getBarycenter().y();
-
-/*			ksi_average[i] = (x - x_0) / h;
-			eta_average[i] = (y - y_0) / h;
-
-			ksi_square_average[i] = sqr(x - x_0) / sqr(h);
-			eta_square_average[i] = sqr(y - y_0) / sqr(h);
-			ksi_eta_average[i] = (x - x_0) * (y - y_0) / sqr(h); */
 
 			ksi_average[i] = CalculateKsiAverage(stencil[i], x_0, y_0, h);
 			eta_average[i] = CalculateEtaAverage(stencil[i], x_0, y_0, h);
 			ksi_square_average[i] = CalculateKsiSquareAverage(stencil[i], x_0, y_0, h);
 			eta_square_average[i] = CalculateEtaSquareAverage(stencil[i], x_0, y_0, h);
 			ksi_eta_average[i] = CalculateKsiEtaAverage(stencil[i], x_0, y_0, h);
-
-
-/*			ksi_average[i] = 1.0 / area * T::GaussianIntegration([h, x_0](double x, double y)
-															{
-																return (x - x_0) / h;
-															}, stencil[i]);
-
-			eta_average[i] = 1.0 / area * T::GaussianIntegration([h, y_0](double x, double y)
-															{
-																return (y - y_0) / h;
-															}, stencil[i]);
-
-			ksi_square_average[i] = 1.0 / area * T::GaussianIntegration([h, x_0](double x, double y)
-																   {
-																	   return sqr(x-x_0) / sqr(h);
-																   }, stencil[i]);
-			eta_square_average[i] = 1.0 / area * T::GaussianIntegration([h, y_0](double x, double y)
-																   {
-																	   return sqr(y-y_0) / sqr(h);
-																   }, stencil[i]); */
-/*			ksi_eta_average[i] = 1.0 / area * T::GaussianIntegration([h, x_0, y_0](double x, double y)
-																{
-																	return (x - x_0) * (y - y_0)  / sqr(h);
-																}, stencil[i]) */;
-
 
 
 
@@ -578,21 +507,6 @@ namespace euler
 
 		for(int i = 0; i < 10; ++i)
 		{
-//			auto const area = stencil[i]->getArea2D();
-//			auto const x = stencil[i]->getBarycenter().x();
-//			auto const y = stencil[i]->getBarycenter().y();
-/*			ksi_average[i] = 1.0 / area * T::GaussianIntegration([h, x_0](double x, double y)
-															{
-																return (x - x_0) / h;
-															}, stencil[i]);
-
-			eta_average[i] = 1.0 / area * T::GaussianIntegration([h, y_0](double x, double y)
-															{
-																return (y - y_0) / h;
-															}, stencil[i]); */
-//			ksi_average[i] = (x - x_0) / h;
-//			eta_average[i] = (y - y_0) / h;
-
 			ksi_average[i] = CalculateKsiAverage(stencil[i], x_0, y_0, h);
 			eta_average[i] = CalculateEtaAverage(stencil[i], x_0, y_0, h);
 
@@ -709,13 +623,15 @@ namespace euler
 #endif
 
 		}
+
+#ifndef CHARACTERISTIC_WISE
 #ifdef MY_STABILITY_FIX
 		for(int i = 0; i < 10; ++i)
 		{
 			q[i] *= 1.0 / (MY_STABILITY_FIX * max_norm);
 		}
 #endif
-
+#endif
 
 #ifdef CHARACTERISTIC_WISE
 		//Forming Riemann invariants
@@ -776,7 +692,7 @@ namespace euler
 			char_wise = false; // then we reconstruct in component-wise way
 
 		std::array<Vec4, 10> w;
-		Vec4 w_reconstructed(0.0, 0.0, 0.0, 0.0);
+		Vec4 w_reconstructed{0.0, 0.0, 0.0, 0.0};
 
 		double max_norm_w = 0.0;
 		if(char_wise)
@@ -794,6 +710,16 @@ namespace euler
 				w[i] *= 1.0 / (MY_STABILITY_FIX * max_norm_w);
 #endif
 		}
+#ifdef MY_STABILITY_FIX
+		else
+		{
+			for(int i = 0; i < 10; ++i)
+			{
+				q[i] *= 1.0 / (MY_STABILITY_FIX * max_norm);
+			}
+		}
+
+#endif
 
 #endif
 		//Reconstruction!
@@ -838,11 +764,13 @@ namespace euler
 			auto const ind_1 = triangleReconstructionData.fo_polynomial[i].stencil[1];
 			auto const ind_2= triangleReconstructionData.fo_polynomial[i].stencil[2];
 
+			Vec4 smoothIndicator;
+
 #ifndef CHARACTERISTIC_WISE
 
 			
 
-			Vec4 const smoothIndicator = (arma::square(triangleReconstructionData.smoothIndicatorData[i].alpha[0] * q[ind_0]
+			smoothIndicator = (arma::square(triangleReconstructionData.smoothIndicatorData[i].alpha[0] * q[ind_0]
 								   + triangleReconstructionData.smoothIndicatorData[i].alpha[1] * q[ind_1]
 								   + triangleReconstructionData.smoothIndicatorData[i].alpha[2] * q[ind_2])
 							   + arma::square(triangleReconstructionData.smoothIndicatorData[i].beta[0] * q[ind_0]
@@ -853,20 +781,20 @@ namespace euler
 #else
 			if(char_wise)
 			{
-				smoothIndicator = (sqr(triangleReconstructionData.smoothIndicatorData[i].alpha[0] * w[ind_0]
+				smoothIndicator = (arma::square(triangleReconstructionData.smoothIndicatorData[i].alpha[0] * w[ind_0]
 									   + triangleReconstructionData.smoothIndicatorData[i].alpha[1] * w[ind_1]
 									   + triangleReconstructionData.smoothIndicatorData[i].alpha[2] * w[ind_2])
-								   + sqr(triangleReconstructionData.smoothIndicatorData[i].beta[0] * w[ind_0]
+								   + arma::square(triangleReconstructionData.smoothIndicatorData[i].beta[0] * w[ind_0]
 										 + triangleReconstructionData.smoothIndicatorData[i].beta[1] * w[ind_1]
 										 + triangleReconstructionData.smoothIndicatorData[i].beta[2] * w[ind_2]));
 
 			}
 			else
 			{
-				smoothIndicator =  (sqr(triangleReconstructionData.smoothIndicatorData[i].alpha[0] * q[ind_0]
+				smoothIndicator =  (arma::square(triangleReconstructionData.smoothIndicatorData[i].alpha[0] * q[ind_0]
 									   + triangleReconstructionData.smoothIndicatorData[i].alpha[1] * q[ind_1]
 									   + triangleReconstructionData.smoothIndicatorData[i].alpha[2] * q[ind_2])
-								   + sqr(triangleReconstructionData.smoothIndicatorData[i].beta[0] * q[ind_0]
+								   + arma::square(triangleReconstructionData.smoothIndicatorData[i].beta[0] * q[ind_0]
 										 + triangleReconstructionData.smoothIndicatorData[i].beta[1] * q[ind_1]
 										 + triangleReconstructionData.smoothIndicatorData[i].beta[2] * q[ind_2]));
 			}
@@ -931,11 +859,11 @@ namespace euler
 
 				if(char_wise)
 				{
-					w_reconstructed += omega[i] * (c_0 * w[ind_0] + c_1 * w[ind_1] + c_2 * w[ind_2]);
+					w_reconstructed += omega[i] % (c_0 * w[ind_0] + c_1 * w[ind_1] + c_2 * w[ind_2]);
 
 				}
 				else
-					q_reconstructed += omega[i] *
+					q_reconstructed += omega[i] %
 									   (c_0 * q[ind_0] + c_1 * q[ind_1] + c_2 * q[ind_2]);
 #endif
 			}
@@ -961,7 +889,7 @@ namespace euler
 							(triangleReconstructionData.so_polynomial.coeffsAtPoints[curr_g_point_n].sigma_plus
 							 * omega_plus[i]
 							 - triangleReconstructionData.so_polynomial.coeffsAtPoints[curr_g_point_n].sigma_minus
-							   * omega_minus[i]) * (c_0 * w[ind_0] + c_1 * w[ind_1] + c_2 * w[ind_2]);
+							   * omega_minus[i]) % (c_0 * w[ind_0] + c_1 * w[ind_1] + c_2 * w[ind_2]);
 				}
 				else
 				{
@@ -969,7 +897,7 @@ namespace euler
 							(triangleReconstructionData.so_polynomial.coeffsAtPoints[curr_g_point_n].sigma_plus
 							 * omega_plus[i]
 							 - triangleReconstructionData.so_polynomial.coeffsAtPoints[curr_g_point_n].sigma_minus
-							   * omega_minus[i]) * (c_0 * q[ind_0] + c_1 * q[ind_1] + c_2 * q[ind_2]);
+							   * omega_minus[i]) % (c_0 * q[ind_0] + c_1 * q[ind_1] + c_2 * q[ind_2]);
 				}
 #endif
 			}
@@ -979,17 +907,23 @@ namespace euler
 
 #ifdef CHARACTERISTIC_WISE
 
-#ifdef MY_STABILITY_FIX
-		w_reconstructed *= (MY_STABILITY_FIX * max_norm_w);
-#endif
-
 		if(char_wise)
 		{
+#ifdef MY_STABILITY_FIX
+			w_reconstructed *= (MY_STABILITY_FIX * max_norm_w);
+#endif
 			q_reconstructed = R * w_reconstructed;
+		}
+#ifdef MY_STABILITY_FIX
+		else
+		{
+			q_reconstructed *= (MY_STABILITY_FIX * max_norm);
 		}
 #endif
 
-#ifdef MY_STABILITY_FIX
+#endif
+
+#if !defined(CHARACTERISTIC_WISE) && defined(MY_STABILITY_FIX)
 		q_reconstructed *= (MY_STABILITY_FIX * max_norm);
 #endif
 		if (!((q_reconstructed(3) > 0) && (q_reconstructed(0) > 0)))
@@ -1004,6 +938,8 @@ namespace euler
 
 
 	}
+
+#ifdef CHARACTERISTIC_WISE
 
 	template<class T>
 	inline void WENOSolver<T>::FormL_A(double density, double velocityX, double velocityY,
@@ -1137,9 +1073,10 @@ namespace euler
 
 	}
 
-
+#endif
 
 }
+
 
 
 
