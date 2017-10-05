@@ -85,8 +85,9 @@ int main()
 			else if ( (bcmesh[triangle_counter]->getBarycenter().x() > 8.0)  )//right, upper and lower boundaries
 			{
 				bcmesh[triangle_counter]->density = mainMesh[index]->density;
-				bcmesh[triangle_counter]->velocityX = mainMesh[index]->velocityX < 0 ?
-													  -mainMesh[index]->velocityX : mainMesh[index]->velocityX;
+//				bcmesh[triangle_counter]->velocityX = mainMesh[index]->velocityX < 0 ?
+//													  -mainMesh[index]->velocityX : mainMesh[index]->velocityX;
+				bcmesh[triangle_counter]->velocityX = mainMesh[index]->velocityX;
 				bcmesh[triangle_counter]->velocityY = mainMesh[index]->velocityY;
 				bcmesh[triangle_counter]->pressure = mainMesh[index]->pressure;
 			}

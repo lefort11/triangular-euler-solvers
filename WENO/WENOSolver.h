@@ -259,6 +259,46 @@ namespace euler
 					T::m_boundingTriangles.push_back(stencil_triangles[1]);
 					T::m_boundingTriangles.push_back(stencil_triangles[2]);
 
+/*					auto const reflectedTriangle0 = pTriangle->ReflectTriangle(edge_number);
+					T::m_boundingTriangles.push_back(reflectedTriangle0);
+
+					auto const ind_1 =
+					reflectedTriangle0->getIntraTriangleIndex(pTriangle->getCorner((edge_number + 1) % 3));
+					auto const ind_2 =
+					reflectedTriangle0->getIntraTriangleIndex(pTriangle->getCorner((edge_number + 2) % 3));
+
+					Triangle* const reflectedTriangle1 = reflectedTriangle0->ReflectTriangle(ind_1);
+					if (pTriangle->GetOppTriangle((edge_number + 1) % 3) != nullptr)
+						reflectedTriangle1->SetIndex(pTriangle->GetOppTriangle((edge_number + 1) % 3)->Index());
+
+					Triangle* const reflectedTriangle2 = reflectedTriangle0->ReflectTriangle(ind_2);
+					if (pTriangle->GetOppTriangle((edge_number + 2) % 3) != nullptr)
+						reflectedTriangle2->SetIndex(pTriangle->GetOppTriangle((edge_number + 2) % 3)->Index());
+
+					T::m_boundingTriangles.push_back(reflectedTriangle1);
+					T::m_boundingTriangles.push_back(reflectedTriangle2); */
+					
+
+					/*					auto const p1_1 = reflectedTriangle0->getCorner((ind_1 + 1) % 3);
+					auto const p2_1 = reflectedTriangle0->getCorner((ind_1 + 2) % 3);
+					auto const ind_1_1 = reflectedTriangle1->getIntraTriangleIndex(p1_1);
+					auto const ind_2_1 = reflectedTriangle1->getIntraTriangleIndex(p2_1);
+					auto const reflectedTriangle3 = reflectedTriangle1->ReflectTriangle(ind_1_1);
+					auto const reflectedTriangle4 = reflectedTriangle1->ReflectTriangle(ind_2_1);
+					T::m_boundingTriangles.push_back(reflectedTriangle3);
+					T::m_boundingTriangles.push_back(reflectedTriangle4);
+
+					auto const p1_2 = reflectedTriangle0->getCorner((ind_2 + 1) % 3);
+					auto const p2_2 = reflectedTriangle0->getCorner((ind_2 + 2) % 3);
+					auto const ind_1_2 = reflectedTriangle2->getIntraTriangleIndex(p1_2);
+					auto const ind_2_2 = reflectedTriangle2->getIntraTriangleIndex(p2_2);
+					auto const reflectedTriangle5 = reflectedTriangle2->ReflectTriangle(ind_1_2);
+					auto const reflectedTriangle6 = reflectedTriangle2->ReflectTriangle(ind_2_2);
+					T::m_boundingTriangles.push_back(reflectedTriangle5);
+					T::m_boundingTriangles.push_back(reflectedTriangle6);
+
+					*/
+
 
 				}
 			}
