@@ -6,19 +6,24 @@
 
 #include "FirstOrderSolver/LaxFriedrichSolver.h"
 #include "WENO/WENOSolver.h"
-#include <corecrt_math_defines.h>
 
 
 int main()
 {
 
-
 	euler::ConstraintFunction circle1([](double t)
-	{
-		auto x = 0.25 * cos(2.0 *M_PI * t);
-		auto y = 0.25 * sin(2.0 *M_PI * t);
-		return GEOM_FADE2D::Point2(x, y);
-	}, 60);
+									  {
+										  auto x = 0.2 * cos(2.0 * M_PI * t);
+										  auto y = 0.2 * sin(2.0 * M_PI * t);
+										  return GEOM_FADE2D::Point2(x, y);
+									  }, 60);
+
+	euler::ConstraintFunction circle2([](double t)
+									  {
+										  auto x = 6.0 * cos(2.0 * M_PI * t);
+										  auto y = 6.0 * sin(2.0 * M_PI * t);
+										  return GEOM_FADE2D::Point2(x, y);
+									  }, 100);
 
 
 	euler::ConstraintFunction square([](double t)
@@ -51,14 +56,16 @@ int main()
 									 }, 4);
 
 	euler::Zone zone(circle1, false),
+				zone2(circle2, true),
 				zone3(square, true);
 
 	std::vector<euler::Zone> vZone;
 	vZone.push_back(zone);
+	vZone.push_back(zone2);
 //	vZone.push_back(zone3);
 
 
-	std::array<double, 3> trProp = {30, 0.001, 0.095};
+	std::array<double, 3> trProp = {30, 0.001, 0.3};
 
 
 
@@ -74,7 +81,7 @@ int main()
 			bcmesh[triangle_counter]->velocityY = mainMesh[index]->velocityY;
 			bcmesh[triangle_counter]->pressure = mainMesh[index]->pressure; */
 
-			if ( bcmesh[triangle_counter]->getBarycenter().x() < -2.0 )//left boundary
+/*			if ( bcmesh[triangle_counter]->getBarycenter().x() < -2.0 )//left boundary
 			{
 				bcmesh[triangle_counter]->density = 1.4;
 				bcmesh[triangle_counter]->velocityX = 0.9;
@@ -117,9 +124,34 @@ int main()
 				bcmesh[triangle_counter]->velocityX = -mainMesh[index]->velocityX;
 				bcmesh[triangle_counter]->velocityY = -mainMesh[index]->velocityY;
 				bcmesh[triangle_counter]->pressure = mainMesh[index]->pressure;
+			} */
+			if ( bcmesh[triangle_counter]->getBarycenter().x() < -4.0 )//left boundary
+			{
+				bcmesh[triangle_counter]->density = 1.4;
+				bcmesh[triangle_counter]->velocityX = 0.9;
+				bcmesh[triangle_counter]->velocityY = 0.0;
+				bcmesh[triangle_counter]->pressure = 1.0;
+
+			}
+			else if(euler::sqr(bcmesh[triangle_counter]->getBarycenter().x())
+					+ euler::sqr(bcmesh[triangle_counter]->getBarycenter().y()) > 35.0)
+			{
+				bcmesh[triangle_counter]->density = mainMesh[index]->density;
+				bcmesh[triangle_counter]->velocityX = mainMesh[index]->velocityX;
+				bcmesh[triangle_counter]->velocityY = mainMesh[index]->velocityY;
+				bcmesh[triangle_counter]->pressure = mainMesh[index]->pressure;
+			}
+			else  // circle ~ wall
+			{
+				bcmesh[triangle_counter]->density = mainMesh[index]->density;
+				bcmesh[triangle_counter]->velocityX = -mainMesh[index]->velocityX;
+				bcmesh[triangle_counter]->velocityY = -mainMesh[index]->velocityY;
+				bcmesh[triangle_counter]->pressure = mainMesh[index]->pressure;
 			}
 
+
 		}
+
 
 
 	}, trProp);
@@ -135,7 +167,7 @@ int main()
 //					return std::array<double, 4>{{1.0, 0.0, 0.0, 1.0}};
 				});
 
-	solver.Calculate(65.0);
+	solver.Calculate(100.0);
 
 	solver.Output("results/density2D.txt", "results/velocity2D.txt", "results/pressure2D.txt");
 	solver.ClcOutput("results/test.clc", 0, 0.5, 1);
