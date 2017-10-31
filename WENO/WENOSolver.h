@@ -14,7 +14,7 @@ namespace euler
 	{
 	private:
 
-		double const m_eps = 1e-6;
+		double const m_eps = 1e-4;
 
 		static int const gaussian_points_number = 6;
 
@@ -253,13 +253,13 @@ namespace euler
 
 					Triangle* pTriangle = T::m_triangles[triangle_counter];
 
-					auto const stencil_triangles = pTriangle->SummonThreeTriangles(edge_number);
+/*					auto const stencil_triangles = pTriangle->SummonThreeTriangles(edge_number);
 
 					T::m_boundingTriangles.push_back(stencil_triangles[0]);
 					T::m_boundingTriangles.push_back(stencil_triangles[1]);
-					T::m_boundingTriangles.push_back(stencil_triangles[2]);
+					T::m_boundingTriangles.push_back(stencil_triangles[2]); */
 
-/*					auto const reflectedTriangle0 = pTriangle->ReflectTriangle(edge_number);
+					auto const reflectedTriangle0 = pTriangle->ReflectTriangle(edge_number);
 					T::m_boundingTriangles.push_back(reflectedTriangle0);
 
 					auto const ind_1 =
@@ -276,7 +276,7 @@ namespace euler
 						reflectedTriangle2->SetIndex(pTriangle->GetOppTriangle((edge_number + 2) % 3)->Index());
 
 					T::m_boundingTriangles.push_back(reflectedTriangle1);
-					T::m_boundingTriangles.push_back(reflectedTriangle2); */
+					T::m_boundingTriangles.push_back(reflectedTriangle2); 
 					
 
 					/*					auto const p1_1 = reflectedTriangle0->getCorner((ind_1 + 1) % 3);
@@ -395,9 +395,9 @@ namespace euler
 		std::array<Triangle const*, 10> stencil;
 
 		GetStencil(pTriangle, stencil);
-		for(int i = 0; i < 10; ++i)
+/*		for(int i = 0; i < 10; ++i)
 			if(stencil[i] == nullptr)
-				return;
+				return; */
 
 		auto const h = std::sqrt(stencil[0]->getArea2D());
 		auto const x_0 = stencil[0]->getBarycenter().x();

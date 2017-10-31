@@ -18,8 +18,8 @@ namespace euler
 
 		struct CartesianMesh
 		{
-			static int const NX = 300;
-			static int const NY = 300;
+			static int const NX = 224;
+			static int const NY = 224;
 			double const X1 = -2.0;
 			double const X2 = 8.0;
 			double const Y1 = -4.0;

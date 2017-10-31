@@ -1,12 +1,12 @@
 #include <iostream>
 
-#define _USE_MATH_DEFINES
 #include <cmath>
 
 #include "SpaceMesh/Area.h"
 
 #include "FirstOrderSolver/LaxFriedrichSolver.h"
 #include "WENO/WENOSolver.h"
+#include <corecrt_math_defines.h>
 
 
 int main()
@@ -58,7 +58,7 @@ int main()
 //	vZone.push_back(zone3);
 
 
-	std::array<double, 3> trProp = {30, 0.001, 0.25};
+	std::array<double, 3> trProp = {30, 0.001, 0.095};
 
 
 
@@ -85,17 +85,29 @@ int main()
 			else if ( (bcmesh[triangle_counter]->getBarycenter().x() > 8.0)  )//right, upper and lower boundaries
 			{
 				bcmesh[triangle_counter]->density = mainMesh[index]->density;
-//				bcmesh[triangle_counter]->velocityX = mainMesh[index]->velocityX < 0 ?
-//													  -mainMesh[index]->velocityX : mainMesh[index]->velocityX;
-				bcmesh[triangle_counter]->velocityX = mainMesh[index]->velocityX;
+				bcmesh[triangle_counter]->velocityX = mainMesh[index]->velocityX < 0 ?
+													  -mainMesh[index]->velocityX : mainMesh[index]->velocityX;
+//				bcmesh[triangle_counter]->velocityX = mainMesh[index]->velocityX;
 				bcmesh[triangle_counter]->velocityY = mainMesh[index]->velocityY;
 				bcmesh[triangle_counter]->pressure = mainMesh[index]->pressure;
 			}
-			else if( std::fabs(bcmesh[triangle_counter]->getBarycenter().y()) > 4.0 )
+			else if( bcmesh[triangle_counter]->getBarycenter().y() > 4.0 )
 			{
 				bcmesh[triangle_counter]->density = mainMesh[index]->density;
 				bcmesh[triangle_counter]->velocityX = mainMesh[index]->velocityX;
-				bcmesh[triangle_counter]->velocityY = mainMesh[index]->velocityY;
+//				bcmesh[triangle_counter]->velocityY = mainMesh[index]->velocityY;
+				bcmesh[triangle_counter]->velocityY = mainMesh[index]->velocityY < -1e-3 ?
+														-mainMesh[index]->velocityY : mainMesh[index]->velocityY;
+				bcmesh[triangle_counter]->pressure = mainMesh[index]->pressure;
+
+			}
+			else if ( bcmesh[triangle_counter]->getBarycenter().y() < -4.0)
+			{
+				bcmesh[triangle_counter]->density = mainMesh[index]->density;
+				bcmesh[triangle_counter]->velocityX = mainMesh[index]->velocityX;
+//				bcmesh[triangle_counter]->velocityY = mainMesh[index]->velocityY;
+				bcmesh[triangle_counter]->velocityY = mainMesh[index]->velocityY > 1e-3 ?
+														-mainMesh[index]->velocityY : mainMesh[index]->velocityY;
 				bcmesh[triangle_counter]->pressure = mainMesh[index]->pressure;
 
 			}
@@ -123,7 +135,7 @@ int main()
 //					return std::array<double, 4>{{1.0, 0.0, 0.0, 1.0}};
 				});
 
-	solver.Calculate(100.0);
+	solver.Calculate(65.0);
 
 	solver.Output("results/density2D.txt", "results/velocity2D.txt", "results/pressure2D.txt");
 	solver.ClcOutput("results/test.clc", 0, 0.5, 1);

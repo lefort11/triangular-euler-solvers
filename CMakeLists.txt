@@ -26,15 +26,6 @@ IF(APPLE)
 
     include_directories(${FADE2D_INCLUDE_DIRS})
 
-    #FIND_LIBRARY(ARMA_LIBRARY armadillo.8.10.0 ${CMAKE_CURRENT_SOURCE_DIR}/lib_source/lib)
-    #IF(ARMA_LIBRARY)
-    #    message("kekasik")
-    #ENDIF(ARMA_LIBRARY)
-
-    #set(ARMA_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/lib_source/armadillo-8.100.0/include)
-
-    #include_directories(${ARMA_INCLUDE_DIRS})
-
     FIND_PACKAGE(Armadillo REQUIRED)
     INCLUDE_DIRECTORIES(${ARMADILLO_INCLUDE_DIRS})
 
@@ -46,25 +37,26 @@ ELSE()
     ENDIF()
 
 
-    FIND_LIBRARY(GMP_LIBRARY libgmp-10 ${CMAKE_CURRENT_SOURCE_DIR}/lib_source/lib/fade2d_win64)
-
+    #FIND_LIBRARY(GMP_LIBRARY libgmp-10 ${CMAKE_CURRENT_SOURCE_DIR}/lib_source/lib/fade2d_win64)
 
 
     set(FADE2D_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/lib_source/fade2d/include)
     include_directories(${FADE2D_INCLUDE_DIRS})
+	set(ARMA_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/lib_source/armadillo-8.200.0/include)
+	include_directories(${ARMA_INCLUDE_DIRS})
 
-    set(ARMA_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/lib_source/armadillo-8.100.0/include)
-    include_directories(${ARMA_INCLUDE_DIRS})
 
-    FIND_LIBRARY(LAPACK_LIBRARY liblapack ${CMAKE_SOURCE_DIR}/lib_source/lib/lapack_win64)
-    IF(LAPACK_LIBRARY)
-        message("lapack")
-    ENDIF()
+  
 
-    FIND_LIBRARY(BLAS_LIBRARY libblas ${CMAKE_SOURCE_DIR}/lib_source/lib/lapack_win64)
-    IF(LAPACK_LIBRARY)
-        message("lapack")
-    ENDIF()
+#    FIND_LIBRARY(LAPACK_LIBRARY liblapack ${CMAKE_SOURCE_DIR}/lib_source/lib/lapack_win64)
+#    IF(LAPACK_LIBRARY)
+#        message("lapack")
+#    ENDIF()
+
+#    FIND_LIBRARY(BLAS_LIBRARY libblas ${CMAKE_SOURCE_DIR}/lib_source/lib/lapack_win64)
+#    IF(LAPACK_LIBRARY)
+#        message("lapack")
+#    ENDIF()
 
     FIND_PACKAGE(OpenMP REQUIRED)
     if(OPENMP_FOUND)
@@ -80,6 +72,7 @@ ELSE()
 ENDIF()
 
 
+
 set(CMAKE_BUILD_TYPE Release)
 
 
@@ -88,5 +81,6 @@ add_executable(Triangular_Solvers ${SOURCE_FILES})
 IF(APPLE)
     target_link_libraries(Triangular_Solvers ${FADE2D_LIBRARY} ${ARMADILLO_LIBRARIES})
 ELSE()
-    target_link_libraries(Triangular_Solvers ${FADE2D_LIBRARY} ${LAPACK_LIBRARY} ${GMP_LIBRARY} ${BLASS_LIBRARY})
+    #target_link_libraries(Triangular_Solvers ${FADE2D_LIBRARY} ${LAPACK_LIBRARY} ${GMP_LIBRARY} ${BLASS_LIBRARY})
+	target_link_libraries(Triangular_Solvers ${FADE2D_LIBRARY})
 ENDIF()
