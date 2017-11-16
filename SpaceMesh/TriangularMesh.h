@@ -102,10 +102,10 @@ namespace euler
 
 			arma::vec middlePoint = arma::solve(A, rightSide);
 
-			auto reflectedPoint = new GEOM_FADE2D::Point2(2 * middlePoint(0) - p0->x(), 2 * middlePoint(1) - p0->y());
+			auto const reflectedPoint = new GEOM_FADE2D::Point2(2 * middlePoint(0) - p0->x(), 2 * middlePoint(1) - p0->y());
 
 			auto const reflectedTriangle = new Triangle();
-			reflectedTriangle->SetIndex(Index());
+			reflectedTriangle->SetIndex(m_index);
 
 			//reflectedTriangle->setProperties(p1, reflectedPoint, p2);
 			reflectedTriangle->setVertexPointer(0, p1);
@@ -127,43 +127,44 @@ namespace euler
 
 		std::array<Triangle*, 3> SummonThreeTriangles(const int edgeNumber)
 		{
-			auto reflectedTriangle = ReflectTriangle(edgeNumber);
-			auto const barycenter = new GEOM_FADE2D::Point2(reflectedTriangle->getBarycenter());
-			auto const p0 = reflectedTriangle->getCorner(0);
-			auto const p1 = reflectedTriangle->getCorner(1);
-			auto const p2 = reflectedTriangle->getCorner(2);
+			auto triangle0 = ReflectTriangle(edgeNumber);
+			auto const barycenter = new GEOM_FADE2D::Point2(triangle0->getBarycenter());
+			auto const p0 = triangle0->getCorner(0);
+			auto const p1 = triangle0->getCorner(1);
+			auto const p2 = triangle0->getCorner(2);
 
-			reflectedTriangle->setVertexPointer(1, barycenter);
-
-			auto triangle0 = new Triangle();
 			auto triangle1 = new Triangle();
-			triangle0->SetIndex(m_index);
+			auto triangle2 = new Triangle();
 			triangle1->SetIndex(m_index);
-
-			triangle0->setVertexPointer(0, p2);
-			triangle0->setVertexPointer(1, barycenter);
-			triangle0->setVertexPointer(2, p1);
+			triangle2->SetIndex(m_index);
 
 			triangle1->setVertexPointer(0, p0);
 			triangle1->setVertexPointer(1, p1);
 			triangle1->setVertexPointer(2, barycenter);
 
-			triangle0->SetOppTriangle(0, triangle1);
-			triangle0->SetOppTriangle(1, nullptr);
-			triangle0->SetOppTriangle(2, reflectedTriangle);
+			triangle2->setVertexPointer(0, p1);
+			triangle2->setVertexPointer(1, p2);
+			triangle2->setVertexPointer(2, barycenter);
 
-			triangle1->SetOppTriangle(0, triangle0);
-			triangle1->SetOppTriangle(1, reflectedTriangle);
+			triangle0->setVertexPointer(1, barycenter);
+
+
+			triangle0->SetOppTriangle(0, triangle2);
+			triangle0->SetOppTriangle(1, this);
+			triangle0->SetOppTriangle(2, triangle1);
+
+
+			triangle1->SetOppTriangle(0, triangle2);
+			triangle1->SetOppTriangle(1, triangle0);
 			triangle1->SetOppTriangle(2, nullptr);
 
-			reflectedTriangle->SetOppTriangle(0, triangle0);
-			reflectedTriangle->SetOppTriangle(1, this);
-			reflectedTriangle->SetOppTriangle(2, triangle1);
+			triangle2->SetOppTriangle(0, triangle0);
+			triangle2->SetOppTriangle(1, triangle1);
+			triangle2->SetOppTriangle(2, nullptr);
 
 
-			std::array<Triangle*, 3> triangles = {triangle0, reflectedTriangle, triangle1};
+			return std::array<Triangle*, 3>{triangle0, triangle1, triangle2};
 
-			return triangles;
 		}
 
 	};

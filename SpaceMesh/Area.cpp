@@ -8,7 +8,7 @@ std::vector<GEOM_FADE2D::Point2> ConstraintFunction::Discretize() const
 	auto const h = 1.0 / (m_discrPointNumber);
 	std::vector<GEOM_FADE2D::Point2> vPoints;
 
-	for(int i = 0; i < m_discrPointNumber; ++i)
+	for(unsigned i = 0; i < m_discrPointNumber; ++i)
 	{
 		auto point = (*this)(i*h);
 		vPoints.push_back(point);

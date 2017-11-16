@@ -1,5 +1,6 @@
 #include <iostream>
 
+#define _USE_MATH_DEFINES
 #include <cmath>
 
 #include "SpaceMesh/Area.h"
@@ -23,7 +24,7 @@ int main()
 										  auto x = 6.0 * cos(2.0 * M_PI * t);
 										  auto y = 6.0 * sin(2.0 * M_PI * t);
 										  return GEOM_FADE2D::Point2(x, y);
-									  }, 100);
+									  }, 1000);
 
 
 	euler::ConstraintFunction square([](double t)
@@ -56,16 +57,16 @@ int main()
 									 }, 4);
 
 	euler::Zone zone(circle1, false),
-				zone2(circle2, true),
+//				zone2(circle2, true),
 				zone3(square, true);
 
 	std::vector<euler::Zone> vZone;
 	vZone.push_back(zone);
-	vZone.push_back(zone2);
+//	vZone.push_back(zone2);
 //	vZone.push_back(zone3);
 
 
-	std::array<double, 3> trProp = {30, 0.001, 0.3};
+	std::array<double, 3> trProp = {30, 0.001, 0.093};
 
 
 
@@ -81,7 +82,7 @@ int main()
 			bcmesh[triangle_counter]->velocityY = mainMesh[index]->velocityY;
 			bcmesh[triangle_counter]->pressure = mainMesh[index]->pressure; */
 
-/*			if ( bcmesh[triangle_counter]->getBarycenter().x() < -2.0 )//left boundary
+			if ( bcmesh[triangle_counter]->getBarycenter().x() < -2.0 )//left boundary
 			{
 				bcmesh[triangle_counter]->density = 1.4;
 				bcmesh[triangle_counter]->velocityX = 0.9;
@@ -92,20 +93,18 @@ int main()
 			else if ( (bcmesh[triangle_counter]->getBarycenter().x() > 8.0)  )//right, upper and lower boundaries
 			{
 				bcmesh[triangle_counter]->density = mainMesh[index]->density;
-				bcmesh[triangle_counter]->velocityX = mainMesh[index]->velocityX < 0 ?
-													  -mainMesh[index]->velocityX : mainMesh[index]->velocityX;
+				bcmesh[triangle_counter]->velocityX = 1.01 * std::fabs(mainMesh[triangle_counter]->velocityX);
 //				bcmesh[triangle_counter]->velocityX = mainMesh[index]->velocityX;
 				bcmesh[triangle_counter]->velocityY = mainMesh[index]->velocityY;
-				bcmesh[triangle_counter]->pressure = mainMesh[index]->pressure;
+				bcmesh[triangle_counter]->pressure = 0.9 * mainMesh[index]->pressure;
 			}
 			else if( bcmesh[triangle_counter]->getBarycenter().y() > 4.0 )
 			{
 				bcmesh[triangle_counter]->density = mainMesh[index]->density;
 				bcmesh[triangle_counter]->velocityX = mainMesh[index]->velocityX;
 //				bcmesh[triangle_counter]->velocityY = mainMesh[index]->velocityY;
-				bcmesh[triangle_counter]->velocityY = mainMesh[index]->velocityY < -1e-3 ?
-														-mainMesh[index]->velocityY : mainMesh[index]->velocityY;
-				bcmesh[triangle_counter]->pressure = mainMesh[index]->pressure;
+				bcmesh[triangle_counter]->velocityY = 1.01 * std::fabs(mainMesh[triangle_counter]->velocityY);
+				bcmesh[triangle_counter]->pressure = 0.9 * mainMesh[index]->pressure;
 
 			}
 			else if ( bcmesh[triangle_counter]->getBarycenter().y() < -4.0)
@@ -113,9 +112,8 @@ int main()
 				bcmesh[triangle_counter]->density = mainMesh[index]->density;
 				bcmesh[triangle_counter]->velocityX = mainMesh[index]->velocityX;
 //				bcmesh[triangle_counter]->velocityY = mainMesh[index]->velocityY;
-				bcmesh[triangle_counter]->velocityY = mainMesh[index]->velocityY > 1e-3 ?
-														-mainMesh[index]->velocityY : mainMesh[index]->velocityY;
-				bcmesh[triangle_counter]->pressure = mainMesh[index]->pressure;
+				bcmesh[triangle_counter]->velocityY = -1.01 * std::fabs(mainMesh[triangle_counter]->velocityY);
+				bcmesh[triangle_counter]->pressure = 0.9 * mainMesh[index]->pressure;
 
 			}
 			else  // circle ~ wall
@@ -124,8 +122,9 @@ int main()
 				bcmesh[triangle_counter]->velocityX = -mainMesh[index]->velocityX;
 				bcmesh[triangle_counter]->velocityY = -mainMesh[index]->velocityY;
 				bcmesh[triangle_counter]->pressure = mainMesh[index]->pressure;
-			} */
-			if ( bcmesh[triangle_counter]->getBarycenter().x() < -4.0 )//left boundary
+			} 
+
+/*			if ( bcmesh[triangle_counter]->getBarycenter().x() < -3.0 )//left boundary
 			{
 				bcmesh[triangle_counter]->density = 1.4;
 				bcmesh[triangle_counter]->velocityX = 0.9;
@@ -134,7 +133,7 @@ int main()
 
 			}
 			else if(euler::sqr(bcmesh[triangle_counter]->getBarycenter().x())
-					+ euler::sqr(bcmesh[triangle_counter]->getBarycenter().y()) > 35.0)
+					+ euler::sqr(bcmesh[triangle_counter]->getBarycenter().y()) >= 35.0)
 			{
 				bcmesh[triangle_counter]->density = mainMesh[index]->density;
 				bcmesh[triangle_counter]->velocityX = mainMesh[index]->velocityX;
@@ -147,7 +146,7 @@ int main()
 				bcmesh[triangle_counter]->velocityX = -mainMesh[index]->velocityX;
 				bcmesh[triangle_counter]->velocityY = -mainMesh[index]->velocityY;
 				bcmesh[triangle_counter]->pressure = mainMesh[index]->pressure;
-			}
+			} */
 
 
 		}
