@@ -1,6 +1,7 @@
 #ifndef TRIANGULAR_SOLVERS_WENOLF_H
 #define TRIANGULAR_SOLVERS_WENOLF_H
 
+#include <array>
 #include "../FirstOrderSolver/LaxFriedrichSolver.h"
 
 //#define CHARACTERISTIC_WISE
