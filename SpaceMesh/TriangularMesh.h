@@ -155,6 +155,7 @@ namespace euler
 		std::array<Triangle*, 3> SummonThreeTriangles(const int edgeNumber)
 		{
 			auto triangle0 = ReflectTriangle(edgeNumber);
+			triangle0->SetIndex(-1);
 			auto const barycenter = new GEOM_FADE2D::Point2(triangle0->getBarycenter());
 			auto const p0 = triangle0->getCorner(0);
 			auto const p1 = triangle0->getCorner(1);
