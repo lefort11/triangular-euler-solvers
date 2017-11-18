@@ -16,13 +16,20 @@ namespace euler
 
 		int m_index;
 
+		struct
+		{
+			bool isBoundary = false;
+			int parentIndex = -1;
+
+		} m_boundaryProperties;
+
 
 	public:
 		double density = 0, velocityX = 0, velocityY = 0, pressure = 0;
 
 	public:
 
-		Triangle():m_index(-1)
+		Triangle():m_index(-1), m_boundaryProperties()
 		{
 			m_pOppTriangles[0] = nullptr;
 			m_pOppTriangles[1] = nullptr;
@@ -52,6 +59,26 @@ namespace euler
 		int Index() const
 		{
 			return m_index;
+		}
+
+		bool IsBoundary() const
+		{
+			return m_boundaryProperties.isBoundary;
+		}
+
+		int ParentIndex() const
+		{
+			return m_boundaryProperties.parentIndex;
+		}
+
+		void SetParentIndex(int const ind)
+		{
+			m_boundaryProperties.parentIndex = ind;
+		}
+
+		void SetBoundary(bool isbndry)
+		{
+			m_boundaryProperties.isBoundary = isbndry;
 		}
 
 		void SetOppTriangle(const int ith, Triangle* pTriangle)
@@ -105,7 +132,7 @@ namespace euler
 			auto const reflectedPoint = new GEOM_FADE2D::Point2(2 * middlePoint(0) - p0->x(), 2 * middlePoint(1) - p0->y());
 
 			auto const reflectedTriangle = new Triangle();
-			reflectedTriangle->SetIndex(m_index);
+			reflectedTriangle->SetIndex(-1);
 
 			//reflectedTriangle->setProperties(p1, reflectedPoint, p2);
 			reflectedTriangle->setVertexPointer(0, p1);
@@ -135,8 +162,8 @@ namespace euler
 
 			auto triangle1 = new Triangle();
 			auto triangle2 = new Triangle();
-			triangle1->SetIndex(m_index);
-			triangle2->SetIndex(m_index);
+			triangle1->SetIndex(-1);
+			triangle2->SetIndex(-1);
 
 			triangle1->setVertexPointer(0, p0);
 			triangle1->setVertexPointer(1, p1);

@@ -76,7 +76,7 @@ int main()
 
 		for (int triangle_counter = 0; triangle_counter < bcmesh.size(); ++triangle_counter)
 		{
-			auto const index = bcmesh[triangle_counter]->Index(); //index of the original triangle
+			auto const index = bcmesh[triangle_counter]->ParentIndex(); //index of the original triangle
 /*			bcmesh[triangle_counter]->density = mainMesh[index]->density;
 			bcmesh[triangle_counter]->velocityX = mainMesh[index]->velocityX;
 			bcmesh[triangle_counter]->velocityY = mainMesh[index]->velocityY;

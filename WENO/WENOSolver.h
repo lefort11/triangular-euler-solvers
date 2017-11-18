@@ -261,6 +261,10 @@ namespace euler
 					T::m_boundingTriangles.push_back(stencil_triangles[2]); */
 
 					auto const reflectedTriangle0 = pTriangle->ReflectTriangle(edge_number);
+
+					reflectedTriangle0->SetBoundary(true);
+					reflectedTriangle0->SetParentIndex(pTriangle->Index());
+					reflectedTriangle0->SetIndex(T::m_boundingTriangles.size());
 					T::m_boundingTriangles.push_back(reflectedTriangle0);
 
 					auto const ind_1 =
@@ -268,7 +272,7 @@ namespace euler
 					auto const ind_2 =
 					reflectedTriangle0->getIntraTriangleIndex(pTriangle->getCorner((edge_number + 2) % 3));
 
-					Triangle* const reflectedTriangle1 = reflectedTriangle0->ReflectTriangle(ind_1);
+/*					Triangle* const reflectedTriangle1 = reflectedTriangle0->ReflectTriangle(ind_1);
 					if (pTriangle->GetOppTriangle((edge_number + 1) % 3) != nullptr)
 						reflectedTriangle1->SetIndex(pTriangle->GetOppTriangle((edge_number + 1) % 3)->Index());
 
@@ -277,7 +281,28 @@ namespace euler
 						reflectedTriangle2->SetIndex(pTriangle->GetOppTriangle((edge_number + 2) % 3)->Index());
 
 					T::m_boundingTriangles.push_back(reflectedTriangle1);
-					T::m_boundingTriangles.push_back(reflectedTriangle2);  
+					T::m_boundingTriangles.push_back(reflectedTriangle2);  */
+
+					auto const stencilTriangles0 = reflectedTriangle0->SummonThreeTriangles(ind_1);
+					auto const stencilTriangles1 = reflectedTriangle0->SummonThreeTriangles(ind_2);
+					for(int i = 0; i < 3; ++i)
+					{
+						stencilTriangles0[i]->SetBoundary(true);
+						stencilTriangles1[i]->SetBoundary(true);
+						if (pTriangle->GetOppTriangle((edge_number + 1) % 3) != nullptr)
+							stencilTriangles0[i]->SetParentIndex(pTriangle->GetOppTriangle((edge_number + 1) % 3)->Index());
+						else
+							stencilTriangles0[i]->SetParentIndex(pTriangle->Index());
+						if (pTriangle->GetOppTriangle((edge_number + 2) % 3) != nullptr)
+							stencilTriangles1[i]->SetParentIndex(pTriangle->GetOppTriangle((edge_number + 2) % 3)->Index());
+						else
+							stencilTriangles1[i]->SetParentIndex(pTriangle->Index());
+
+						stencilTriangles0[i]->SetIndex(T::m_boundingTriangles.size());
+						stencilTriangles1[i]->SetIndex(T::m_boundingTriangles.size() + 1);
+						T::m_boundingTriangles.push_back(stencilTriangles0[i]);
+						T::m_boundingTriangles.push_back(stencilTriangles1[i]);
+					}
 					
 
 				}
@@ -296,8 +321,8 @@ namespace euler
 		stencil[1] = stencil[0]->GetOppTriangle(0);
 		stencil[2] = stencil[0]->GetOppTriangle(1);
 		stencil[3] = stencil[0]->GetOppTriangle(2);
-//		if((stencil[0] == nullptr) || (stencil[2] == nullptr) || stencil[3] == nullptr)
-//			return;
+		if((stencil[0] == nullptr) || (stencil[2] == nullptr) || stencil[3] == nullptr)
+			return;
 
 
 		stencil[4] = stencil[1]->GetOppTriangle(stencil[1]->getIntraTriangleIndex(stencil[0]->getCorner(2)));
@@ -322,12 +347,19 @@ namespace euler
 	{
 		T::Init(initStateFunction);
 
-		m_vReconstructionData.resize(T::m_triangles.size());
+		m_vReconstructionData.resize(T::m_triangles.size() + T::m_boundingTriangles.size());
 
 #pragma omp parallel for
 		for(int triangle_number = 0; triangle_number < T::m_triangles.size(); ++triangle_number)
 		{
 			GetTriangleReconstructionData(m_vReconstructionData[triangle_number], T::m_triangles[triangle_number]);
+
+		}
+#pragma omp parallel for
+		for(int triangle_number = 0; triangle_number < T::m_boundingTriangles.size(); ++triangle_number)
+		{
+			GetTriangleReconstructionData(m_vReconstructionData[triangle_number + T::m_triangles.size()],
+										  T::m_boundingTriangles[triangle_number]);
 
 		}
 	}
@@ -375,9 +407,9 @@ namespace euler
 		std::array<Triangle const*, 10> stencil;
 
 		GetStencil(pTriangle, stencil);
-/*		for(int i = 0; i < 10; ++i)
+		for(int i = 0; i < 10; ++i)
 			if(stencil[i] == nullptr)
-				return; */
+				return;
 
 		auto const h = std::sqrt(stencil[0]->getArea2D());
 		auto const x_0 = stencil[0]->getBarycenter().x();
@@ -625,11 +657,11 @@ namespace euler
 		std::array<Triangle const*, 10> stencil;
 		GetStencil(pTriangle, stencil);
 
-		for(int i = 0; i < 10; ++i)
+/*		for(int i = 0; i < 10; ++i)
 		{
 			if(stencil[i] == nullptr)
 				return qVec;
-		}
+		} */
 
 		std::array<Vec4, 10> q;
 		q[0] = qVec;
@@ -745,7 +777,9 @@ namespace euler
 		//Reconstruction!
 		Vec4 q_reconstructed{0.0, 0.0, 0.0, 0.0};
 
-		auto const triangleReconstructionData = m_vReconstructionData[pTriangle->Index()];
+		auto const triangleReconstructionData =
+				pTriangle->IsBoundary() ? m_vReconstructionData[pTriangle->Index() + T::m_triangles.size()]
+										: m_vReconstructionData[pTriangle->Index()];
 
 		//Searching for coressponding gaussian point
 		int curr_g_point_n = 0;
