@@ -6,7 +6,7 @@
 
 //#define CHARACTERISTIC_WISE
 
-#define MY_STABILITY_FIX 100.0 //100.0, 1e-6
+#define MY_STABILITY_FIX 10.0 //100.0, 1e-6
 
 namespace euler
 {
@@ -261,13 +261,12 @@ namespace euler
 					reflectedTriangle0->SetBoundary(true);
 					reflectedTriangle0->SetParentIndex(pTriangle->Index());
 					reflectedTriangle0->SetIndex(T::m_boundingTriangles.size());
-                    
 					T::m_boundingTriangles.push_back(reflectedTriangle0);
 
 					auto const ind_1 =
-					reflectedTriangle0->getIntraTriangleIndex(pTriangle->getCorner((edge_number + 1) % 3));
+						reflectedTriangle0->getIntraTriangleIndex(pTriangle->getCorner((edge_number + 1) % 3));
 					auto const ind_2 =
-					reflectedTriangle0->getIntraTriangleIndex(pTriangle->getCorner((edge_number + 2) % 3));
+						reflectedTriangle0->getIntraTriangleIndex(pTriangle->getCorner((edge_number + 2) % 3));
 /*
 					Triangle* const reflectedTriangle1 = reflectedTriangle0->ReflectTriangle(ind_1);
                     reflectedTriangle0->SetBoundary(true);
@@ -330,14 +329,14 @@ namespace euler
 					{
 						stencilTriangles0[i]->SetBoundary(true);
 						stencilTriangles1[i]->SetBoundary(true);
-						if ((pTriangle->GetOppTriangle((edge_number + 1) % 3) != nullptr) &&
-                                !(pTriangle->GetOppTriangle((edge_number + 1) % 3)->IsBoundary()))
+						if ((pTriangle->GetOppTriangle((edge_number + 1) % 3) != nullptr) && (i != 0)  &&
+								!pTriangle->GetOppTriangle((edge_number + 1) % 3)->IsBoundary())
 							stencilTriangles0[i]->SetParentIndex(pTriangle->GetOppTriangle((edge_number + 1) % 3)->Index());
 						else
 							stencilTriangles0[i]->SetParentIndex(pTriangle->Index());
 
-						if ((pTriangle->GetOppTriangle((edge_number + 2) % 3) != nullptr) &&
-                                !(pTriangle->GetOppTriangle((edge_number + 2) % 3)->IsBoundary()))
+						if ((pTriangle->GetOppTriangle((edge_number + 2) % 3) != nullptr) && (i != 0) &&
+								!pTriangle->GetOppTriangle((edge_number + 2) % 3)->IsBoundary())
 							stencilTriangles1[i]->SetParentIndex(pTriangle->GetOppTriangle((edge_number + 2) % 3)->Index());
 						else
 							stencilTriangles1[i]->SetParentIndex(pTriangle->Index());
@@ -581,8 +580,6 @@ namespace euler
 
 
 		}
-
-
 
 		GetSmoothIndicatorData(trRecData, pTriangle);
 
@@ -1035,6 +1032,8 @@ namespace euler
 			throw 1;
 		}
 
+		if(pTriangle->IsBoundary() && (pTriangle->getBarycenter().x() > 8.0))
+			double a = 0;
 
 		return q_reconstructed;
 

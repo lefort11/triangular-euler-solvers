@@ -66,7 +66,7 @@ int main()
 //	vZone.push_back(zone3);
 
 
-	std::array<double, 3> trProp = {30, 0.001, 0.12};
+	std::array<double, 3> trProp = {30, 0.001, 0.1};
 
 
 
