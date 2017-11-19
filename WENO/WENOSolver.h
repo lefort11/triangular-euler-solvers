@@ -6,7 +6,7 @@
 
 //#define CHARACTERISTIC_WISE
 
-#define MY_STABILITY_FIX 10.0 //100.0, 1e-6
+#define MY_STABILITY_FIX 20.0 //100.0, 1e-6
 
 namespace euler
 {
@@ -267,17 +267,19 @@ namespace euler
 						reflectedTriangle0->getIntraTriangleIndex(pTriangle->getCorner((edge_number + 1) % 3));
 					auto const ind_2 =
 						reflectedTriangle0->getIntraTriangleIndex(pTriangle->getCorner((edge_number + 2) % 3));
-/*
+
 					Triangle* const reflectedTriangle1 = reflectedTriangle0->ReflectTriangle(ind_1);
                     reflectedTriangle0->SetBoundary(true);
-					if (pTriangle->GetOppTriangle((edge_number + 1) % 3) != nullptr)
+					if ((pTriangle->GetOppTriangle((edge_number + 1) % 3) != nullptr) &&
+							!pTriangle->GetOppTriangle((edge_number + 1) % 3)->IsBoundary())
 						reflectedTriangle1->SetParentIndex(pTriangle->GetOppTriangle((edge_number + 1) % 3)->Index());
                     else
                         reflectedTriangle1->SetParentIndex(pTriangle->Index());
 
 					Triangle* const reflectedTriangle2 = reflectedTriangle0->ReflectTriangle(ind_2);
                     reflectedTriangle2->SetBoundary(true);
-					if (pTriangle->GetOppTriangle((edge_number + 2) % 3) != nullptr)
+					if ((pTriangle->GetOppTriangle((edge_number + 2) % 3) != nullptr) &&
+							!pTriangle->GetOppTriangle((edge_number + 2) % 3)->IsBoundary())
 						reflectedTriangle2->SetParentIndex(pTriangle->GetOppTriangle((edge_number + 2) % 3)->Index());
                     else
                         reflectedTriangle2->SetParentIndex(pTriangle->Index());
@@ -321,9 +323,9 @@ namespace euler
                     reflectedTriangle5->SetIndex(T::m_boundingTriangles.size());
                     reflectedTriangle6->SetIndex(T::m_boundingTriangles.size() + 1);
                     T::m_boundingTriangles.push_back(reflectedTriangle5);
-                    T::m_boundingTriangles.push_back(reflectedTriangle6); */
+                    T::m_boundingTriangles.push_back(reflectedTriangle6);
 
-					auto const stencilTriangles0 = reflectedTriangle0->SummonThreeTriangles(ind_1);
+/*					auto const stencilTriangles0 = reflectedTriangle0->SummonThreeTriangles(ind_1);
 					auto const stencilTriangles1 = reflectedTriangle0->SummonThreeTriangles(ind_2);
 					for(int i = 0; i < 3; ++i)
 					{
@@ -347,7 +349,7 @@ namespace euler
 						T::m_boundingTriangles.push_back(stencilTriangles1[i]);
 					}
 
-					
+	*/
 
 				}
 			}
