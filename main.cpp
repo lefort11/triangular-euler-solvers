@@ -66,7 +66,7 @@ int main()
 //	vZone.push_back(zone3);
 
 
-	std::array<double, 3> trProp = {30, 0.001, 0.3};
+	std::array<double, 3> trProp = {30, 0.001, 0.097};
 
 
 
@@ -93,38 +93,27 @@ int main()
 			else if ( (bcmesh[triangle_counter]->getBarycenter().x() > 8.0)  )//right, upper and lower boundaries
 			{
 				bcmesh[triangle_counter]->density = mainMesh[index]->density;
-				bcmesh[triangle_counter]->velocityX = mainMesh[index]->velocityX;
+				bcmesh[triangle_counter]->velocityX = std::fabs(mainMesh[index]->velocityX);
 				bcmesh[triangle_counter]->velocityY = mainMesh[index]->velocityY;
-                if(mainMesh[index]->velocityX < 0)
-				    bcmesh[triangle_counter]->pressure = 0.97 * mainMesh[index]->pressure;
-                else
-                    bcmesh[triangle_counter]->pressure = mainMesh[index]->pressure;
+                bcmesh[triangle_counter]->pressure = mainMesh[index]->pressure;
 
             }
 			else if( bcmesh[triangle_counter]->getBarycenter().y() > 4.0 )
 			{
 				bcmesh[triangle_counter]->density = mainMesh[index]->density;
 				bcmesh[triangle_counter]->velocityX = mainMesh[index]->velocityX;
-//				bcmesh[triangle_counter]->velocityY = mainMesh[index]->velocityY;
 				bcmesh[triangle_counter]->velocityY = mainMesh[index]->velocityY;
                                                      // + 0.005 * std::fabs(mainMesh[index]->velocityY);
-                if(mainMesh[index]->velocityY < 0)
-                    bcmesh[triangle_counter]->pressure = 0.97 * mainMesh[index]->pressure;
-                else
-                    bcmesh[triangle_counter]->pressure = mainMesh[index]->pressure;
+                bcmesh[triangle_counter]->pressure = mainMesh[index]->pressure;
 
 			}
 			else if ( bcmesh[triangle_counter]->getBarycenter().y() < -4.0)
 			{
 				bcmesh[triangle_counter]->density = mainMesh[index]->density;
 				bcmesh[triangle_counter]->velocityX = mainMesh[index]->velocityX;
-//				bcmesh[triangle_counter]->velocityY = mainMesh[index]->velocityY;
 				bcmesh[triangle_counter]->velocityY = mainMesh[index]->velocityY;
                                                      // - 0.005 * std::fabs(mainMesh[index]->velocityY);
-                if(mainMesh[index]->velocityY > 0)
-                    bcmesh[triangle_counter]->pressure = 0.97 * mainMesh[index]->pressure;
-                else
-                    bcmesh[triangle_counter]->pressure = mainMesh[index]->pressure;
+                bcmesh[triangle_counter]->pressure = mainMesh[index]->pressure;
 			}
 			else  // circle ~ wall
 			{

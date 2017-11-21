@@ -167,18 +167,9 @@ namespace euler
 			auto const ind1 = vtriangles[0]->getIntraTriangleIndex(getCorner((edgeNumber + 1) % 3));
 			auto const ind2 = vtriangles[0]->getIntraTriangleIndex(getCorner((edgeNumber + 2) % 3));
 
-			if(GetOppTriangle((edgeNumber + 1) % 3) == nullptr)
-			{
-				auto const vtr1 = vtriangles[0]->SummonThreeTriangles(ind1);
-				for(int i = 0; i < 3; ++i)
-				{
-					vtr1[i]->SetBoundary(true);
-					vtr1[i]->SetParentIndex(m_index);
-					vtriangles[i + 1] = vtr1[i];
-				}
 
-			}
-			else
+            if((GetOppTriangle((edgeNumber + 1) % 3) != nullptr) &&
+                    !GetOppTriangle((edgeNumber + 1) % 3)->IsBoundary())
 			{
 
 				auto const tr1 = GetOppTriangle((edgeNumber + 1) % 3);
@@ -235,18 +226,9 @@ namespace euler
 			}
 
 
-			if(GetOppTriangle((edgeNumber + 2) % 3) == nullptr)
-			{
-				auto const vtr2 = vtriangles[0]->SummonThreeTriangles(ind2);
-				for(int i = 0; i < 3; ++i)
-				{
-					vtr2[i]->SetBoundary(true);
-					vtr2[i]->SetParentIndex(m_index);
-					vtriangles[i + 4] = vtr2[i];
-				}
 
-			}
-			else
+            if((GetOppTriangle((edgeNumber + 2) % 3) != nullptr) &&
+                    !GetOppTriangle((edgeNumber + 2) % 3)->IsBoundary())
 			{
 
 				auto const tr2 = GetOppTriangle((edgeNumber + 2) % 3);
@@ -301,6 +283,18 @@ namespace euler
 
 
 			}
+            else
+            {
+                auto const vtr2 = vtriangles[0]->SummonThreeTriangles(ind2);
+                for(int i = 0; i < 3; ++i)
+                {
+                    vtr2[i]->SetBoundary(true);
+                    vtr2[i]->SetParentIndex(m_index);
+                    vtriangles[i + 4] = vtr2[i];
+                }
+
+            }
+
 
 
 			for(int i = 0; i < 7; ++i)
