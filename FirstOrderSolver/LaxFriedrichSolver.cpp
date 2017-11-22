@@ -13,12 +13,17 @@ void LaxFriedrichSolver::CreateBoundingMesh()
 		{
 			if(m_triangles[triangle_counter]->GetOppTriangle(edge_number) == nullptr)
 			{
+				m_triangles[triangle_counter]->SetBoundary(true);
+
 				auto const reflectedTriangle = m_triangles[triangle_counter]->ReflectTriangle(edge_number);
 
-				reflectedTriangle->SetBoundary(true);
+				reflectedTriangle->SetVirtual(true);
 				reflectedTriangle->SetParentIndex(m_triangles[triangle_counter]->Index());
 				reflectedTriangle->SetIndex(m_boundingTriangles.size());
 
+
+//				m_triangles[triangle_counter]->SetChildIndex(edge_number, reflectedTriangle->Index());
+				m_triangles[triangle_counter]->AddChild(reflectedTriangle->Index());
 				m_boundingTriangles.push_back(reflectedTriangle);
 			}
 		}

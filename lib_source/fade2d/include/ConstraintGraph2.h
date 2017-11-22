@@ -122,11 +122,22 @@ public:
 
 /** \brief Check if an edge is a constraint
 *
-* Checks if the edge (p0,p1) is a constraint of *this
+* Checks if the edge (p0,p1) is a constraint of the present
+* ConstraintGraph2 object.
 */
 	CLASS_DECLSPEC
 	bool isConstraint(Point2* p0,Point2* p1) const;
 
+/** \brief Check if a ConstraintSegment2 is a member
+*
+* The present ConstraintGraph2 has been created using a set of edges
+* and this method checks if the ConstraintSegment2 \p pCSeg is one of
+* them. Original edges that have been splitted are not alive anymore
+* and are no members. But their child segments are members.
+*
+*/
+	CLASS_DECLSPEC
+	bool isConstraint(ConstraintSegment2* pCSeg) const;
 
 
 /** \brief Visualization
@@ -162,12 +173,20 @@ public:
 	void getChildConstraintSegments(std::vector<ConstraintSegment2*>& vConstraintSegments_) const;
 
 /// @private
+bool dbg_hasDirection(ConstraintSegment2* pCSeg) const;
+
+
+///// @private
+//void updateSplittedConstraintSegment(
+		//ConstraintSegment2* pCSeg,
+		//bool bDirChange0,
+		//bool bDirChange1,
+		//ConstraintSegment2* pChild0,
+		//ConstraintSegment2* pChild1,
+		//bool bUpdateCMGR);
+/// @private
 void updateSplittedConstraintSegment(
 		ConstraintSegment2* pCSeg,
-		bool bDirChange0,
-		bool bDirChange1,
-		ConstraintSegment2* pChild0,
-		ConstraintSegment2* pChild1,
 		bool bUpdateCMGR);
 /**
 * \return the Delaunay class it belongs to
@@ -186,12 +205,29 @@ void updateSplittedConstraintSegment(
 	void getDirectChildren(ConstraintSegment2* pParent,ConstraintSegment2*& pChild0,ConstraintSegment2*& pChild1);
 /// @private
 	void getAliveConstraintChain(std::vector<ConstraintSegment2*>& vAliveCSeg) ; // For debugging
+	/// @private
+	void setDirectionsRecursive(std::vector<ConstraintSegment2*>& vCSegments);
+/** Get the orientation of a ConstraintSegment2
+*
+* A ConstraintSegment2 \p pCSeg is unoriented because it may participate
+* (with different orientations) in more than just one ConstraintGraph2
+* and thus the vertices returned by pCSeg->getSrc() and pCSeg->getTrg()
+* do not carry any orientation information. However, the orientation of
+* \p pCSeg is stored in the ConstraintGraph2 objects where \p pCSeg is
+* a member and this method returns if the source and target vertex must
+* be exchanged to match the present graph's direction.
+*
+*
+*/
+	CLASS_DECLSPEC
+	bool isReverse(ConstraintSegment2* pCSeg) const;
 	//void getAliveConstraintChain_old(std::vector<ConstraintSegment2*>& vAliveCSeg);
 protected:
-/// @private
-	bool isReverse(ConstraintSegment2* pCSeg) const;
+
 /// @private
 	bool checkAndSortPolygon(std::vector<ConstraintSegment2*>& vCSegments_);
+/// @private
+	bool checkAndSortPolygonSub(std::vector<ConstraintSegment2*>& vCSegments);
 /// @private
 	void makeSelfOwner(std::vector<ConstraintSegment2*>& vCSeg);
 

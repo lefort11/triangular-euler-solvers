@@ -98,6 +98,8 @@ public:
 	float width; ///< Linewidth
 	bool bFill; ///< Fill the shape or not
 	friend std::ostream &operator<<(std::ostream &stream, const Color& c);
+	static Colorname getNextColorName();
+	static size_t currentColorName;
 };
 
 

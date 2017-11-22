@@ -253,6 +253,7 @@ namespace euler
 				if(T::m_triangles[triangle_counter]->GetOppTriangle(edge_number) == nullptr)
 				{
 
+
 					Triangle* pTriangle = T::m_triangles[triangle_counter];
 
 					std::array<Triangle*, 7> virtualTriangles;
@@ -271,107 +272,14 @@ namespace euler
 
 
 
-
-/*					auto const reflectedTriangle0 = pTriangle->ReflectTriangle(edge_number);
-
-					reflectedTriangle0->SetBoundary(true);
-					reflectedTriangle0->SetParentIndex(pTriangle->Index());
-					reflectedTriangle0->SetIndex(T::m_boundingTriangles.size());
-					T::m_boundingTriangles.push_back(reflectedTriangle0);
-
-					auto const ind_1 =
-						reflectedTriangle0->getIntraTriangleIndex(pTriangle->getCorner((edge_number + 1) % 3));
-					auto const ind_2 =
-						reflectedTriangle0->getIntraTriangleIndex(pTriangle->getCorner((edge_number + 2) % 3));
-
-					Triangle* const reflectedTriangle1 = reflectedTriangle0->ReflectTriangle(ind_1);
-                    reflectedTriangle0->SetBoundary(true);
-					if ((pTriangle->GetOppTriangle((edge_number + 1) % 3) != nullptr) &&
-							!pTriangle->GetOppTriangle((edge_number + 1) % 3)->IsBoundary())
-						reflectedTriangle1->SetParentIndex(pTriangle->GetOppTriangle((edge_number + 1) % 3)->Index());
-                    else
-                        reflectedTriangle1->SetParentIndex(pTriangle->Index());
-
-					Triangle* const reflectedTriangle2 = reflectedTriangle0->ReflectTriangle(ind_2);
-                    reflectedTriangle2->SetBoundary(true);
-					if ((pTriangle->GetOppTriangle((edge_number + 2) % 3) != nullptr) &&
-							!pTriangle->GetOppTriangle((edge_number + 2) % 3)->IsBoundary())
-						reflectedTriangle2->SetParentIndex(pTriangle->GetOppTriangle((edge_number + 2) % 3)->Index());
-                    else
-                        reflectedTriangle2->SetParentIndex(pTriangle->Index());
-
-                    reflectedTriangle1->SetIndex(T::m_boundingTriangles.size());
-                    reflectedTriangle2->SetIndex(T::m_boundingTriangles.size() + 1);
-					T::m_boundingTriangles.push_back(reflectedTriangle1);
-					T::m_boundingTriangles.push_back(reflectedTriangle2);
-
-                    auto const p1_1 = reflectedTriangle0->getCorner((ind_1 + 1) % 3);
-                    auto const p2_1 = reflectedTriangle0->getCorner((ind_1 + 2) % 3);
-                    auto const ind_1_1 = reflectedTriangle1->getIntraTriangleIndex(p1_1);
-                    auto const ind_2_1 = reflectedTriangle1->getIntraTriangleIndex(p2_1);
-
-                    auto reflectedTriangle3 = reflectedTriangle1->ReflectTriangle(ind_1_1);
-                    reflectedTriangle3->SetBoundary(true);
-                    reflectedTriangle3->SetParentIndex(reflectedTriangle1->ParentIndex());
-
-                    auto reflectedTriangle4 = reflectedTriangle1->ReflectTriangle(ind_2_1);
-                    reflectedTriangle4->SetBoundary(true);
-                    reflectedTriangle4->SetParentIndex(reflectedTriangle1->ParentIndex());
-
-                    reflectedTriangle3->SetIndex(T::m_boundingTriangles.size());
-                    reflectedTriangle4->SetIndex(T::m_boundingTriangles.size() + 1);
-                    T::m_boundingTriangles.push_back(reflectedTriangle3);
-                    T::m_boundingTriangles.push_back(reflectedTriangle4);
-
-                    auto const p1_2 = reflectedTriangle0->getCorner((ind_2 + 1) % 3);
-                    auto const p2_2 = reflectedTriangle0->getCorner((ind_2 + 2) % 3);
-                    auto const ind_1_2 = reflectedTriangle2->getIntraTriangleIndex(p1_2);
-                    auto const ind_2_2 = reflectedTriangle2->getIntraTriangleIndex(p2_2);
-
-                    auto reflectedTriangle5 = reflectedTriangle2->ReflectTriangle(ind_1_2);
-                    reflectedTriangle5->SetBoundary(true);
-                    reflectedTriangle5->SetParentIndex(reflectedTriangle2->ParentIndex());
-
-                    auto reflectedTriangle6 = reflectedTriangle2->ReflectTriangle(ind_2_2);
-                    reflectedTriangle6->SetBoundary(true);
-                    reflectedTriangle6->SetParentIndex(reflectedTriangle2->ParentIndex());
-
-                    reflectedTriangle5->SetIndex(T::m_boundingTriangles.size());
-                    reflectedTriangle6->SetIndex(T::m_boundingTriangles.size() + 1);
-                    T::m_boundingTriangles.push_back(reflectedTriangle5);
-                    T::m_boundingTriangles.push_back(reflectedTriangle6);  */
-
-/*					auto const stencilTriangles0 = reflectedTriangle0->SummonThreeTriangles(ind_1);
-					auto const stencilTriangles1 = reflectedTriangle0->SummonThreeTriangles(ind_2);
-					for(int i = 0; i < 3; ++i)
-					{
-						stencilTriangles0[i]->SetBoundary(true);
-						stencilTriangles1[i]->SetBoundary(true);
-						if ((pTriangle->GetOppTriangle((edge_number + 1) % 3) != nullptr) && (i != 0)  &&
-								!pTriangle->GetOppTriangle((edge_number + 1) % 3)->IsBoundary())
-							stencilTriangles0[i]->SetParentIndex(pTriangle->GetOppTriangle((edge_number + 1) % 3)->Index());
-						else
-							stencilTriangles0[i]->SetParentIndex(pTriangle->Index());
-
-						if ((pTriangle->GetOppTriangle((edge_number + 2) % 3) != nullptr) && (i != 0) &&
-								!pTriangle->GetOppTriangle((edge_number + 2) % 3)->IsBoundary())
-							stencilTriangles1[i]->SetParentIndex(pTriangle->GetOppTriangle((edge_number + 2) % 3)->Index());
-						else
-							stencilTriangles1[i]->SetParentIndex(pTriangle->Index());
-
-						stencilTriangles0[i]->SetIndex(T::m_boundingTriangles.size());
-						stencilTriangles1[i]->SetIndex(T::m_boundingTriangles.size() + 1);
-						T::m_boundingTriangles.push_back(stencilTriangles0[i]);
-						T::m_boundingTriangles.push_back(stencilTriangles1[i]);
-					}
-
-	*/
-
 				}
 			}
 
-
 		}
+
+
+
+
 
 	}
 
@@ -852,7 +760,7 @@ namespace euler
 		Vec4 q_reconstructed{0.0, 0.0, 0.0, 0.0};
 
 		auto const triangleReconstructionData =
-				pTriangle->IsBoundary() ? m_vBoundaryReconstructionData[pTriangle->Index()] :
+				pTriangle->IsVirtual() ? m_vBoundaryReconstructionData[pTriangle->Index()] :
                 m_vReconstructionData[pTriangle->Index()];
 
 		//Searching for coressponding gaussian point
@@ -1061,7 +969,7 @@ namespace euler
 			throw 1;
 		}
 
-		if(pTriangle->IsBoundary() && (pTriangle->getBarycenter().x() > 8.0))
+		if(pTriangle->IsVirtual() && (pTriangle->getBarycenter().x() > 8.0))
 			double a = 0;
 
 		return q_reconstructed;

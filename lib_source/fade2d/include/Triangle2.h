@@ -19,8 +19,6 @@
 #pragma once
 #include "Point2.h"
 
-#include <array>
-
 
 #include "common.h"
 #if GEOM_PSEUDO3D==GEOM_TRUE
@@ -50,22 +48,19 @@
 class CLASS_DECLSPEC  Triangle2
 {
 public:
-
-	public:
 /** \brief Constructor
 *
 */
-		Triangle2()
-		{
-			aVertexPointer[0]=NULL;
-			aVertexPointer[1]=NULL;
-			aVertexPointer[2]=NULL;
-			aOppTriangles[0]=NULL;
-			aOppTriangles[1]=NULL;
-			aOppTriangles[2]=NULL;
+	Triangle2()
+	{
+		aVertexPointer[0]=NULL;
+		aVertexPointer[1]=NULL;
+		aVertexPointer[2]=NULL;
+		aOppTriangles[0]=NULL;
+		aOppTriangles[1]=NULL;
+		aOppTriangles[2]=NULL;
 
-		} // Never used!
-
+	} // Never used!
 
 
 
@@ -276,6 +271,10 @@ double getInteriorAngle25D(int ith) const;
 */
 	void setProperties( Point2* pI, Point2* pJ, Point2* pK);
 
+/** \brief Clear all corners and neighbor pointers
+ */
+	void clearProperties();
+
 /** \brief Set all corners and neighbor triangles
 */
 	void setPropertiesAndOppT(Point2* pI, Point2* pJ, Point2* pK,Triangle2* pNeig0,Triangle2* pNeig1,Triangle2* pNeig2);
@@ -300,6 +299,9 @@ double getInteriorAngle25D(int ith) const;
 */
 	int getMaxIndex() const;
 
+/** \brief Get the index of the smallest edge
+*/
+	int getMinIndex() const;
 
 
 	// DEBUG
@@ -418,6 +420,14 @@ inline void Triangle2::setProperties( Point2* pI, Point2* pJ, Point2* pK)
 	}
 }
 
+inline void Triangle2::clearProperties()
+{
+	for(int i=0;i<3;++i)
+	{
+		aVertexPointer[i]=NULL;
+		aOppTriangles[i]=NULL;
+	}
+}
 
 inline void Triangle2::setPropertiesAndOppT(
 	Point2* pI, Point2* pJ, Point2* pK,

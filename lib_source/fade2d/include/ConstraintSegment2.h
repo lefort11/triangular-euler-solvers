@@ -89,6 +89,8 @@ public:
 /// @private
 	void kill();
 
+/// @private
+	bool dbg_hasDirection();
 
 // Reanimate a constraint segment
 /// @private
@@ -192,6 +194,8 @@ public:
 	// temporarily public
 /// @private
 	std::set<ConstraintGraph2*> sOwners;
+
+	int label;
 protected:
 
 	Point2 *p0,*p1;
@@ -202,6 +206,7 @@ protected:
 /// @private
 	double adjacentArea;
 
+	static int runningLabel;
 };
 
 } // NAMESPACE

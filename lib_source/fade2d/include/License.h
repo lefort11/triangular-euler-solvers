@@ -1,10 +1,10 @@
 
 // (c) 2010 Geom e.U. Bernhard Kornberger, Graz/Austria. All rights reserved.
 //
-// This file is part of the Fade2D library. You can use it for your personal
-// non-commercial, non-military research. Redistribution with your software
-// is allowed if you clearly point out that your software is linked with 
-// Fade and that any commercial use requires a commercial Fade license.
+// This file is part of the Fade2D library. The licensee mentioned below may use
+// this license file for evaluation purposes during the agreed period
+// Commercial use requires a valid commercial license, this applies also to
+// inhouse usage. This license file is personalized, DO NOT SHARE IT.
 
 // This software is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING 
 // THE WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
@@ -16,9 +16,10 @@
 //         C++ Freelancer
 // http://www.geom.at/products/fade2d/
 
+
 #pragma once 
 #include "Fade_2D.h"
- 
+
 namespace{
 #if GEOM_PSEUDO3D==GEOM_TRUE
 	namespace GEOM_LIC=GEOM_FADE25D;
@@ -28,14 +29,14 @@ namespace{
 
 struct License
 {
-	License()
-	{
+License()
+{
 	GEOM_LIC::setLic(
-		"[NonCommercialResearch]",
-		"[LicType,student],[2D,1e6],[25D,5e4],[MeshGen,5e4],[SegCheck,5e4],[CutFill,1e4],[CutFill,1e4]",
+		"Lomonosov Moscow State University;Faculty of Computational Mathematics and Cybernetics;Russia;119991, Moscow, GSP-1, 1-52;Leninskiye Gory;;Student: Gleb Plaksin;Supervisor: Mikhail Abakumov;Research license, valid until 11/2019;;Not valid for use in commercial software;Do not share this License File;",
+		"[LicType,eval],[2D,1e6],[25D,5e5],[MeshGen,5e5],[SegCheck,5e5],[CutFill,1e4]",
 		"[LF:F/C]",
-		"5303992d",
-		"417955c7");
+		"940ebf7d",
+		"7637e127");
 	}
 };
 License lic;

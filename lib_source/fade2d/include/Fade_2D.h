@@ -137,12 +137,23 @@ public:
 	*/
 
 	void showGeomview(const std::string& filename);
+
+/// @private
+	// Experimental, will change
+	bool save(const char* filenameOut);
+/// @private
+	// Experimental, will change
+	bool load(const char* filenameIn);
+
 #endif
 
-/** \brief Remove a single point
+/** \brief Remove a single vertex
 *
-* @param pVertex is the point to be removed
+* @param pVertex shall be removed.
 *
+* \note \p pVertex must not be a vertex of a ConstraintGraph2 or
+* ConstraintSegment2 object. If this is the case, the vertex is
+* not removed and a warning is issued.
 */
 
 	void remove(Point2* pVertex);

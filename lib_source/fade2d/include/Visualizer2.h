@@ -25,6 +25,7 @@
 #include "Color.h"
 #include "Label.h"
 #include "Bbox2.h"
+#include "Edge2.h"
 
 
 #include "common.h"
@@ -41,7 +42,7 @@
  * objects Point2, Segment2, Triangle2, Circle2 and Label.
  *
 * \sa http://www.geom.at/example2-traversing/
-* \image html visualizer.jpg "Figure 1: Example output of the Visualizer"
+* \image html visualizer.jpg "Example output of the Visualizer"
 * \image latex visualizer.eps "Example output of the Visualizer" width=12cm
 *
 *
@@ -67,6 +68,12 @@ public:
 */
 	CLASS_DECLSPEC
 	void addObject(const Segment2& seg,const Color& c);
+
+/** \brief Add an Edge2 object to the visualization
+*/
+	CLASS_DECLSPEC
+	void addObject(const Edge2& edge,const Color& c);
+
 /** \brief Add a vector of Point2 objects to the visualization
 */
 	CLASS_DECLSPEC
@@ -82,6 +89,12 @@ public:
 */
 	CLASS_DECLSPEC
 	void addObject(const std::vector<Segment2>& vSegments,const Color& c);
+
+/** \brief Add a vector of Edge2 objects to the visualization
+*/
+	CLASS_DECLSPEC
+	void addObject(const std::vector<Edge2>& vSegments,const Color& c);
+
 
 /** \brief Add a vector of Triangle2 objects to the visualization
 */
