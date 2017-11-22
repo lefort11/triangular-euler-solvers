@@ -22,8 +22,6 @@ void LaxFriedrichSolver::CreateBoundingMesh()
 				reflectedTriangle->SetIndex(m_boundingTriangles.size());
 
 
-//				m_triangles[triangle_counter]->SetChildIndex(edge_number, reflectedTriangle->Index());
-				m_triangles[triangle_counter]->AddChild(reflectedTriangle->Index());
 				m_boundingTriangles.push_back(reflectedTriangle);
 			}
 		}

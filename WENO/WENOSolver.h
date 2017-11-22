@@ -6,7 +6,7 @@
 
 //#define CHARACTERISTIC_WISE
 
-#define MY_STABILITY_FIX 20.0 //100.0, 1e-6
+#define MY_STABILITY_FIX 18.0 //100.0, 1e-6
 
 namespace euler
 {
@@ -260,7 +260,6 @@ namespace euler
 
 					pTriangle->CreateWENOVirtualTriangles(edge_number, virtualTriangles);
 
-
 					virtualTriangles[0]->SetIndex(m_vBoundaryReconstructionData.size());
 					m_vBoundaryReconstructionData.push_back(TriangleReconstructionData());
 					for(int i = 0; i < 7; ++i)
@@ -342,6 +341,7 @@ namespace euler
 		for(int triangle_number = 0; triangle_number < m_vBoundaryReconstructionData.size(); triangle_number++)
 		{
 
+            assert(T::m_boundingTriangles[triangle_number * 7]->ToBeReconstructed());
 			GetTriangleReconstructionData(m_vBoundaryReconstructionData[triangle_number],
                                           T::m_boundingTriangles[triangle_number * 7]);
 
@@ -391,9 +391,7 @@ namespace euler
 		std::array<Triangle const*, 10> stencil;
 
 		GetStencil(pTriangle, stencil);
-		for(int i = 0; i < 10; ++i)
-			if(stencil[i] == nullptr)
-				return;
+
 
 		auto const h = std::sqrt(stencil[0]->getArea2D());
 		auto const x_0 = stencil[0]->getBarycenter().x();
@@ -452,6 +450,7 @@ namespace euler
 				  << eta_average[ind_0] << eta_average[ind_1]
 				  << eta_average[ind_2] << arma::endr;
 
+
 				arma::vec3 coeffs = arma::solve(A, b);
 
 				currPolynomial.coeffsAtPoints[g_point_number].c[0] = coeffs[0];
@@ -470,8 +469,8 @@ namespace euler
 			}
 
 
-			M *= 1000;
-			d *= 1000;
+			M *= 10;
+			d *= 10;
 			arma::vec9 gammas = arma::solve(M, d);
 
 			for(int i = 0; i < 9; ++i)
@@ -616,7 +615,10 @@ namespace euler
 				i+=3;
 			}
 
+            A *= 10;
+            c *= 10;
 
+ //           assert(arma::det(A) != 0);
 			arma::vec9 solution = arma::solve(A, c);
 
 			trRecData.smoothIndicatorData[polynomial_number].alpha[0] = solution[0];
@@ -759,6 +761,7 @@ namespace euler
 		//Reconstruction!
 		Vec4 q_reconstructed{0.0, 0.0, 0.0, 0.0};
 
+        assert(pTriangle->ToBeReconstructed());
 		auto const triangleReconstructionData =
 				pTriangle->IsVirtual() ? m_vBoundaryReconstructionData[pTriangle->Index()] :
                 m_vReconstructionData[pTriangle->Index()];
@@ -787,7 +790,6 @@ namespace euler
 
 		bool const weights_to_be_treated =
 				triangleReconstructionData.so_polynomial.coeffsAtPoints[curr_g_point_n].weights_to_be_treated;
-
 
 
 		static Vec4 const eps{m_eps, m_eps, m_eps, m_eps};
@@ -969,8 +971,6 @@ namespace euler
 			throw 1;
 		}
 
-		if(pTriangle->IsVirtual() && (pTriangle->getBarycenter().x() > 8.0))
-			double a = 0;
 
 		return q_reconstructed;
 

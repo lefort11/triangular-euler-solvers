@@ -140,35 +140,49 @@ namespace euler
 			return {p_y/p_abs, -p_x/p_abs};
 		};
 
+        GEOM_FADE2D::Point2 ReflectPoint(GEOM_FADE2D::Point2* const pointToBeReflected, GEOM_FADE2D::Point2* const p1,
+                                         GEOM_FADE2D::Point2* const p2) const
+        {
+            auto const n_x = p2->y() - p1->y();
+            auto const n_y = -(p2->x() - p1->x());
+
+            arma::mat22 A;
+            A << n_x << n_y << arma::endr
+              << -n_y << n_x << arma::endr;
+
+            auto const c = -(n_x * p2->x() + n_y * p2->y());
+
+            auto const d = n_y * pointToBeReflected->x() - n_x * pointToBeReflected->y();
+
+            arma::vec2 rightSide;
+            rightSide[0] = -c;
+            rightSide[1] = -d;
+
+            arma::vec2 middlePoint = arma::solve(A, rightSide);
+
+            return GEOM_FADE2D::Point2(2 * middlePoint(0) - pointToBeReflected->x(),
+                                       2 * middlePoint(1) - pointToBeReflected->y());
+
+
+        }
+
 		Triangle* ReflectTriangle(const int edgeNumber)
 		{
 
-			auto const normal = CalculateNormal(edgeNumber);
 
-			arma::mat22 A;
-			A << normal[0] << normal[1] << arma::endr
-			  << -normal[1] << normal[0] << arma::endr;
+
 
 			auto const p1 = getCorner((edgeNumber + 1) % 3);
 			auto const p2 = getCorner((edgeNumber + 2) % 3);
 
 			auto const p0 = getCorner(edgeNumber); //point to be reflected
 
-			auto const c = -(normal[0] * p2->x() + normal[1] * p2->y());
 
-
-			auto const d = -(-normal[1] * p0->x() + normal[0] * p0->y());
-
-			arma::vec rightSide;
-			rightSide << -c << -d;
-
-			arma::vec middlePoint = arma::solve(A, rightSide);
-
-			auto const reflectedPoint = new GEOM_FADE2D::Point2(2 * middlePoint(0) - p0->x(), 2 * middlePoint(1) - p0->y());
 
 			auto const reflectedTriangle = new Triangle();
 			reflectedTriangle->SetIndex(-1);
 
+            auto const reflectedPoint = new GEOM_FADE2D::Point2(ReflectPoint(p0, p1, p2));
 			//reflectedTriangle->setProperties(p1, reflectedPoint, p2);
 			reflectedTriangle->setVertexPointer(0, p1);
 			reflectedTriangle->setVertexPointer(1, reflectedPoint);
@@ -211,16 +225,16 @@ namespace euler
 
 				auto const tr1 = GetOppTriangle((edgeNumber + 1) % 3);
 				auto const ind1_0 = tr1->getIntraTriangleIndex(p0);
-				Triangle temp;
-				temp.setVertexPointer(0, tr1->getCorner((ind1_0 + 2) % 3));
-				temp.setVertexPointer(1, p1);
-				temp.setVertexPointer(2, p2);
-				vtriangles[1] = temp.ReflectTriangle(0);
+
+                vtriangles[1] = new Triangle();
+                vtriangles[1]->setVertexPointer(1, new GEOM_FADE2D::Point2(
+                        ReflectPoint(tr1->getCorner((ind1_0 + 2) % 3), p1, p2)));
 				vtriangles[1]->setVertexPointer(0, refPoint);
 				vtriangles[1]->setVertexPointer(2, p2);
 				assert(vtriangles[1]->getArea2D() > 0);
 
 				vtriangles[1]->SetVirtual(true);
+                vtriangles[1]->SetParentIndex(tr1->Index());
 
 				vtriangles[0]->SetOppTriangle(0, vtriangles[1]);
 
@@ -233,8 +247,9 @@ namespace euler
 					auto const tr3 = tr1->GetOppTriangle((ind1_0 + 1) % 3);
 					auto const ind3_0 = tr3->getIntraTriangleIndex(p0);
 
-					temp.setVertexPointer(0, tr3->getCorner((ind3_0 + 2) % 3));
-					vtriangles[2] = temp.ReflectTriangle(0);
+					vtriangles[2] = new Triangle();
+                    vtriangles[2]->setVertexPointer(1, new GEOM_FADE2D::Point2(
+                            ReflectPoint(tr3->getCorner((ind3_0 + 2) % 3), p1, p2)));
 					vtriangles[2]->setVertexPointer(0, refPoint);
 					vtriangles[2]->setVertexPointer(2, rp1);
 					vtriangles[2]->SetVirtual(true);
@@ -249,7 +264,7 @@ namespace euler
 
 					vtriangles[2] = vtriangles[1]->ReflectTriangle(2);
 					vtriangles[2]->SetVirtual(true);
-					vtriangles[2]->SetParentIndex(tr1->Index());
+					vtriangles[2]->SetParentIndex(m_index);
 
 				}
 
@@ -260,8 +275,9 @@ namespace euler
 					auto const tr5 = tr1->GetOppTriangle(ind1_0);
 					auto const ind5_2 = tr5->getIntraTriangleIndex(p2);
 
-					temp.setVertexPointer(0, tr5->getCorner((ind5_2 + 1) % 3));
-					vtriangles[3] = temp.ReflectTriangle(0);
+					vtriangles[3] = new Triangle();
+                    vtriangles[3]->setVertexPointer(1, new GEOM_FADE2D::Point2(
+                            ReflectPoint(tr5->getCorner((ind5_2 + 1) % 3), p1, p2)));
 					vtriangles[3]->setVertexPointer(0, rp1);
 					vtriangles[3]->setVertexPointer(2, p2);
 					vtriangles[3]->SetVirtual(true);
@@ -276,7 +292,7 @@ namespace euler
 
 					vtriangles[3] = vtriangles[1]->ReflectTriangle(0);
 					vtriangles[3]->SetVirtual(true);
-					vtriangles[3]->SetParentIndex(tr1->Index());
+					vtriangles[3]->SetParentIndex(m_index);
 
 				}
 
@@ -339,11 +355,9 @@ namespace euler
 
 				auto const tr2 = GetOppTriangle((edgeNumber + 2) % 3);
 				auto const ind2_0 = tr2->getIntraTriangleIndex(p0);
-				Triangle temp;
-				temp.setVertexPointer(0, tr2->getCorner((ind2_0 + 1) % 3));
-				temp.setVertexPointer(1, p1);
-				temp.setVertexPointer(2, p2);
-				vtriangles[4] = temp.ReflectTriangle(0);
+				vtriangles[4] = new Triangle();
+                vtriangles[4]->setVertexPointer(1, new GEOM_FADE2D::Point2(
+                        ReflectPoint(tr2->getCorner((ind2_0 + 1) % 3), p1, p2)));
 				vtriangles[4]->setVertexPointer(0, p1);
 				vtriangles[4]->setVertexPointer(2, refPoint);
 				assert(vtriangles[4]->getArea2D() > 0);
@@ -351,6 +365,7 @@ namespace euler
 				vtriangles[0]->SetOppTriangle(2, vtriangles[4]);
 
 				vtriangles[4]->SetVirtual(true);
+                vtriangles[4]->SetParentIndex(tr2->Index());
 
 				auto const rp2 = vtriangles[4]->getCorner(1);
 
@@ -360,8 +375,9 @@ namespace euler
 					auto const tr4 = tr2->GetOppTriangle((ind2_0 + 2) % 3);
 					auto const ind4_0 = tr4->getIntraTriangleIndex(p0);
 
-					temp.setVertexPointer(0, tr4->getCorner((ind4_0 + 1) % 3));
-					vtriangles[5] = temp.ReflectTriangle(0);
+					vtriangles[5] = new Triangle();
+                    vtriangles[5]->setVertexPointer(1, new GEOM_FADE2D::Point2(
+                            ReflectPoint(tr4->getCorner((ind4_0 + 1) % 3), p1, p2)));
 					vtriangles[5]->setVertexPointer(0, rp2);
 					vtriangles[5]->setVertexPointer(2, refPoint);
 					vtriangles[5]->SetVirtual(true);
@@ -376,7 +392,7 @@ namespace euler
 
 					vtriangles[5] = vtriangles[4]->ReflectTriangle(0);
 					vtriangles[5]->SetVirtual(true);
-					vtriangles[5]->SetParentIndex(tr2->Index());
+					vtriangles[5]->SetParentIndex(m_index);
 
 				}
 
@@ -387,8 +403,9 @@ namespace euler
 					auto const tr6 = tr2->GetOppTriangle(ind2_0);
 					auto const ind6_1 = tr6->getIntraTriangleIndex(p1);
 
-					temp.setVertexPointer(0, tr6->getCorner((ind6_1 + 2) % 3));
-					vtriangles[6] = temp.ReflectTriangle(0);
+					vtriangles[6] = new Triangle();
+                    vtriangles[6]->setVertexPointer(1, new GEOM_FADE2D::Point2(
+                            ReflectPoint(tr6->getCorner((ind6_1 + 2) % 3), p1, p2)));
 					vtriangles[6]->setVertexPointer(0, p1);
 					vtriangles[6]->setVertexPointer(2, rp2);
 					vtriangles[6]->SetVirtual(true);
@@ -403,7 +420,7 @@ namespace euler
 
 					vtriangles[6] = vtriangles[4]->ReflectTriangle(2);
 					vtriangles[6]->SetVirtual(true);
-					vtriangles[6]->SetParentIndex(tr2->Index());
+					vtriangles[6]->SetParentIndex(m_index);
 
 				}
 
@@ -467,9 +484,13 @@ namespace euler
 
 
 
-			for(int i = 0; i < 7; ++i)
-				assert(vtriangles[i]->getArea2D() > 0);
+			for(int i = 1; i < 7; ++i)
+            {
 
+                vtriangles[i]->SetReconstructionNecessity(false);
+
+            }
+            vtriangles[0]->SetReconstructionNecessity(true);
 		}
 
 
