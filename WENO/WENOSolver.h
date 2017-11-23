@@ -6,7 +6,7 @@
 
 //#define CHARACTERISTIC_WISE
 
-#define MY_STABILITY_FIX 18.0 //100.0, 1e-6
+#define MY_STABILITY_FIX 30.0 //100.0, 1e-6
 
 namespace euler
 {
@@ -15,7 +15,7 @@ namespace euler
 	{
 	private:
 
-		double const m_eps = 1e-6;
+		double const m_eps = 1e-7;
 
 		static int const gaussian_points_number = 6;
 
@@ -814,6 +814,8 @@ namespace euler
 							   + arma::square(triangleReconstructionData.smoothIndicatorData[i].beta[0] * q[ind_0]
 									 + triangleReconstructionData.smoothIndicatorData[i].beta[1] * q[ind_1]
 									 + triangleReconstructionData.smoothIndicatorData[i].beta[2] * q[ind_2])); 
+
+
 
 
 #else

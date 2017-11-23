@@ -264,7 +264,7 @@ namespace euler
 
 					vtriangles[2] = vtriangles[1]->ReflectTriangle(2);
 					vtriangles[2]->SetVirtual(true);
-					vtriangles[2]->SetParentIndex(m_index);
+					vtriangles[2]->SetParentIndex(tr1->Index());
 
 				}
 
@@ -292,7 +292,7 @@ namespace euler
 
 					vtriangles[3] = vtriangles[1]->ReflectTriangle(0);
 					vtriangles[3]->SetVirtual(true);
-					vtriangles[3]->SetParentIndex(m_index);
+					vtriangles[3]->SetParentIndex(tr1->Index());
 
 				}
 
@@ -392,7 +392,7 @@ namespace euler
 
 					vtriangles[5] = vtriangles[4]->ReflectTriangle(0);
 					vtriangles[5]->SetVirtual(true);
-					vtriangles[5]->SetParentIndex(m_index);
+					vtriangles[5]->SetParentIndex(tr2->Index()  );
 
 				}
 
@@ -420,7 +420,7 @@ namespace euler
 
 					vtriangles[6] = vtriangles[4]->ReflectTriangle(2);
 					vtriangles[6]->SetVirtual(true);
-					vtriangles[6]->SetParentIndex(m_index);
+					vtriangles[6]->SetParentIndex(tr2->Index());
 
 				}
 
