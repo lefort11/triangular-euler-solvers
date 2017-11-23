@@ -131,6 +131,20 @@ namespace euler
 		}
 	};
 
+	class MyMeshGenParams: public GEOM_FADE2D::MeshGenParams
+	{
+	public:
+		MyMeshGenParams(GEOM_FADE2D::Zone2* pZone): MeshGenParams(pZone)
+		{}
+
+		double getMaxEdgeLength(GEOM_FADE2D::Triangle2* pT) override
+		{
+			if(pT->getInteriorAngle2D(pT->getMaxIndex()) >= 80)
+				return maxEdgeLength;
+			return 2.0 * maxEdgeLength;
+		}
+	};
+
 }
 
 

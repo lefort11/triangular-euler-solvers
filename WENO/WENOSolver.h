@@ -6,7 +6,7 @@
 
 //#define CHARACTERISTIC_WISE
 
-#define MY_STABILITY_FIX 30.0 //100.0, 1e-6
+#define MY_STABILITY_FIX 25.0 //100.0, 1e-6
 
 namespace euler
 {
@@ -15,7 +15,7 @@ namespace euler
 	{
 	private:
 
-		double const m_eps = 1e-7;
+		double const m_eps = 1e-6;
 
 		static int const gaussian_points_number = 6;
 
@@ -275,9 +275,27 @@ namespace euler
 			}
 
 		}
+/*
+		std::vector<GEOM_FADE2D::Triangle2*> kek(T::m_triangles.size());
+		std::vector<GEOM_FADE2D::Triangle2*> kekas(T::m_boundingTriangles.size());
+
+		for(int i = 0; i < kek.size(); ++i)
+		{
+			kek[i] = dynamic_cast<GEOM_FADE2D::Triangle2*>(T::m_triangles[i]);
+		}
+		for(int i = 0; i < kekas.size(); ++i)
+		{
+			kekas[i] = dynamic_cast<GEOM_FADE2D::Triangle2*>(T::m_boundingTriangles[i]);
+		}
+
+		GEOM_FADE2D::Visualizer2 vis("kekas.ps");
+		vis.addObject(kek, GEOM_FADE2D::Color(GEOM_FADE2D::CBLACK));
+		vis.addObject(kekas, GEOM_FADE2D::Color(GEOM_FADE2D::CRED));
+
+		vis.writeFile();
 
 
-
+*/
 
 
 	}
@@ -469,8 +487,8 @@ namespace euler
 			}
 
 
-			M *= 10;
-			d *= 10;
+			M *= 10000;
+			d *= 10000;
 			arma::vec9 gammas = arma::solve(M, d);
 
 			for(int i = 0; i < 9; ++i)
@@ -615,8 +633,8 @@ namespace euler
 				i+=3;
 			}
 
-            A *= 10;
-            c *= 10;
+            A *= 10000;
+            c *= 10000;
 
  //           assert(arma::det(A) != 0);
 			arma::vec9 solution = arma::solve(A, c);
@@ -659,6 +677,7 @@ namespace euler
 #endif
 
 		}
+		max_norm = 1.0;
 
 #ifndef CHARACTERISTIC_WISE
 #ifdef MY_STABILITY_FIX
