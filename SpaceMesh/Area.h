@@ -141,7 +141,7 @@ namespace euler
 		{
 			if(pT->getInteriorAngle2D(pT->getMaxIndex()) >= 80)
 				return maxEdgeLength;
-			return 2.0 * maxEdgeLength;
+			return 1.4 * maxEdgeLength;
 		}
 	};
 

@@ -199,7 +199,6 @@ Vec4 LaxFriedrichSolver::CalculateFlux(Vec4 const &qVec, int triangleNumber, int
 
 		//************************************************************************//
 
-
 		Vec4 const x_Flux = 0.5 * (F_minus + F_plus);
 
 		Vec4 const y_Flux = 0.5 * (G_minus + G_plus); 

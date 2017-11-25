@@ -6,7 +6,7 @@
 
 //#define CHARACTERISTIC_WISE
 
-#define MY_STABILITY_FIX 25.0 //100.0, 1e-6
+//#define MY_STABILITY_FIX 25.0 //100.0, 1e-6
 
 namespace euler
 {
@@ -15,7 +15,7 @@ namespace euler
 	{
 	private:
 
-		double const m_eps = 1e-6;
+		double const m_eps = 1e-3;
 
 		static int const gaussian_points_number = 6;
 
@@ -275,7 +275,7 @@ namespace euler
 			}
 
 		}
-/*
+
 		std::vector<GEOM_FADE2D::Triangle2*> kek(T::m_triangles.size());
 		std::vector<GEOM_FADE2D::Triangle2*> kekas(T::m_boundingTriangles.size());
 
@@ -295,7 +295,7 @@ namespace euler
 		vis.writeFile();
 
 
-*/
+
 
 
 	}

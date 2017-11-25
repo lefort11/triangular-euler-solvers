@@ -18,9 +18,9 @@ namespace euler
 
 		struct CartesianMesh
 		{
-			static int const NX = 250;
-			static int const NY = 250;
-			double const X1 = -2.0;
+			static int const NX = 230;
+			static int const NY = 230;
+			double const X1 = -1.5;
 			double const X2 = 8.0;
 			double const Y1 = -4.0;
 			double const Y2 = 4.0;
@@ -64,7 +64,7 @@ namespace euler
 		explicit Solver(std::vector<Zone> const& constraints,
 						std::function<void(TriangularMesh const&, TriangularMesh const&)>  const& bcFunc,
 						std::array<double, 3> const& triangleProp = {0.0, 0.0, 0.0},
-						double gamma = 5.0/3.0): m_area(constraints),
+						double gamma = 1.4): m_area(constraints),
 												 m_triangularizationProperties(triangleProp),
 												 m_boundaryConditionFunction(bcFunc),
 												 m_gamma(gamma),
@@ -202,7 +202,7 @@ namespace euler
 		virtual double CalculateTimeStep()
 		{
 
-			double const sigma = 0.45;
+			double const sigma = 0.4;
 			auto min_area = m_triangles[0]->getArea2D();
 
 			m_lambda_max = 0.0;

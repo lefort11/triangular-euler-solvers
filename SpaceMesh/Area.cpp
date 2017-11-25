@@ -28,7 +28,7 @@ TriangularMesh Area::Triangulate(std::array<double, 3> const& triangleProperties
 {
 
 	//making bounding rectangle
-	GEOM_FADE2D::Point2 p1(-2.0, -4.0), p2(-2.0, 4.0), p3(8.0, -4.0), p4(8.0, 4.0);
+	GEOM_FADE2D::Point2 p1(-1.5, -4.0), p2(-1.5, 4.0), p3(8.0, -4.0), p4(8.0, 4.0);
 	//GEOM_FADE2D::Point2 p1(-1.0, -1.0), p2(-1.0, 1.0), p3(1.0, -1.0), p4(1.0, 1.0);
 	m_globalArea.insert(p1);
 	m_globalArea.insert(p2);
@@ -48,11 +48,11 @@ TriangularMesh Area::Triangulate(std::array<double, 3> const& triangleProperties
 		//creating segments
 		for (int j = 0; j < vPoints.size(); ++j)
 		{
-			vvSegment[i].emplace_back(GEOM_FADE2D::Segment2(vPoints[j], vPoints[(j + 1) % vPoints.size()]));
+			vvSegment[i].push_back(GEOM_FADE2D::Segment2(vPoints[j], vPoints[(j + 1) % vPoints.size()]));
 		}
 
 		//creating constraint graphs
-		vCSG.push_back(m_globalArea.createConstraint(vvSegment[i], GEOM_FADE2D::CIS_CONSTRAINED_DELAUNAY));
+		vCSG.push_back(m_globalArea.createConstraint(vvSegment[i], GEOM_FADE2D::CIS_CONFORMING_DELAUNAY));
 
 
 		//creating fade2D delaunay zones
@@ -62,13 +62,17 @@ TriangularMesh Area::Triangulate(std::array<double, 3> const& triangleProperties
 
 	}
 
-	auto pGrowZone = m_globalArea.createZone(vCSG, GEOM_FADE2D::ZL_GROW, p1);
+	//auto pGrowZone = m_globalArea.createZone(vCSG, GEOM_FADE2D::ZL_GROW, p1);
+
+    GEOM_FADE2D::Zone2* pGrowZone = m_globalArea.createZone(nullptr, GEOM_FADE2D::ZL_GLOBAL);
 
 	//calculating final zone
-	auto const size = static_cast<int>(vpZonesDealunay.size() - 1);
+	auto const size = static_cast<int>(vpZonesDealunay.size());
 	for (int i = 0; i < size; ++i)
 	{
-		pGrowZone = GEOM_FADE2D::zoneIntersection(vpZonesDealunay[i], vpZonesDealunay[i + 1]);
+		//pGrowZone = GEOM_FADE2D::zoneUnion(pGrowZone,
+                                           //GEOM_FADE2D::zoneIntersection(vpZonesDealunay[i], vpZonesDealunay[i + 1]));
+        pGrowZone = GEOM_FADE2D::zoneIntersection(pGrowZone, vpZonesDealunay[i]);
 	}
 
 
@@ -82,11 +86,12 @@ TriangularMesh Area::Triangulate(std::array<double, 3> const& triangleProperties
 	//refining final zone
 	auto pBoundedZone(pGrowZone->convertToBoundedZone());
 
-	MyMeshGenParams params(pBoundedZone);
+	GEOM_FADE2D::MeshGenParams params(pBoundedZone);
 	params.minAngleDegree = triangleProperties[0];
 	params.minEdgeLength = triangleProperties[1];
 	params.maxEdgeLength = triangleProperties[2];
 	params.gridVector = GEOM_FADE2D::Vector2(1.0, 1.0);
+    //params.capAspectLimit = 0.9;
 
 //	m_globalArea.refine(pBoundedZone, triangleProperties[0], triangleProperties[1], triangleProperties[2], true);
 	m_globalArea.refineAdvanced(&params);

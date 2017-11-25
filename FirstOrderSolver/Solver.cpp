@@ -49,13 +49,13 @@ void Solver::Calculate(double time)
 
 			auto const next_q = RungeKuttaTVDStep(currentQs[trngl_number], [this, trngl_number](Vec4 const &qVec)
 			{
-				auto const area = CalculateTriangleArea(trngl_number);
+				auto const area = m_triangles[trngl_number]->getArea2D();
 
 				Vec4 sum{0.0, 0.0, 0.0, 0.0};
 
 				for(int edge_number = 0; edge_number < 3; ++edge_number)
 				{
-					auto const edge_length = CalculateTriangleEdgeLength(trngl_number, edge_number);
+					auto const edge_length = std::sqrt(m_triangles[trngl_number]->getSquaredEdgeLength(edge_number));;
 					sum += edge_length * CalculateFlux(qVec, trngl_number, edge_number);
 
 				}

@@ -14,10 +14,10 @@ int main()
 
 	euler::ConstraintFunction circle1([](double t)
 									  {
-										  auto x = 0.2 * cos(2.0 * M_PI * t);
-										  auto y = 0.2 * sin(2.0 * M_PI * t);
+										  auto x = 0.15 * cos(2.0 * M_PI * t);
+										  auto y = 0.15 * sin(2.0 * M_PI * t);
 										  return GEOM_FADE2D::Point2(x, y);
-									  }, 60);
+									  }, 47); //0,2 50
 
 	euler::ConstraintFunction circle2([](double t)
 									  {
@@ -66,7 +66,7 @@ int main()
 //	vZone.push_back(zone3);
 
 
-	std::array<double, 3> trProp = {20, 0.0008, 0.1};
+	std::array<double, 3> trProp = {30, 0.0008, 0.19}; // 0.08, 0.079 area ot 2
 
 
 
@@ -82,7 +82,7 @@ int main()
 			bcmesh[triangle_counter]->velocityY = mainMesh[index]->velocityY;
 			bcmesh[triangle_counter]->pressure = mainMesh[index]->pressure; */
 
-			if ( bcmesh[triangle_counter]->getBarycenter().x() < -2.0 )//left boundary
+			if ( bcmesh[triangle_counter]->getBarycenter().x() <= -1.5 )//left boundary
 			{
 				bcmesh[triangle_counter]->density = 1.4;
 				bcmesh[triangle_counter]->velocityX = 0.9;
@@ -90,7 +90,7 @@ int main()
 				bcmesh[triangle_counter]->pressure = 1.0;
 
 			}
-			else if ( (bcmesh[triangle_counter]->getBarycenter().x() > 8.0)  )//right, upper and lower boundaries
+			else if ( (bcmesh[triangle_counter]->getBarycenter().x() >= 8.0)  )//right, upper and lower boundaries
 			{
 				bcmesh[triangle_counter]->density = mainMesh[index]->density;
 				bcmesh[triangle_counter]->velocityX = mainMesh[index]->velocityX;
@@ -98,21 +98,21 @@ int main()
                 bcmesh[triangle_counter]->pressure = mainMesh[index]->pressure;
 
             }
-			else if( bcmesh[triangle_counter]->getBarycenter().y() > 4.0 )
+			else if( bcmesh[triangle_counter]->getBarycenter().y() >= 4.0 )
 			{
 				bcmesh[triangle_counter]->density = mainMesh[index]->density;
 				bcmesh[triangle_counter]->velocityX = mainMesh[index]->velocityX;
 				bcmesh[triangle_counter]->velocityY = mainMesh[index]->velocityY;
-                                                     // + 0.005 * std::fabs(mainMesh[index]->velocityY);
+
                 bcmesh[triangle_counter]->pressure = mainMesh[index]->pressure;
 
 			}
-			else if ( bcmesh[triangle_counter]->getBarycenter().y() < -4.0)
+			else if ( bcmesh[triangle_counter]->getBarycenter().y() <= -4.0)
 			{
 				bcmesh[triangle_counter]->density = mainMesh[index]->density;
 				bcmesh[triangle_counter]->velocityX = mainMesh[index]->velocityX;
 				bcmesh[triangle_counter]->velocityY = mainMesh[index]->velocityY;
-                                                     // - 0.005 * std::fabs(mainMesh[index]->velocityY);
+
                 bcmesh[triangle_counter]->pressure = mainMesh[index]->pressure;
 			}
 			else  // circle ~ wall
@@ -152,7 +152,7 @@ int main()
 
 
 
-	}, trProp);
+	}, trProp, 1.4);
 
 	solver.Init([](GEOM_FADE2D::Point2 point)
 				{
