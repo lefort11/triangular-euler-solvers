@@ -22,8 +22,8 @@ namespace euler
 			static int const NY = 230;
 			double const X1 = -1.5;
 			double const X2 = 8.0;
-			double const Y1 = -4.0;
-			double const Y2 = 4.0;
+			double const Y1 = -2.5;
+			double const Y2 = 2.5;
 			double const HX = (X2 - X1) / NX;
 			double const HY = (Y2 - Y1) / NX;
 			std::array<double, NX> X;

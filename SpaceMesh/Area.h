@@ -139,10 +139,20 @@ namespace euler
 
 		double getMaxEdgeLength(GEOM_FADE2D::Triangle2* pT) override
 		{
+			if((pT->getOppositeTriangle(0) == nullptr) ||
+					(pT->getOppositeTriangle(1) == nullptr) ||
+					(pT->getOppositeTriangle(2) == nullptr))
+				return 0.5 * maxEdgeLength;
+			return maxEdgeLength;
+		}
+
+/*		double getMaxEdgeLength(GEOM_FADE2D::Triangle2* pT) override
+		{
 			if(pT->getInteriorAngle2D(pT->getMaxIndex()) >= 80)
 				return maxEdgeLength;
 			return 1.4 * maxEdgeLength;
-		}
+		} */
+
 	};
 
 }

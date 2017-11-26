@@ -6,7 +6,7 @@
 
 //#define CHARACTERISTIC_WISE
 
-//#define MY_STABILITY_FIX 25.0 //100.0, 1e-6
+#define MY_STABILITY_FIX 25.0 //100.0, 1e-6
 
 namespace euler
 {
@@ -15,7 +15,7 @@ namespace euler
 	{
 	private:
 
-		double const m_eps = 1e-3;
+		double const m_eps = 1e-6;
 
 		static int const gaussian_points_number = 6;
 
@@ -659,344 +659,168 @@ namespace euler
 		std::array<Triangle const*, 10> stencil;
 		GetStencil(pTriangle, stencil);
 
-/*		for(int i = 0; i < 10; ++i)
-		{
-			if(stencil[i] == nullptr)
-				return qVec;
-		} */
 
 		std::array<Vec4, 10> q;
+
 		q[0] = qVec;
-		double max_norm = std::sqrt(sqr(q[0][0]) + sqr(q[0][1]) + sqr(q[0][2]) + sqr(q[0][3]));
+
+#ifdef MY_STABILITY_FIX
+        auto max_norm = arma::norm(q[0], 2);
+#endif
+
 		for(int i = 1; i < 10; ++i)
 		{
 			T::FormQVector(q[i], stencil[i]);
 #ifdef MY_STABILITY_FIX
-			if(max_norm < std::sqrt(sqr(q[i][0]) + sqr(q[i][1]) + sqr(q[i][2]) + sqr(q[i][3])))
-				max_norm = std::sqrt(sqr(q[i][0]) + sqr(q[i][1]) + sqr(q[i][2]) + sqr(q[i][3]));
+            auto const norm = arma::norm(q[i], 2);
+			if(norm > max_norm)
+				max_norm = norm;
 #endif
-
 		}
-		max_norm = 1.0;
 
-#ifndef CHARACTERISTIC_WISE
 #ifdef MY_STABILITY_FIX
 		for(int i = 0; i < 10; ++i)
 		{
-			q[i] *= 1.0 / (MY_STABILITY_FIX * max_norm);
+			q[i] /= MY_STABILITY_FIX * max_norm;
 		}
 #endif
-#endif
 
-#ifdef CHARACTERISTIC_WISE
-		//Forming Riemann invariants
-		arma::mat44 L_A, L_B, R_A, R_B;
-		//Vec4 q_avrg = 0.5 * (q[0] + q[1 + edgeNumber]);
-
-		auto const density_minus = q[0][0];
-		auto const velocityX_minus = q[0][1] / density_minus;
-		auto const velocityY_minus = q[0][2] / density_minus;
-		auto const E_minus = q[0][3] / density_minus;
-		auto const velocity_sqr_abs_minus = sqr(velocityX_minus) + sqr(velocityY_minus);
-		auto const eps_minus = E_minus - 0.5 * velocity_sqr_abs_minus;
-		auto const pressure_minus = (T::m_gamma - 1.0) * eps_minus * density_minus;
-		auto const H_minus = eps_minus + pressure_minus / density_minus + 0.5 * velocity_sqr_abs_minus;
-		auto const c_minus = std::sqrt(T::m_gamma * pressure_minus / density_minus);
-
-		auto const density_plus = q[1 + edgeNumber][0];
-		auto const velocityX_plus = q[1 + edgeNumber][1] / density_plus;
-		auto const velocityY_plus = q[1 + edgeNumber][2] / density_plus;
-		auto const E_plus = q[1 + edgeNumber][3] / density_plus;
-		auto const velocity_sqr_abs_plus = sqr(velocityX_plus) + sqr(velocityY_plus);
-		auto const eps_plus = E_plus - 0.5 * velocity_sqr_abs_plus;
-		auto const pressure_plus = (T::m_gamma - 1.0) * eps_plus * density_plus;
-		auto const H_plus = eps_plus + pressure_plus / density_plus + 0.5 * velocity_sqr_abs_plus;
-		auto const c_plus = std::sqrt(T::m_gamma * pressure_plus / density_plus);
-
-		auto const density_star = std::sqrt(density_minus * density_plus);
-
-		auto const velocityX_star = (std::sqrt(density_minus) * velocityX_minus
-									 + std::sqrt(density_plus) * velocityX_plus)
-									/ (std::sqrt(density_minus) + std::sqrt(density_plus));
-
-		auto const velocityY_star = (std::sqrt(density_minus) * velocityY_minus
-									 + std::sqrt(density_plus) * velocityY_plus)
-									/ (std::sqrt(density_minus) + std::sqrt(density_plus));
-
-		auto const H_star = (std::sqrt(density_minus) * H_minus
-							 + std::sqrt(density_plus) * H_plus)
-							/ (std::sqrt(density_minus) + std::sqrt(density_plus));
-
-		auto const velocity_sqr_abs_star = sqr(velocityX_star) + sqr(velocityY_star);
-
-
-
-//		FormL_A(density_star, velocityX_star, velocityY_star, H_star, L_A);
-//		FormL_B(density_star, velocityX_star, velocityY_star, H_star, L_B);
-		FormR_A(density_star, velocityX_star, velocityY_star, H_star, R_A);
-		FormR_B(density_star, velocityX_star, velocityY_star, H_star, R_B);
-
-		bool char_wise = true;
-
-		auto const normal = T::CalculateNormal(pTriangle, edgeNumber);
-		arma::mat44 R = normal[0] * R_A + normal[1] * R_B;
-		arma::mat44 L;
-		if(std::fabs(det(R)) > 0.0001)
-			 L = R.i();
-		else
-			char_wise = false; // then we reconstruct in component-wise way
-
-		std::array<Vec4, 10> w;
-		Vec4 w_reconstructed{0.0, 0.0, 0.0, 0.0};
-
-		double max_norm_w = 0.0;
-		if(char_wise)
-		{
-			for (int i = 0; i < 10; ++i)
-			{
-				w[i] = L * q[i];
-#ifdef MY_STABILITY_FIX
-				if(max_norm_w < std::sqrt(sqr(w[i][0]) + sqr(w[i][1]) + sqr(w[i][2]) + sqr(w[i][3])))
-					max_norm_w = std::sqrt(sqr(w[i][0]) + sqr(w[i][1]) + sqr(w[i][2]) + sqr(w[i][3]));
-#endif
-			}
-#ifdef MY_STABILITY_FIX
-			for(int i = 0; i < 10; ++i)
-				w[i] *= 1.0 / (MY_STABILITY_FIX * max_norm_w);
-#endif
-		}
-#ifdef MY_STABILITY_FIX
-		else
-		{
-			for(int i = 0; i < 10; ++i)
-			{
-				q[i] *= 1.0 / (MY_STABILITY_FIX * max_norm);
-			}
-		}
-
-#endif
-
-#endif
 		//Reconstruction!
 		Vec4 q_reconstructed{0.0, 0.0, 0.0, 0.0};
 
-        assert(pTriangle->ToBeReconstructed());
-		auto const triangleReconstructionData =
-				pTriangle->IsVirtual() ? m_vBoundaryReconstructionData[pTriangle->Index()] :
-                m_vReconstructionData[pTriangle->Index()];
+		assert(pTriangle->ToBeReconstructed());
+		TriangleReconstructionData const& triangleRecData =
+				pTriangle->IsVirtual()? m_vBoundaryReconstructionData[pTriangle->Index()] :
+									 m_vReconstructionData[pTriangle->Index()];
 
-		//Searching for coressponding gaussian point
-		int curr_g_point_n = 0;
-		for(curr_g_point_n = 0; curr_g_point_n < gaussian_points_number; ++curr_g_point_n)
+
+
+
+		bool point_found;
+		int current_g_n = 0;
+		for(current_g_n = 0; current_g_n < gaussian_points_number; ++current_g_n)
 		{
-			if(triangleReconstructionData.gaussian_points[curr_g_point_n] == gaussianPoint)
+			if(triangleRecData.gaussian_points[current_g_n] == gaussianPoint)
+			{
+				point_found = true;
 				break;
+			}
 		}
-		if(curr_g_point_n == gaussian_points_number)
+		if(!point_found)
 			throw 1;
 
 
-		std::array<Vec4, 9> omega, omega_waved;
-		Vec4 o_wave_sum{0.0, 0.0, 0.0, 0.0};
+		std::array<Vec4, 9> omega_waved;
+		Vec4 omega_waved_sum{0.0, 0.0, 0.0, 0.0};
 
-
-		std::array<Vec4, 9> omega_plus, omega_waved_plus;
-		Vec4 o_wave_sum_plus{0.0, 0.0, 0.0, 0.0};
-
-		std::array<Vec4, 9> omega_minus, omega_waved_minus;
-		Vec4 o_wave_sum_minus{0.0, 0.0, 0.0, 0.0};
-
-
-		bool const weights_to_be_treated =
-				triangleReconstructionData.so_polynomial.coeffsAtPoints[curr_g_point_n].weights_to_be_treated;
-
+		std::array<Vec4, 9> omega_waved_plus;
+		Vec4 omega_waved_plus_sum{0.0, 0.0, 0.0, 0.0};
+		std::array<Vec4, 9> omega_waved_minus;
+		Vec4 omega_waved_minus_sum{0.0, 0.0, 0.0, 0.0};
 
 		static Vec4 const eps{m_eps, m_eps, m_eps, m_eps};
 
-		for(int i = 0; i < 9; ++i)
+		auto const weights_to_be_treated =
+                triangleRecData.so_polynomial.coeffsAtPoints[current_g_n].weights_to_be_treated;
+
+		for(int polynom_num = 0; polynom_num < 9; ++polynom_num)
 		{
 
-
-			auto const ind_0 = triangleReconstructionData.fo_polynomial[i].stencil[0];
-			auto const ind_1 = triangleReconstructionData.fo_polynomial[i].stencil[1];
-			auto const ind_2= triangleReconstructionData.fo_polynomial[i].stencil[2];
-
-			Vec4 smoothIndicator;
-
-#ifndef CHARACTERISTIC_WISE
-
-			
-
-			smoothIndicator = (arma::square(triangleReconstructionData.smoothIndicatorData[i].alpha[0] * q[ind_0]
-								   + triangleReconstructionData.smoothIndicatorData[i].alpha[1] * q[ind_1]
-								   + triangleReconstructionData.smoothIndicatorData[i].alpha[2] * q[ind_2])
-							   + arma::square(triangleReconstructionData.smoothIndicatorData[i].beta[0] * q[ind_0]
-									 + triangleReconstructionData.smoothIndicatorData[i].beta[1] * q[ind_1]
-									 + triangleReconstructionData.smoothIndicatorData[i].beta[2] * q[ind_2])); 
+			auto const ind_0 = triangleRecData.fo_polynomial[polynom_num].stencil[0];
+			auto const ind_1 = triangleRecData.fo_polynomial[polynom_num].stencil[1];
+			auto const ind_2 = triangleRecData.fo_polynomial[polynom_num].stencil[2];
 
 
 
+			SmoothIndicatorReconstructionData const& smIndData = triangleRecData.smoothIndicatorData[polynom_num];
 
-#else
-			if(char_wise)
+			Vec4 smoothIndicator = arma::square(smIndData.alpha[0] * q[ind_0]
+										   + smIndData.alpha[1] * q[ind_1]
+										   + smIndData.alpha[2] * q[ind_2]) +
+							  arma::square(smIndData.beta[0] * q[ind_0]
+										   + smIndData.beta[1] * q[ind_1]
+										   + smIndData.beta[2] * q[ind_2]);
+
+			if(!weights_to_be_treated)
 			{
-				smoothIndicator = (arma::square(triangleReconstructionData.smoothIndicatorData[i].alpha[0] * w[ind_0]
-									   + triangleReconstructionData.smoothIndicatorData[i].alpha[1] * w[ind_1]
-									   + triangleReconstructionData.smoothIndicatorData[i].alpha[2] * w[ind_2])
-								   + arma::square(triangleReconstructionData.smoothIndicatorData[i].beta[0] * w[ind_0]
-										 + triangleReconstructionData.smoothIndicatorData[i].beta[1] * w[ind_1]
-										 + triangleReconstructionData.smoothIndicatorData[i].beta[2] * w[ind_2]));
+				omega_waved[polynom_num] = Vec4{triangleRecData.so_polynomial.coeffsAtPoints[current_g_n].gammas[polynom_num],
+												triangleRecData.so_polynomial.coeffsAtPoints[current_g_n].gammas[polynom_num],
+												triangleRecData.so_polynomial.coeffsAtPoints[current_g_n].gammas[polynom_num],
+												triangleRecData.so_polynomial.coeffsAtPoints[current_g_n].gammas[polynom_num]} /
+						arma::square(eps + smoothIndicator);
+
+				omega_waved_sum += omega_waved[polynom_num];
+			} else
+			{
+				omega_waved_plus[polynom_num] = Vec4{triangleRecData.so_polynomial.coeffsAtPoints[current_g_n].gammas_plus[polynom_num],
+													 triangleRecData.so_polynomial.coeffsAtPoints[current_g_n].gammas_plus[polynom_num],
+													 triangleRecData.so_polynomial.coeffsAtPoints[current_g_n].gammas_plus[polynom_num],
+													 triangleRecData.so_polynomial.coeffsAtPoints[current_g_n].gammas_plus[polynom_num]} /
+												arma::square(eps + smoothIndicator);
+				omega_waved_plus_sum += omega_waved_plus[polynom_num];
+
+				omega_waved_minus[polynom_num] = Vec4{triangleRecData.so_polynomial.coeffsAtPoints[current_g_n].gammas_minus[polynom_num],
+													 triangleRecData.so_polynomial.coeffsAtPoints[current_g_n].gammas_minus[polynom_num],
+													 triangleRecData.so_polynomial.coeffsAtPoints[current_g_n].gammas_minus[polynom_num],
+													 triangleRecData.so_polynomial.coeffsAtPoints[current_g_n].gammas_minus[polynom_num]} /
+												arma::square(eps + smoothIndicator);
+				omega_waved_minus_sum += omega_waved_minus[polynom_num];
+
+			}
+
+
+		}
+
+
+		for(int polynom_num = 0; polynom_num < 9; ++polynom_num)
+		{
+			FOReconstructionPolynomial const& current_polynomial = triangleRecData.fo_polynomial[polynom_num];
+
+			auto const ind_0 = current_polynomial.stencil[0];
+			auto const ind_1 = current_polynomial.stencil[1];
+			auto const ind_2 = current_polynomial.stencil[2];
+
+			auto const c_0 = current_polynomial.coeffsAtPoints[current_g_n].c[0];
+			auto const c_1 = current_polynomial.coeffsAtPoints[current_g_n].c[1];
+			auto const c_2 = current_polynomial.coeffsAtPoints[current_g_n].c[2];
+
+			if(!weights_to_be_treated)
+			{
+				Vec4 const omega = omega_waved[polynom_num] / omega_waved_sum;
+				q_reconstructed += omega % (c_0 * q[ind_0] + c_1 * q[ind_1] + c_2 * q[ind_2]);
 
 			}
 			else
 			{
-				smoothIndicator =  (arma::square(triangleReconstructionData.smoothIndicatorData[i].alpha[0] * q[ind_0]
-									   + triangleReconstructionData.smoothIndicatorData[i].alpha[1] * q[ind_1]
-									   + triangleReconstructionData.smoothIndicatorData[i].alpha[2] * q[ind_2])
-								   + arma::square(triangleReconstructionData.smoothIndicatorData[i].beta[0] * q[ind_0]
-										 + triangleReconstructionData.smoothIndicatorData[i].beta[1] * q[ind_1]
-										 + triangleReconstructionData.smoothIndicatorData[i].beta[2] * q[ind_2]));
-			}
-#endif
+				Vec4 const omega_plus = omega_waved_plus[polynom_num] / omega_waved_plus_sum;
+				Vec4 const omega_minus = omega_waved_minus[polynom_num] / omega_waved_minus_sum;
 
+				Vec4 const p = c_0 * q[ind_0] + c_1 * q[ind_1] + c_2 * q[ind_2];
 
-			if(!weights_to_be_treated)
-			{
-				omega_waved[i] = Vec4{triangleReconstructionData.so_polynomial.coeffsAtPoints[curr_g_point_n].gammas[i],
-									  triangleReconstructionData.so_polynomial.coeffsAtPoints[curr_g_point_n].gammas[i],
-									  triangleReconstructionData.so_polynomial.coeffsAtPoints[curr_g_point_n].gammas[i],
-									  triangleReconstructionData.so_polynomial.coeffsAtPoints[curr_g_point_n].gammas[i]}
-								 / arma::square(eps + smoothIndicator);
-
-				o_wave_sum += omega_waved[i];
-
-			}
-			else // weights to be treated
-			{
-				omega_waved_plus[i] =
-						Vec4{triangleReconstructionData.so_polynomial.coeffsAtPoints[curr_g_point_n].gammas_plus[i],
-							 triangleReconstructionData.so_polynomial.coeffsAtPoints[curr_g_point_n].gammas_plus[i],
-							 triangleReconstructionData.so_polynomial.coeffsAtPoints[curr_g_point_n].gammas_plus[i],
-							 triangleReconstructionData.so_polynomial.coeffsAtPoints[curr_g_point_n].gammas_plus[i]}
-						/ arma::square(eps + smoothIndicator);
-
-				omega_waved_minus[i] =
-						Vec4{triangleReconstructionData.so_polynomial.coeffsAtPoints[curr_g_point_n].gammas_minus[i],
-							 triangleReconstructionData.so_polynomial.coeffsAtPoints[curr_g_point_n].gammas_minus[i],
-							 triangleReconstructionData.so_polynomial.coeffsAtPoints[curr_g_point_n].gammas_minus[i],
-							 triangleReconstructionData.so_polynomial.coeffsAtPoints[curr_g_point_n].gammas_minus[i]}
-						/ arma::square(eps + smoothIndicator);
-
-				o_wave_sum_plus += omega_waved_plus[i];
-				o_wave_sum_minus += omega_waved_minus[i];
-
+				q_reconstructed += triangleRecData.so_polynomial.coeffsAtPoints[current_g_n].sigma_plus * omega_plus % p -
+								   triangleRecData.so_polynomial.coeffsAtPoints[current_g_n].sigma_minus * omega_minus % p;
 			}
 
 		}
 
-
-
-		for(int i = 0; i < 9; ++i)
-		{
-			auto const c_0 = triangleReconstructionData.fo_polynomial[i].coeffsAtPoints[curr_g_point_n].c[0];
-			auto const c_1= triangleReconstructionData.fo_polynomial[i].coeffsAtPoints[curr_g_point_n].c[1];
-			auto const c_2 = triangleReconstructionData.fo_polynomial[i].coeffsAtPoints[curr_g_point_n].c[2];
-
-			auto const ind_0 = triangleReconstructionData.fo_polynomial[i].stencil[0];
-			auto const ind_1 = triangleReconstructionData.fo_polynomial[i].stencil[1];
-			auto const ind_2 = triangleReconstructionData.fo_polynomial[i].stencil[2];
-
-
-			if(!weights_to_be_treated)
-			{
-				omega[i] = omega_waved[i] / o_wave_sum;
-
-#ifndef CHARACTERISTIC_WISE
-				q_reconstructed += omega[i] %
-								   (c_0 * q[ind_0] + c_1 * q[ind_1] + c_2 * q[ind_2]);
-#else
-
-				if(char_wise)
-				{
-					w_reconstructed += omega[i] % (c_0 * w[ind_0] + c_1 * w[ind_1] + c_2 * w[ind_2]);
-
-				}
-				else
-					q_reconstructed += omega[i] %
-									   (c_0 * q[ind_0] + c_1 * q[ind_1] + c_2 * q[ind_2]);
-#endif
-			}
-			else //weights to be treated
-			{
-
-
-				omega_plus[i] = omega_waved_plus[i] / o_wave_sum_plus;
-				omega_minus[i] = omega_waved_minus[i] / o_wave_sum_minus;
-
-#ifndef CHARACTERISTIC_WISE
-
-				q_reconstructed +=
-						(triangleReconstructionData.so_polynomial.coeffsAtPoints[curr_g_point_n].sigma_plus
-						 * omega_plus[i]
-						 - triangleReconstructionData.so_polynomial.coeffsAtPoints[curr_g_point_n].sigma_minus
-						   * omega_minus[i]) % (c_0 * q[ind_0] + c_1 * q[ind_1] + c_2 * q[ind_2]);
-#else
-				if(char_wise)
-				{
-
-					w_reconstructed +=
-							(triangleReconstructionData.so_polynomial.coeffsAtPoints[curr_g_point_n].sigma_plus
-							 * omega_plus[i]
-							 - triangleReconstructionData.so_polynomial.coeffsAtPoints[curr_g_point_n].sigma_minus
-							   * omega_minus[i]) % (c_0 * w[ind_0] + c_1 * w[ind_1] + c_2 * w[ind_2]);
-				}
-				else
-				{
-					q_reconstructed +=
-							(triangleReconstructionData.so_polynomial.coeffsAtPoints[curr_g_point_n].sigma_plus
-							 * omega_plus[i]
-							 - triangleReconstructionData.so_polynomial.coeffsAtPoints[curr_g_point_n].sigma_minus
-							   * omega_minus[i]) % (c_0 * q[ind_0] + c_1 * q[ind_1] + c_2 * q[ind_2]);
-				}
-#endif
-			}
-
-
-		}
-
-#ifdef CHARACTERISTIC_WISE
-
-		if(char_wise)
-		{
 #ifdef MY_STABILITY_FIX
-			w_reconstructed *= (MY_STABILITY_FIX * max_norm_w);
-#endif
-			q_reconstructed = R * w_reconstructed;
-		}
-#ifdef MY_STABILITY_FIX
-		else
-		{
-			q_reconstructed *= (MY_STABILITY_FIX * max_norm);
-		}
+        q_reconstructed *= MY_STABILITY_FIX * max_norm;
 #endif
 
-#endif
-
-#if !defined(CHARACTERISTIC_WISE) && defined(MY_STABILITY_FIX)
-		q_reconstructed *= (MY_STABILITY_FIX * max_norm);
-#endif
-		if (!((q_reconstructed(3) > 0) && (q_reconstructed(0) > 0)))
+		if(!((q_reconstructed[0] > 0) && (q_reconstructed[3] > 0)))
 		{
 			std::cout << "kek" << std::endl;
-//			return qVec;
 			throw 1;
 		}
-
 
 		return q_reconstructed;
 
 
+
 	}
+
+
+
 
 #ifdef CHARACTERISTIC_WISE
 

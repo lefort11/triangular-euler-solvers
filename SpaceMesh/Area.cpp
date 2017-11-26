@@ -5,7 +5,7 @@ using namespace euler;
 
 std::vector<GEOM_FADE2D::Point2> ConstraintFunction::Discretize() const
 {
-	auto const h = 1.0 / (m_discrPointNumber);
+	auto const h = 1.0 / m_discrPointNumber;
 	std::vector<GEOM_FADE2D::Point2> vPoints;
 
 	for(unsigned i = 0; i < m_discrPointNumber; ++i)
@@ -28,7 +28,7 @@ TriangularMesh Area::Triangulate(std::array<double, 3> const& triangleProperties
 {
 
 	//making bounding rectangle
-	GEOM_FADE2D::Point2 p1(-1.5, -4.0), p2(-1.5, 4.0), p3(8.0, -4.0), p4(8.0, 4.0);
+	GEOM_FADE2D::Point2 p1(-1.5, -2.5), p2(-1.5, 2.5), p3(8.0, -2.5), p4(8.0, 2.5);
 	//GEOM_FADE2D::Point2 p1(-1.0, -1.0), p2(-1.0, 1.0), p3(1.0, -1.0), p4(1.0, 1.0);
 	m_globalArea.insert(p1);
 	m_globalArea.insert(p2);
@@ -86,11 +86,12 @@ TriangularMesh Area::Triangulate(std::array<double, 3> const& triangleProperties
 	//refining final zone
 	auto pBoundedZone(pGrowZone->convertToBoundedZone());
 
-	GEOM_FADE2D::MeshGenParams params(pBoundedZone);
+	MyMeshGenParams params(pBoundedZone);
 	params.minAngleDegree = triangleProperties[0];
 	params.minEdgeLength = triangleProperties[1];
 	params.maxEdgeLength = triangleProperties[2];
 	params.gridVector = GEOM_FADE2D::Vector2(1.0, 1.0);
+	//params.growFactor = 2.0;
     //params.capAspectLimit = 0.9;
 
 //	m_globalArea.refine(pBoundedZone, triangleProperties[0], triangleProperties[1], triangleProperties[2], true);
