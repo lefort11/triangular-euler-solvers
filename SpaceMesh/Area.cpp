@@ -28,7 +28,7 @@ TriangularMesh Area::Triangulate(std::array<double, 3> const& triangleProperties
 {
 
 	//making bounding rectangle
-	GEOM_FADE2D::Point2 p1(-1.5, -2.5), p2(-1.5, 2.5), p3(8.0, -2.5), p4(8.0, 2.5);
+	GEOM_FADE2D::Point2 p1(-1.5, -4.0), p2(-1.5, 4.0), p3(8.0, -4.0), p4(8.0, 4.0);
 	//GEOM_FADE2D::Point2 p1(-1.0, -1.0), p2(-1.0, 1.0), p3(1.0, -1.0), p4(1.0, 1.0);
 	m_globalArea.insert(p1);
 	m_globalArea.insert(p2);

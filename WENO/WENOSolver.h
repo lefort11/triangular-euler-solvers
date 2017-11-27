@@ -6,7 +6,7 @@
 
 //#define CHARACTERISTIC_WISE
 
-#define MY_STABILITY_FIX 25.0 //100.0, 1e-6
+//#define MY_STABILITY_FIX 10.0 //100.0, 1e-6
 
 namespace euler
 {
@@ -15,7 +15,7 @@ namespace euler
 	{
 	private:
 
-		double const m_eps = 1e-6;
+		double const m_eps = 1e-3;
 
 		static int const gaussian_points_number = 6;
 
@@ -77,7 +77,7 @@ namespace euler
 	public:
 
 		explicit WENOSolver(std::vector<Zone> const &constraints,
-						std::function<void(TriangularMesh const&, TriangularMesh const&)> const &bcFunc,
+						std::function<void(TriangularMesh const&, TriangularMesh const&, double)> const &bcFunc,
 						std::array<double, 3> const &triangleProp = {0.0, 0.0, 0.0},
 						double gamma = 5.0 / 3.0) : T(constraints, bcFunc, triangleProp, gamma)
 		{}

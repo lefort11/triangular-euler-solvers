@@ -22,8 +22,8 @@ namespace euler
 			static int const NY = 230;
 			double const X1 = -1.5;
 			double const X2 = 8.0;
-			double const Y1 = -2.5;
-			double const Y2 = 2.5;
+			double const Y1 = -4.0;
+			double const Y2 = 4.0;
 			double const HX = (X2 - X1) / NX;
 			double const HY = (Y2 - Y1) / NX;
 			std::array<double, NX> X;
@@ -52,7 +52,7 @@ namespace euler
 
 		double m_delta_t = 0;
 
-		std::function<void(TriangularMesh const& boundaryMesh, TriangularMesh const& mainMesh)>
+		std::function<void(TriangularMesh const& boundaryMesh, TriangularMesh const& mainMesh, double currentTime)>
 																					m_boundaryConditionFunction;
 
 		double m_lambda_max;
@@ -62,7 +62,7 @@ namespace euler
 
 
 		explicit Solver(std::vector<Zone> const& constraints,
-						std::function<void(TriangularMesh const&, TriangularMesh const&)>  const& bcFunc,
+						std::function<void(TriangularMesh const&, TriangularMesh const&, double)>  const& bcFunc,
 						std::array<double, 3> const& triangleProp = {0.0, 0.0, 0.0},
 						double gamma = 1.4): m_area(constraints),
 												 m_triangularizationProperties(triangleProp),
@@ -139,9 +139,9 @@ namespace euler
 		/**@brief Method updates bounding triangles according to boundary conditions
 		 *
 		 */
-		void UpdateBoundingMesh() const
+		void UpdateBoundingMesh(double currentTime) const
 		{
-			m_boundaryConditionFunction(m_boundingTriangles, m_triangles);
+			m_boundaryConditionFunction(m_boundingTriangles, m_triangles, currentTime);
 		}
 
 

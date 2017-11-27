@@ -36,7 +36,7 @@ void Solver::Calculate(double time)
 	while(m_delta_t > 0)
 	{
 
-		UpdateBoundingMesh();
+		UpdateBoundingMesh(currentTime);
 
 		std::cout << currentTime << std::endl;
 
