@@ -8,7 +8,6 @@
 #include <iostream>
 #include <fstream>
 
-//#define ABK_FIX
 
 namespace euler
 {
@@ -285,28 +284,13 @@ namespace euler
 			auto const E = qVec[3] / density;
 			auto const velocity_sqr_abs = sqr(velocityX) + sqr(velocityY);
 			auto const eps = E - 0.5 * velocity_sqr_abs;
-#ifdef ABK_FIX
-			if (eps < 0.001)
-			{
-				std::cout << eps << std::endl;
-				pressure = (m_gamma - 1.0) * (eps + 0.001) * density;
-			}
-			else
-				pressure = (m_gamma - 1.0) * eps * density;
-
-
-			if (density <= 0)
-			{
-				std::cout << "density <= 0" << std::endl;
-			}
-			if(pressure <= 0)
-			{
-				std::cout << "pressure <= 0" << std::endl;
-			}
-#else
 			pressure = (m_gamma - 1.0) * eps * density;
-#endif
 
+			if(!((density > 0) && (pressure > 0)))
+			{
+				std::cout << "kekas" << std::endl;
+				throw 2;
+			}
 		}
 
 	public:

@@ -7,6 +7,7 @@
 
 #include "FirstOrderSolver/LaxFriedrichSolver.h"
 #include "WENO/WENOSolver.h"
+#include "FirstOrderSolver/RoeSolver.h"
 
 
 int main()
@@ -66,11 +67,11 @@ int main()
 //	vZone.push_back(zone3);
 
 
-	std::array<double, 3> trProp = {30, 0.0008, 0.085}; // 0.08, 0.079 area ot 2
+	std::array<double, 3> trProp = {30, 0.0008, 0.18}; // 0.08, 0.079 area ot 2
 
 
 
-	euler::WENOSolver<euler::LaxFriedrichSolver>
+	euler::RoeSolver
 			solver(vZone, [](euler::TriangularMesh const& bcmesh, euler::TriangularMesh const& mainMesh, double time)
 	{
 
@@ -173,8 +174,6 @@ int main()
 	solver.Output("results/density2D.txt", "results/velocity2D.txt", "results/pressure2D.txt");
 	solver.ClcOutput("results/test.clc", 0, 0.5, 1);
 
-	double a;
-	std::cin >> a;
 
 	return 0;
 }

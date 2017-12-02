@@ -1,21 +1,21 @@
-#ifndef TRIANGULAR_SOLVERS_WENOLF_H
-#define TRIANGULAR_SOLVERS_WENOLF_H
+#ifndef TRIANGULAR_SOLVERS_CWENOLF_H
+#define TRIANGULAR_SOLVERS_CWENOLF_H
 
 #include <array>
 #include "../FirstOrderSolver/LaxFriedrichSolver.h"
 
 //#define CHARACTERISTIC_WISE
 
-#define MY_STABILITY_FIX 10.0 //100.0, 1e-6
+//#define MY_STABILITY_FIX 10.0 //100.0, 1e-6
 
 namespace euler
 {
 	template <class T>
-	class WENOSolver : public T
+	class CWENOSolver : public T
 	{
 	private:
 
-		double const m_eps = 1e-6;
+		double const m_eps = 1e-4;
 
 		static int const gaussian_points_number = 6;
 
@@ -67,7 +67,7 @@ namespace euler
 		};
 
 		std::vector<TriangleReconstructionData> m_vReconstructionData;
-        std::vector<TriangleReconstructionData> m_vBoundaryReconstructionData;
+		std::vector<TriangleReconstructionData> m_vBoundaryReconstructionData;
 
 
 
@@ -76,10 +76,10 @@ namespace euler
 
 	public:
 
-		explicit WENOSolver(std::vector<Zone> const &constraints,
-						std::function<void(TriangularMesh const&, TriangularMesh const&, double)> const &bcFunc,
-						std::array<double, 3> const &triangleProp = {0.0, 0.0, 0.0},
-						double gamma = 5.0 / 3.0) : T(constraints, bcFunc, triangleProp, gamma)
+		explicit CWENOSolver(std::vector<Zone> const &constraints,
+							std::function<void(TriangularMesh const&, TriangularMesh const&, double)> const &bcFunc,
+							std::array<double, 3> const &triangleProp = {0.0, 0.0, 0.0},
+							double gamma = 5.0 / 3.0) : T(constraints, bcFunc, triangleProp, gamma)
 		{}
 
 		void Init(std::function<std::array<double, 4>(GEOM_FADE2D::Point2)> const& initStateFunction) override;
@@ -118,7 +118,7 @@ namespace euler
 
 
 	template<class T>
-	inline double WENOSolver<T>::CalculateKsiAverage(Triangle const *pTriangle, double x_0, double y_0, double h) const
+	inline double CWENOSolver<T>::CalculateKsiAverage(Triangle const *pTriangle, double x_0, double y_0, double h) const
 	{
 		double area = pTriangle->getArea2D();
 		auto const x_1 = pTriangle->getCorner(0)->x();
@@ -130,14 +130,14 @@ namespace euler
 
 
 		return 1.0 / (6.0 * area * h) * ( (y_2 - y_1) * (sqr(x_2 - x_0) + (x_2 - x_0) * (x_1 - x_0) + sqr(x_1 - x_0)) +
-				(y_3 - y_2) * (sqr(x_3 - x_0) + (x_3 - x_0) * (x_2 - x_0) + sqr(x_2 - x_0)) +
-				(y_1 - y_3) * (sqr(x_1 - x_0) + (x_1 - x_0) * (x_3 - x_0) + sqr(x_3 - x_0)));
+										  (y_3 - y_2) * (sqr(x_3 - x_0) + (x_3 - x_0) * (x_2 - x_0) + sqr(x_2 - x_0)) +
+										  (y_1 - y_3) * (sqr(x_1 - x_0) + (x_1 - x_0) * (x_3 - x_0) + sqr(x_3 - x_0)));
 
 
 	}
 
 	template<class T>
-	inline double WENOSolver<T>::CalculateEtaAverage(Triangle const *pTriangle, double x_0, double y_0, double h) const
+	inline double CWENOSolver<T>::CalculateEtaAverage(Triangle const *pTriangle, double x_0, double y_0, double h) const
 	{
 		double area = pTriangle->getArea2D();
 		auto const x_1 = pTriangle->getCorner(0)->x();
@@ -149,13 +149,13 @@ namespace euler
 
 
 		return -1.0 / (6.0 * area * h) * ( (x_2 - x_1) * (sqr(y_2 - y_0) + (y_2 - y_0) * (y_1 - y_0) + sqr(y_1 - y_0)) +
-										  (x_3 - x_2) * (sqr(y_3 - y_0) + (y_3 - y_0) * (y_2 - y_0) + sqr(y_2 - y_0)) +
-										  (x_1 - x_3) * (sqr(y_1 - y_0) + (y_1 - y_0) * (y_3 - y_0) + sqr(y_3 - y_0)));
+										   (x_3 - x_2) * (sqr(y_3 - y_0) + (y_3 - y_0) * (y_2 - y_0) + sqr(y_2 - y_0)) +
+										   (x_1 - x_3) * (sqr(y_1 - y_0) + (y_1 - y_0) * (y_3 - y_0) + sqr(y_3 - y_0)));
 
 	}
 
 	template<class T>
-	inline double WENOSolver<T>::CalculateKsiSquareAverage(Triangle const *pTriangle,
+	inline double CWENOSolver<T>::CalculateKsiSquareAverage(Triangle const *pTriangle,
 														   double x_0, double y_0, double h) const
 	{
 		double area = pTriangle->getArea2D();
@@ -167,14 +167,14 @@ namespace euler
 		auto const y_3 = pTriangle->getCorner(2)->y();
 
 		return 1.0 / (12.0 * area * sqr(h)) * ( (y_2 - y_1) * (x_2 + x_1 - 2 * x_0) * (sqr(x_2 - x_0) + sqr(x_1 - x_0)) +
-				(y_3 - y_2) * (x_3 + x_2 - 2 * x_0) * (sqr(x_3 - x_0) + sqr(x_2 - x_0)) +
-				(y_1 - y_3) * (x_1 + x_3 - 2 * x_0) * (sqr(x_1 - x_0) + sqr(x_3 - x_0)));
+												(y_3 - y_2) * (x_3 + x_2 - 2 * x_0) * (sqr(x_3 - x_0) + sqr(x_2 - x_0)) +
+												(y_1 - y_3) * (x_1 + x_3 - 2 * x_0) * (sqr(x_1 - x_0) + sqr(x_3 - x_0)));
 
 	}
 
 
 	template<class T>
-	inline double WENOSolver<T>::CalculateEtaSquareAverage(Triangle const *pTriangle,
+	inline double CWENOSolver<T>::CalculateEtaSquareAverage(Triangle const *pTriangle,
 														   double x_0, double y_0, double h) const
 	{
 		double area = pTriangle->getArea2D();
@@ -186,13 +186,13 @@ namespace euler
 		auto const y_3 = pTriangle->getCorner(2)->y();
 
 		return -1.0 / (12.0 * area * sqr(h)) * ( (x_2 - x_1) * (y_2 + y_1 - 2 * y_0) * (sqr(y_2 - y_0) + sqr(y_1 - y_0)) +
-												(x_3 - x_2) * (y_3 + y_2 - 2 * y_0) * (sqr(y_3 - y_0) + sqr(y_2 - y_0)) +
-												(x_1 - x_3) * (y_1 + y_3 - 2 * y_0) * (sqr(y_1 - y_0) + sqr(y_3 - y_0)));
+												 (x_3 - x_2) * (y_3 + y_2 - 2 * y_0) * (sqr(y_3 - y_0) + sqr(y_2 - y_0)) +
+												 (x_1 - x_3) * (y_1 + y_3 - 2 * y_0) * (sqr(y_1 - y_0) + sqr(y_3 - y_0)));
 	}
 
 
 	template<class T>
-	inline double WENOSolver<T>::CalculateKsiEtaAverage(Triangle const *pTriangle, double x_0, double y_0, double h) const
+	inline double CWENOSolver<T>::CalculateKsiEtaAverage(Triangle const *pTriangle, double x_0, double y_0, double h) const
 	{
 
 		double area = pTriangle->getArea2D();
@@ -232,9 +232,9 @@ namespace euler
 		for(int i = 0; i < 3; ++i)
 		{
 			result += (0.25 * sqr(delta_x[i]) * delta_y[i] + 1.0 / 3.0 * sqr(delta_x[i]) * delta_y_waved[i]
-					  + 2.0 / 3.0 * delta_x[i] * delta_y[i] * delta_x_waved[i]
-					  + delta_x[i] * delta_x_waved[i] * delta_y_waved[i]
-					  + 0.5 * delta_y[i] * sqr(delta_x_waved[i]) + delta_y_waved[i] * sqr(delta_x_waved[i])) * delta_y[i];
+					   + 2.0 / 3.0 * delta_x[i] * delta_y[i] * delta_x_waved[i]
+					   + delta_x[i] * delta_x_waved[i] * delta_y_waved[i]
+					   + 0.5 * delta_y[i] * sqr(delta_x_waved[i]) + delta_y_waved[i] * sqr(delta_x_waved[i])) * delta_y[i];
 		}
 
 		return result * 1.0 / (2.0 * sqr(h) * area);
@@ -242,7 +242,7 @@ namespace euler
 	}
 
 	template<class T>
-	inline void WENOSolver<T>::CreateBoundingMesh()
+	inline void CWENOSolver<T>::CreateBoundingMesh()
 	{
 
 		for(int triangle_counter = 0; triangle_counter < T::m_triangles.size(); ++triangle_counter)
@@ -301,7 +301,7 @@ namespace euler
 	}
 
 	template<class T>
-	inline void WENOSolver<T>::GetStencil(Triangle const* pTriangle, std::array<Triangle const*, 10> & stencil) const
+	inline void CWENOSolver<T>::GetStencil(Triangle const* pTriangle, std::array<Triangle const*, 10> & stencil) const
 	{
 		stencil[0] = pTriangle;
 
@@ -341,12 +341,12 @@ namespace euler
 	}
 
 	template<class T>
-	inline void WENOSolver<T>::Init(std::function<std::array<double, 4>(GEOM_FADE2D::Point2)> const &initStateFunction)
+	inline void CWENOSolver<T>::Init(std::function<std::array<double, 4>(GEOM_FADE2D::Point2)> const &initStateFunction)
 	{
 		T::Init(initStateFunction);
 
 		m_vReconstructionData.resize(T::m_triangles.size());
- //       m_vBoundaryReconstructionData.resize(T::m_boundingTriangles.size());
+		//       m_vBoundaryReconstructionData.resize(T::m_boundingTriangles.size());
 
 #pragma omp parallel for
 		for(int triangle_number = 0; triangle_number < T::m_triangles.size(); ++triangle_number)
@@ -358,15 +358,15 @@ namespace euler
 		for(int triangle_number = 0; triangle_number < m_vBoundaryReconstructionData.size(); triangle_number++)
 		{
 
-            assert(T::m_boundingTriangles[triangle_number * 7]->ToBeReconstructed());
+			assert(T::m_boundingTriangles[triangle_number * 7]->ToBeReconstructed());
 			GetTriangleReconstructionData(m_vBoundaryReconstructionData[triangle_number],
-                                          T::m_boundingTriangles[triangle_number * 7]);
+										  T::m_boundingTriangles[triangle_number * 7]);
 
 		}
 	}
 
 	template<class T>
-	inline void WENOSolver<T>::GetTriangleReconstructionData(TriangleReconstructionData &trRecData, Triangle const *pTriangle)
+	inline void CWENOSolver<T>::GetTriangleReconstructionData(TriangleReconstructionData &trRecData, Triangle const *pTriangle)
 	{
 
 		trRecData.fo_polynomial[0].stencil = {0, 1, 2};
@@ -442,13 +442,16 @@ namespace euler
 			arma::vec3 b;
 			b << 1.0 << (currGPoint.x - x_0) / h << (currGPoint.y - y_0) / h;
 
-			arma::vec4 d;
-			d << 1.0 << sqr( (currGPoint.x - x_0) / h ) << sqr( (currGPoint.y - y_0) / h )
-			  << (currGPoint.x - x_0) * (currGPoint.y - y_0) / sqr(h);
 
 
 			arma::mat M(4, 9);
 			M.fill(0.0);
+
+
+			arma::vec4 d;
+			d << 1.0 << sqr( (currGPoint.x - x_0) / h ) << sqr( (currGPoint.y - y_0) / h )
+			  << (currGPoint.x - x_0) * (currGPoint.y - y_0) / sqr(h);
+
 
 			//getting all first order polynomial's coeffs
 			for(int polynomial_number = 0; polynomial_number < 9; ++polynomial_number)
@@ -483,28 +486,11 @@ namespace euler
 				M(3, polynomial_number) = coeffs[0] * ksi_eta_average[ind_0] + coeffs[1] * ksi_eta_average[ind_1]
 										  + coeffs[2] * ksi_eta_average[ind_2];
 
-
 			}
 
 
 
-/*			arma::mat B(6, 10);
-			B.fill(0.0);
-			arma::vec::fixed<6> f;
-			for(int j = 0; j < 10; ++j)
-			{
-				B(0, j) = 1.0;
-				B(1, j) = ksi_average[j];
-				B(2, j) = eta_average[j];
-				B(3, j) = ksi_square_average[j];
-				B(4, j) = eta_square_average[j];
-				B(5, j) = ksi_eta_average[j];
-			}
-			f << 1.0 << (currGPoint.x - x_0) / h << (currGPoint.y - y_0) / h
-			  << sqr( (currGPoint.x - x_0) / h ) << sqr( (currGPoint.y - y_0) / h )
-			  << (currGPoint.x - x_0) * (currGPoint.y - y_0) / sqr(h);
-
-			arma::vec soCoeffs = arma::solve(B, f);
+/*
 
 			//getting gammas
 
@@ -595,7 +581,7 @@ namespace euler
 
 
 	template<class T>
-	inline void WENOSolver<T>::GetSmoothIndicatorData(TriangleReconstructionData &trRecData, Triangle const *pTriangle) const
+	inline void CWENOSolver<T>::GetSmoothIndicatorData(TriangleReconstructionData &trRecData, Triangle const *pTriangle) const
 	{
 		std::array<Triangle const*, 10> stencil;
 		GetStencil(pTriangle, stencil);
@@ -685,10 +671,10 @@ namespace euler
 				i+=3;
 			}
 
-            A *= 10000;
-            c *= 10000;
+			A *= 10000;
+			c *= 10000;
 
- //           assert(arma::det(A) != 0);
+			//           assert(arma::det(A) != 0);
 			arma::vec9 solution = arma::solve(A, c);
 
 			trRecData.smoothIndicatorData[polynomial_number].alpha[0] = solution[0];
@@ -705,7 +691,7 @@ namespace euler
 	}
 
 	template<class T>
-	inline Vec4 WENOSolver<T>::Reconstruct(Vec4 const& qVec, Triangle const *pTriangle,
+	inline Vec4 CWENOSolver<T>::Reconstruct(Vec4 const& qVec, Triangle const *pTriangle,
 										   Point2 const &gaussianPoint, int edgeNumber) const
 	{
 		std::array<Triangle const*, 10> stencil;
@@ -717,14 +703,14 @@ namespace euler
 		q[0] = qVec;
 
 #ifdef MY_STABILITY_FIX
-        auto max_norm = arma::norm(q[0], 2);
+		auto max_norm = arma::norm(q[0], 2);
 #endif
 
 		for(int i = 1; i < 10; ++i)
 		{
 			T::FormQVector(q[i], stencil[i]);
 #ifdef MY_STABILITY_FIX
-            auto const norm = arma::norm(q[i], 2);
+			auto const norm = arma::norm(q[i], 2);
 			if(norm > max_norm)
 				max_norm = norm;
 #endif
@@ -743,7 +729,7 @@ namespace euler
 		assert(pTriangle->ToBeReconstructed());
 		TriangleReconstructionData const& triangleRecData =
 				pTriangle->IsVirtual()? m_vBoundaryReconstructionData[pTriangle->Index()] :
-									 m_vReconstructionData[pTriangle->Index()];
+				m_vReconstructionData[pTriangle->Index()];
 
 
 
@@ -773,7 +759,7 @@ namespace euler
 		static Vec4 const eps{m_eps, m_eps, m_eps, m_eps};
 
 		auto const weights_to_be_treated =
-                triangleRecData.so_polynomial.coeffsAtPoints[current_g_n].weights_to_be_treated;
+				triangleRecData.so_polynomial.coeffsAtPoints[current_g_n].weights_to_be_treated;
 
 		for(int polynom_num = 0; polynom_num < 9; ++polynom_num)
 		{
@@ -787,11 +773,11 @@ namespace euler
 			SmoothIndicatorReconstructionData const& smIndData = triangleRecData.smoothIndicatorData[polynom_num];
 
 			Vec4 smoothIndicator = arma::square(smIndData.alpha[0] * q[ind_0]
-										   + smIndData.alpha[1] * q[ind_1]
-										   + smIndData.alpha[2] * q[ind_2]) +
-							  arma::square(smIndData.beta[0] * q[ind_0]
-										   + smIndData.beta[1] * q[ind_1]
-										   + smIndData.beta[2] * q[ind_2]);
+												+ smIndData.alpha[1] * q[ind_1]
+												+ smIndData.alpha[2] * q[ind_2]) +
+								   arma::square(smIndData.beta[0] * q[ind_0]
+												+ smIndData.beta[1] * q[ind_1]
+												+ smIndData.beta[2] * q[ind_2]);
 
 			if(!weights_to_be_treated)
 			{
@@ -799,7 +785,7 @@ namespace euler
 												triangleRecData.so_polynomial.coeffsAtPoints[current_g_n].gammas[polynom_num],
 												triangleRecData.so_polynomial.coeffsAtPoints[current_g_n].gammas[polynom_num],
 												triangleRecData.so_polynomial.coeffsAtPoints[current_g_n].gammas[polynom_num]} /
-						arma::square(eps + smoothIndicator);
+										   arma::square(eps + smoothIndicator);
 
 				omega_waved_sum += omega_waved[polynom_num];
 			} else
@@ -812,10 +798,10 @@ namespace euler
 				omega_waved_plus_sum += omega_waved_plus[polynom_num];
 
 				omega_waved_minus[polynom_num] = Vec4{triangleRecData.so_polynomial.coeffsAtPoints[current_g_n].gammas_minus[polynom_num],
-													 triangleRecData.so_polynomial.coeffsAtPoints[current_g_n].gammas_minus[polynom_num],
-													 triangleRecData.so_polynomial.coeffsAtPoints[current_g_n].gammas_minus[polynom_num],
-													 triangleRecData.so_polynomial.coeffsAtPoints[current_g_n].gammas_minus[polynom_num]} /
-												arma::square(eps + smoothIndicator);
+													  triangleRecData.so_polynomial.coeffsAtPoints[current_g_n].gammas_minus[polynom_num],
+													  triangleRecData.so_polynomial.coeffsAtPoints[current_g_n].gammas_minus[polynom_num],
+													  triangleRecData.so_polynomial.coeffsAtPoints[current_g_n].gammas_minus[polynom_num]} /
+												 arma::square(eps + smoothIndicator);
 				omega_waved_minus_sum += omega_waved_minus[polynom_num];
 
 			}
@@ -856,7 +842,7 @@ namespace euler
 		}
 
 #ifdef MY_STABILITY_FIX
-        q_reconstructed *= MY_STABILITY_FIX * max_norm;
+		q_reconstructed *= MY_STABILITY_FIX * max_norm;
 #endif
 
 		if(!((q_reconstructed[0] > 0) && (q_reconstructed[3] > 0)))
@@ -877,7 +863,7 @@ namespace euler
 #ifdef CHARACTERISTIC_WISE
 
 	template<class T>
-	inline void WENOSolver<T>::FormL_A(double density, double velocityX, double velocityY,
+	inline void CWENOSolver<T>::FormL_A(double density, double velocityX, double velocityY,
 									   double H, arma::mat44 &L_A) const
 	{
 
@@ -911,7 +897,7 @@ namespace euler
 
 
 	template<class T>
-	inline void WENOSolver<T>::FormL_B(double density, double velocityX, double velocityY,
+	inline void CWENOSolver<T>::FormL_B(double density, double velocityX, double velocityY,
 									   double H, arma::mat44 &L_B) const
 	{
 
@@ -945,7 +931,7 @@ namespace euler
 
 
 	template<class T>
-	inline void WENOSolver<T>::FormR_A(double density, double velocityX, double velocityY,
+	inline void CWENOSolver<T>::FormR_A(double density, double velocityX, double velocityY,
 									   double H, arma::mat44 &R_A) const
 	{
 
@@ -978,7 +964,7 @@ namespace euler
 	}
 
 	template<class T>
-	inline void WENOSolver<T>::FormR_B(double density, double velocityX, double velocityY,
+	inline void CWENOSolver<T>::FormR_B(double density, double velocityX, double velocityY,
 									   double H, arma::mat44 &R_B) const
 	{
 
@@ -1019,4 +1005,4 @@ namespace euler
 
 
 
-#endif //TRIANGULAR_SOLVERS_WENOLF_H
+#endif //TRIANGULAR_SOLVERS_CWENOLF_H

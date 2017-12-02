@@ -21,7 +21,6 @@ namespace euler
 			bool isVirtual = false;
 			bool isBoundary = false;
 			int parentIndex = -1;
-			std::vector<int> childIndex;
 
 			bool toBeReconstructed = true;
 
@@ -91,15 +90,7 @@ namespace euler
 			m_boundaryProperties.parentIndex = ind;
 		}
 
-		void AddChild(int const ind)
-		{
-			m_boundaryProperties.childIndex.push_back(ind);
-		}
 
-		int GetChild(int const child_number)
-		{
-			return m_boundaryProperties.childIndex[child_number];
-		}
 
 		void SetVirtual(bool isvirtual)
 		{
