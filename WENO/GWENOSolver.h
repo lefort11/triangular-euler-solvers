@@ -782,17 +782,27 @@ namespace euler
 
             Vec4 const omega = omega_waved[k] / omega_waved_sum;
 
-            q_reconstructed += omega % (fo_pol_0_data.coeffsAtPoints[current_g_n].c[0] * q[fo_pol_0_data.stencil[0]] +
-                                        fo_pol_0_data.coeffsAtPoints[current_g_n].c[1] * q[fo_pol_0_data.stencil[1]] +
-                                        fo_pol_0_data.coeffsAtPoints[current_g_n].c[2] * q[fo_pol_0_data.stencil[2]] +
+            Vec4 const p0 = fo_pol_0_data.coeffsAtPoints[current_g_n].c[0] * q[fo_pol_0_data.stencil[0]] +
+                            fo_pol_0_data.coeffsAtPoints[current_g_n].c[1] * q[fo_pol_0_data.stencil[1]] +
+                            fo_pol_0_data.coeffsAtPoints[current_g_n].c[2] * q[fo_pol_0_data.stencil[2]];
 
-                                        fo_pol_1_data.coeffsAtPoints[current_g_n].c[0] * q[fo_pol_1_data.stencil[0]] +
-                                        fo_pol_1_data.coeffsAtPoints[current_g_n].c[1] * q[fo_pol_1_data.stencil[1]] +
-                                        fo_pol_1_data.coeffsAtPoints[current_g_n].c[2] * q[fo_pol_1_data.stencil[2]] +
+            Vec4 const p1 = fo_pol_1_data.coeffsAtPoints[current_g_n].c[0] * q[fo_pol_1_data.stencil[0]] +
+                            fo_pol_1_data.coeffsAtPoints[current_g_n].c[1] * q[fo_pol_1_data.stencil[1]] +
+                            fo_pol_1_data.coeffsAtPoints[current_g_n].c[2] * q[fo_pol_1_data.stencil[2]];
 
-                                        fo_pol_2_data.coeffsAtPoints[current_g_n].c[0] * q[fo_pol_2_data.stencil[0]] +
-                                        fo_pol_2_data.coeffsAtPoints[current_g_n].c[1] * q[fo_pol_2_data.stencil[1]] +
-                                        fo_pol_2_data.coeffsAtPoints[current_g_n].c[2] * q[fo_pol_2_data.stencil[2]]);
+            Vec4 const p2 = fo_pol_2_data.coeffsAtPoints[current_g_n].c[0] * q[fo_pol_2_data.stencil[0]] +
+                            fo_pol_2_data.coeffsAtPoints[current_g_n].c[1] * q[fo_pol_2_data.stencil[1]] +
+                            fo_pol_2_data.coeffsAtPoints[current_g_n].c[2] * q[fo_pol_2_data.stencil[2]];
+
+            double const gamma_waved = triangleRecData.so_polynomial.coeffsAtPoints[current_g_n].gammas[pol_0] +
+                                       triangleRecData.so_polynomial.coeffsAtPoints[current_g_n].gammas[pol_1] +
+                                       triangleRecData.so_polynomial.coeffsAtPoints[current_g_n].gammas[pol_2];
+
+            Vec4 const p = 1.0 / gamma_waved * (triangleRecData.so_polynomial.coeffsAtPoints[current_g_n].gammas[pol_0] * p0 +
+                    triangleRecData.so_polynomial.coeffsAtPoints[current_g_n].gammas[pol_1] * p1 +
+                    triangleRecData.so_polynomial.coeffsAtPoints[current_g_n].gammas[pol_2] * p2);
+
+            q_reconstructed += omega % p;
 
         }
 
