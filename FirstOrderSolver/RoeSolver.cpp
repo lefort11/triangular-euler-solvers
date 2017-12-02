@@ -215,8 +215,7 @@ Vec4 RoeSolver::CalculateFlux(Vec4 const &qVec, int triangleNumber, int edgeNumb
 		auto const eta_vl_0 = std::max({lambdas_n[0] - (vel_n_x_minus - c_minus),
 										(vel_n_x_plus - c_plus) - lambdas_n[0], 0.0});
 
-		auto const eta_vl_1 = std::max({lambdas_n[1] - vel_n_x_minus,
-										vel_n_x_plus - lambdas_n[1], 0.0});
+		auto const eta_vl_1 = std::max(vel_n_x_plus - vel_n_x_minus, 0.0);
 		auto const eta_vl_3 = std::max({lambdas_n[3] - (vel_n_x_minus + c_minus),
 										(vel_n_x_plus + c_plus) - lambdas_n[3], 0.0});
 
@@ -227,9 +226,9 @@ Vec4 RoeSolver::CalculateFlux(Vec4 const &qVec, int triangleNumber, int edgeNumb
 																: sqr(lambdas_n[0]) / (4 * eta_vl_0) + eta_vl_0,
 
 						std::fabs(lambdas_n[1]) >= 2 * eta_vl_1 ? std::fabs(lambdas_n[1])
-																: sqr(lambdas_n[1]) / (4 * eta_vl_1) + eta_vl_1,
+																: std::fabs(lambdas_n[1]) / (4 * eta_vl_1) + eta_vl_1,
 						std::fabs(lambdas_n[1]) >= 2 * eta_vl_1 ? std::fabs(lambdas_n[1])
-																: sqr(lambdas_n[1]) / (4 * eta_vl_1) + eta_vl_1,
+																: std::fabs(lambdas_n[1]) / (4 * eta_vl_1) + eta_vl_1,
 
 						std::fabs(lambdas_n[3]) >= 2 * eta_vl_3 ? std::fabs(lambdas_n[3])
 																: sqr(lambdas_n[3]) / (4 * eta_vl_3) + eta_vl_3

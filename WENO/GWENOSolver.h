@@ -15,7 +15,7 @@ namespace euler
     {
     private:
 
-        double const m_eps = 1e-6;
+        double const m_eps = 1e-3;
 
         static int const gaussian_points_number = 6;
 
@@ -431,12 +431,12 @@ namespace euler
             arma::vec3 b;
             b << 1.0 << (currGPoint.x - x_0) / h << (currGPoint.y - y_0) / h;
 
-            arma::vec4 d;
+            arma::vec7 d;
             d << 1.0 << sqr( (currGPoint.x - x_0) / h ) << sqr( (currGPoint.y - y_0) / h )
-              << (currGPoint.x - x_0) * (currGPoint.y - y_0) / sqr(h);
+              << (currGPoint.x - x_0) * (currGPoint.y - y_0) / sqr(h) << 1.0 / 3.0 << 1.0 / 3.0 << 1.0 / 3.0;
 
 
-            arma::mat M(4, 9);
+            arma::mat M(7, 9);
             M.fill(0.0);
 
             //getting all first order polynomial's coeffs
@@ -471,6 +471,20 @@ namespace euler
                                           + coeffs[2] * eta_square_average[ind_2];
                 M(3, polynomial_number) = coeffs[0] * ksi_eta_average[ind_0] + coeffs[1] * ksi_eta_average[ind_1]
                                           + coeffs[2] * ksi_eta_average[ind_2];
+
+                M(4, polynomial_groups[g_point_number][0]) = 1.0;
+                M(4, polynomial_groups[g_point_number][1]) = 1.0;
+                M(4, polynomial_groups[g_point_number][2]) = 1.0;
+
+                M(5, polynomial_groups[g_point_number][3]) = 1.0;
+                M(5, polynomial_groups[g_point_number][4]) = 1.0;
+                M(5, polynomial_groups[g_point_number][5]) = 1.0;
+
+                M(6, polynomial_groups[g_point_number][6]) = 1.0;
+                M(6, polynomial_groups[g_point_number][7]) = 1.0;
+                M(6, polynomial_groups[g_point_number][8]) = 1.0;
+
+
 
 
             }
@@ -726,9 +740,9 @@ namespace euler
 
         for(int k = 0; k < 3; ++k)
         {
-            auto const pol_0 = polynomial_groups[current_g_n][k];
-            auto const pol_1 = polynomial_groups[current_g_n][k + 1];
-            auto const pol_2 = polynomial_groups[current_g_n][k + 2];
+            auto const pol_0 = polynomial_groups[current_g_n][3 * k];
+            auto const pol_1 = polynomial_groups[current_g_n][3 * k + 1];
+            auto const pol_2 = polynomial_groups[current_g_n][3 * k + 2];
 
             FOReconstructionPolynomial const& fo_pol_0_data = triangleRecData.fo_polynomial[pol_0];
             FOReconstructionPolynomial const& fo_pol_1_data = triangleRecData.fo_polynomial[pol_1];
@@ -772,9 +786,9 @@ namespace euler
         for(int k = 0; k < 3; ++k)
         {
 
-            auto const pol_0 = polynomial_groups[current_g_n][k];
-            auto const pol_1 = polynomial_groups[current_g_n][k + 1];
-            auto const pol_2 = polynomial_groups[current_g_n][k + 2];
+            auto const pol_0 = polynomial_groups[current_g_n][3 * k];
+            auto const pol_1 = polynomial_groups[current_g_n][3 * k + 1];
+            auto const pol_2 = polynomial_groups[current_g_n][3 * k + 2];
 
             FOReconstructionPolynomial const& fo_pol_0_data = triangleRecData.fo_polynomial[pol_0];
             FOReconstructionPolynomial const& fo_pol_1_data = triangleRecData.fo_polynomial[pol_1];

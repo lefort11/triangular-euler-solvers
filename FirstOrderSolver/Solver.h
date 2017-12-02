@@ -201,7 +201,7 @@ namespace euler
 		virtual double CalculateTimeStep()
 		{
 
-			double const sigma = 0.4;
+			double const sigma = 0.3;
 			auto min_area = m_triangles[0]->getArea2D();
 
 			m_lambda_max = 0.0;
