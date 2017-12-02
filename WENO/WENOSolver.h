@@ -6,7 +6,7 @@
 
 //#define CHARACTERISTIC_WISE
 
-#define MY_STABILITY_FIX 10.0 //100.0, 1e-6
+//#define MY_STABILITY_FIX 10.0 //100.0, 1e-6
 
 namespace euler
 {
@@ -15,7 +15,7 @@ namespace euler
 	{
 	private:
 
-		double const m_eps = 1e-6;
+		double const m_eps = 1e-3;
 
 		static int const gaussian_points_number = 6;
 

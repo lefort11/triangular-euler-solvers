@@ -207,32 +207,32 @@ Vec4 RoeSolver::CalculateFlux(Vec4 const &qVec, int triangleNumber, int edgeNumb
 						vel_n_x_star + c_star
 				};
 
-		double const eta_vl_0 = std::max((vel_n_x_plus - c_plus) - (vel_n_x_minus - c_minus), 0.0);
-		auto const eta_vl_1 = std::max(vel_n_x_plus - vel_n_x_minus, 0.0);
+//		auto const eta_vl_0 = std::max((vel_n_x_plus - c_plus) - (vel_n_x_minus - c_minus), 0.0);
+//		auto const eta_vl_1 = std::max(vel_n_x_plus - vel_n_x_minus, 0.0);
 
-		auto const eta_vl_3 = std::max((vel_n_x_plus + c_plus) - (vel_n_x_minus + c_minus), 0.0);
+//		auto const eta_vl_3 = std::max((vel_n_x_plus + c_plus) - (vel_n_x_minus + c_minus), 0.0);
 
-/*		std::array<double, 4> const lambdas_n_waved =
-				{
-						std::fabs(lambdas_n[0]) >= 2 * eta_vl_0 ? std::fabs(lambdas_n[0])
-																: std::fabs(lambdas_n[0]) / (4 * eta_vl_0) + eta_vl_0,
-						lambdas_n[1],
-						lambdas_n[2],
+		auto const eta_vl_0 = std::max({lambdas_n[0] - (vel_n_x_minus - c_minus),
+										(vel_n_x_plus - c_plus) - lambdas_n[0], 0.0});
 
-						std::fabs(lambdas_n[3]) >= 2 * eta_vl_3 ? std::fabs(lambdas_n[3])
-																: std::fabs(lambdas_n[3]) / (4 * eta_vl_3) + eta_vl_3,
-				}; */
+		auto const eta_vl_1 = std::max({lambdas_n[1] - vel_n_x_minus,
+										vel_n_x_plus - lambdas_n[1], 0.0});
+		auto const eta_vl_3 = std::max({lambdas_n[3] - (vel_n_x_minus + c_minus),
+										(vel_n_x_plus + c_plus) - lambdas_n[3], 0.0});
+
 
 		std::array<double, 4> const lambdas_n_waved =
 				{
-						std::min(lambdas_n[0], vel_n_x_minus - c_minus),
+						std::fabs(lambdas_n[0]) >= 2 * eta_vl_0 ? std::fabs(lambdas_n[0])
+																: sqr(lambdas_n[0]) / (4 * eta_vl_0) + eta_vl_0,
 
 						std::fabs(lambdas_n[1]) >= 2 * eta_vl_1 ? std::fabs(lambdas_n[1])
-																: std::fabs(lambdas_n[1]) / (4 * eta_vl_1) + eta_vl_1,
+																: sqr(lambdas_n[1]) / (4 * eta_vl_1) + eta_vl_1,
 						std::fabs(lambdas_n[1]) >= 2 * eta_vl_1 ? std::fabs(lambdas_n[1])
-																: std::fabs(lambdas_n[1]) / (4 * eta_vl_1) + eta_vl_1,
+																: sqr(lambdas_n[1]) / (4 * eta_vl_1) + eta_vl_1,
 
-						std::max(lambdas_n[3], vel_n_x_plus + c_star)
+						std::fabs(lambdas_n[3]) >= 2 * eta_vl_3 ? std::fabs(lambdas_n[3])
+																: sqr(lambdas_n[3]) / (4 * eta_vl_3) + eta_vl_3
 				};
 
 		std::array<Vec4, 4> r_n =

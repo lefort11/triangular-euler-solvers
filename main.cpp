@@ -6,7 +6,7 @@
 #include "SpaceMesh/Area.h"
 
 #include "FirstOrderSolver/LaxFriedrichSolver.h"
-#include "WENO/WENOSolver.h"
+#include "WENO/GWENOSolver.h"
 #include "FirstOrderSolver/RoeSolver.h"
 
 
@@ -71,7 +71,7 @@ int main()
 
 
 
-	euler::RoeSolver
+	euler::GWENOSolver<euler::RoeSolver>
 			solver(vZone, [](euler::TriangularMesh const& bcmesh, euler::TriangularMesh const& mainMesh, double time)
 	{
 
@@ -105,8 +105,7 @@ int main()
 				bcmesh[triangle_counter]->velocityX = mainMesh[index]->velocityX;
 				bcmesh[triangle_counter]->velocityY = mainMesh[index]->velocityY;
                 bcmesh[triangle_counter]->pressure = mainMesh[index]->pressure;
-				if((time > 10.0) && (bcmesh[triangle_counter]->velocityY < 0))
-					bcmesh[triangle_counter]->velocityY *= -1;
+
 
 			}
 			else if ( bcmesh[triangle_counter]->getBarycenter().y() <= -4.0)
@@ -115,9 +114,6 @@ int main()
 				bcmesh[triangle_counter]->velocityX = mainMesh[index]->velocityX;
 				bcmesh[triangle_counter]->velocityY = mainMesh[index]->velocityY;
                 bcmesh[triangle_counter]->pressure = mainMesh[index]->pressure;
-				if((time > 10.0) && (bcmesh[triangle_counter]->velocityY > 0))
-                    bcmesh[triangle_counter]->velocityY *= -1;
-
 			}
 			else  // circle ~ wall
 			{
