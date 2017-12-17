@@ -8,6 +8,7 @@
 #include <iostream>
 #include <fstream>
 
+#define ABK_FIX
 
 namespace euler
 {
@@ -17,8 +18,8 @@ namespace euler
 
 		struct CartesianMesh
 		{
-			static int const NX = 230;
-			static int const NY = 230;
+			static int const NX = 300;
+			static int const NY = 300;
 			double const X1 = -1.5;
 			double const X2 = 8.0;
 			double const Y1 = -4.0;
@@ -201,7 +202,7 @@ namespace euler
 		virtual double CalculateTimeStep()
 		{
 
-			double const sigma = 0.3;
+			double const sigma = 0.4;
 			auto min_area = m_triangles[0]->getArea2D();
 
 			m_lambda_max = 0.0;
@@ -286,11 +287,20 @@ namespace euler
 			auto const eps = E - 0.5 * velocity_sqr_abs;
 			pressure = (m_gamma - 1.0) * eps * density;
 
-			if(!((density > 0) && (pressure > 0)))
-			{
-				std::cout << "kekas" << std::endl;
-				throw 2;
-			}
+			if(!(density > 0))
+            {
+                std::cout << "density " << density << std::endl;
+                throw 2;
+            }
+            if(!(pressure > 0))
+            {
+                std::cout << "pressure " << pressure << std::endl;
+#ifdef ABK_FIX
+                pressure = (m_gamma - 1.0) * (eps + 1e-3) * density;
+#else
+                throw 2;
+#endif
+            }
 		}
 
 	public:

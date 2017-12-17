@@ -86,12 +86,12 @@ TriangularMesh Area::Triangulate(std::array<double, 3> const& triangleProperties
 	//refining final zone
 	auto pBoundedZone(pGrowZone->convertToBoundedZone());
 
-	MyMeshGenParams params(pBoundedZone);
+	GEOM_FADE2D::MeshGenParams params(pBoundedZone); //changed
 	params.minAngleDegree = triangleProperties[0];
 	params.minEdgeLength = triangleProperties[1];
 	params.maxEdgeLength = triangleProperties[2];
 	params.gridVector = GEOM_FADE2D::Vector2(1.0, 1.0);
-	//params.growFactor = 2.0;
+	params.growFactor = 2.5;
     //params.capAspectLimit = 0.9;
 
 //	m_globalArea.refine(pBoundedZone, triangleProperties[0], triangleProperties[1], triangleProperties[2], true);

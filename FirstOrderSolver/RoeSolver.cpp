@@ -95,12 +95,8 @@ Vec4 RoeSolver::CalculateFlux(Vec4 const &qVec, int triangleNumber, int edgeNumb
 		//edge_number calculation
 		auto const v0_ind =
 				neighbour_triangle->getIntraTriangleIndex(m_triangles[triangleNumber]->getCorner((edgeNumber + 1) % 3));
-		auto const v1_ind =
-				neighbour_triangle->getIntraTriangleIndex(m_triangles[triangleNumber]->getCorner((edgeNumber + 2) % 3));
-		int neighbourEdgeNumber = (v0_ind + 1) % 3;
-		if (neighbourEdgeNumber == v1_ind)
-			neighbourEdgeNumber = (v1_ind + 1) % 3;
 
+		int neighbourEdgeNumber = (v0_ind + 1) % 3;
 
 		q_plus = Reconstruct(q_plus, neighbour_triangle, g_point, neighbourEdgeNumber);
 
@@ -219,18 +215,36 @@ Vec4 RoeSolver::CalculateFlux(Vec4 const &qVec, int triangleNumber, int edgeNumb
 		auto const eta_vl_3 = std::max({lambdas_n[3] - (vel_n_x_minus + c_minus),
 										(vel_n_x_plus + c_plus) - lambdas_n[3], 0.0});
 
+ /*       auto const lambda_neigh_0 = normal[0] * m_triangles[triangleNumber]->GetOppTriangle((edgeNumber + 1) % 3)->velocityX +
+                                    normal[1] * m_triangles[triangleNumber]->GetOppTriangle((edgeNumber + 1) % 3)->velocityY;
+        auto const lambda_neigh_1 = normal[0] * m_triangles[triangleNumber]->GetOppTriangle((edgeNumber + 2) % 3)->velocityX +
+                                    normal[1] * m_triangles[triangleNumber]->GetOppTriangle((edgeNumber + 2) % 3)->velocityY;
+
+        auto const lambda_neigh_2 = normal[0] * neighbour_triangle->GetOppTriangle((neighbourEdgeNumber + 1) % 3)->velocityX +
+                                    normal[1] * neighbour_triangle->GetOppTriangle((neighbourEdgeNumber + 1) % 3)->velocityY;
+
+        auto const lambda_neigh_3 = normal[0] * neighbour_triangle->GetOppTriangle((neighbourEdgeNumber + 2) % 3)->velocityX +
+                                    normal[1] * neighbour_triangle->GetOppTriangle((neighbourEdgeNumber + 2) % 3)->velocityY;
+
+        auto const eta_pa = 0.5 *
+                std::max({std::fabs(lambdas_n[1] - lambda_neigh_0), std::fabs(lambdas_n[1] - lambda_neigh_1),
+                          std::fabs(vel_n_x_plus - lambda_neigh_2), std::fabs(vel_n_x_plus - lambda_neigh_3)}); */
+
 
 		std::array<double, 4> const lambdas_n_waved =
 				{
 						std::fabs(lambdas_n[0]) >= 2 * eta_vl_0 ? std::fabs(lambdas_n[0])
 																: sqr(lambdas_n[0]) / (4 * eta_vl_0) + eta_vl_0,
 
-						std::fabs(lambdas_n[1]) >= 2 * eta_vl_1 ? std::fabs(lambdas_n[1])
-																: std::fabs(lambdas_n[1]) / (4 * eta_vl_1) + eta_vl_1,
-						std::fabs(lambdas_n[1]) >= 2 * eta_vl_1 ? std::fabs(lambdas_n[1])
-																: std::fabs(lambdas_n[1]) / (4 * eta_vl_1) + eta_vl_1,
+                        //std::max(std::fabs(lambdas_n[1]), eta_pa),
+                       // std::max(std::fabs(lambdas_n[2]), eta_pa),
 
-						std::fabs(lambdas_n[3]) >= 2 * eta_vl_3 ? std::fabs(lambdas_n[3])
+                        std::fabs(lambdas_n[1]) >= 2 * eta_vl_1 ? std::fabs(lambdas_n[1])
+                                                               	: sqr(lambdas_n[1]) / (4 * eta_vl_1) + eta_vl_1,
+                        std::fabs(lambdas_n[1]) >= 2 * eta_vl_1 ? std::fabs(lambdas_n[1])
+                                                                : sqr(lambdas_n[1]) / (4 * eta_vl_1) + eta_vl_1,
+
+                        std::fabs(lambdas_n[3]) >= 2 * eta_vl_3 ? std::fabs(lambdas_n[3])
 																: sqr(lambdas_n[3]) / (4 * eta_vl_3) + eta_vl_3
 				};
 
@@ -286,12 +300,12 @@ Vec4 RoeSolver::CalculateFlux(Vec4 const &qVec, int triangleNumber, int edgeNumb
 
 				};
 
-		flux += 0.5 * (normal[0] * (F_minus + F_plus) + normal[1] * (G_minus + G_plus));
 
-		for(int k = 0; k < 4; ++k)
-		{
-			flux -= 0.5 * std::fabs(lambdas_n_waved[k]) * arma::dot(l_n[k], q_plus - q_minus) * r_n[k];
-		}
+        flux += 0.5 * (normal[0] * (F_minus + F_plus) + normal[1] * (G_minus + G_plus));
+        for (int k = 0; k < 4; ++k)
+        {
+            flux -= 0.5 * std::fabs(lambdas_n_waved[k]) * arma::dot(l_n[k], q_plus - q_minus) * r_n[k];
+        }
 
 
 	}

@@ -6,7 +6,7 @@
 
 //#define CHARACTERISTIC_WISE
 
-//#define MY_STABILITY_FIX 10.0 //100.0, 1e-6
+//#define GWENO_MY_STABILITY_FIX 10.0 //100.0, 1e-6
 
 namespace euler
 {
@@ -431,12 +431,12 @@ namespace euler
             arma::vec3 b;
             b << 1.0 << (currGPoint.x - x_0) / h << (currGPoint.y - y_0) / h;
 
-            arma::vec7 d;
+            arma::vec4 d;
             d << 1.0 << sqr( (currGPoint.x - x_0) / h ) << sqr( (currGPoint.y - y_0) / h )
-              << (currGPoint.x - x_0) * (currGPoint.y - y_0) / sqr(h) << 1.0 / 3.0 << 1.0 / 3.0 << 1.0 / 3.0;
+              << (currGPoint.x - x_0) * (currGPoint.y - y_0) / sqr(h);
 
 
-            arma::mat M(7, 9);
+            arma::mat M(4, 9);
             M.fill(0.0);
 
             //getting all first order polynomial's coeffs
@@ -472,7 +472,7 @@ namespace euler
                 M(3, polynomial_number) = coeffs[0] * ksi_eta_average[ind_0] + coeffs[1] * ksi_eta_average[ind_1]
                                           + coeffs[2] * ksi_eta_average[ind_2];
 
-                M(4, polynomial_groups[g_point_number][0]) = 1.0;
+         /*       M(4, polynomial_groups[g_point_number][0]) = 1.0;
                 M(4, polynomial_groups[g_point_number][1]) = 1.0;
                 M(4, polynomial_groups[g_point_number][2]) = 1.0;
 
@@ -482,7 +482,7 @@ namespace euler
 
                 M(6, polynomial_groups[g_point_number][6]) = 1.0;
                 M(6, polynomial_groups[g_point_number][7]) = 1.0;
-                M(6, polynomial_groups[g_point_number][8]) = 1.0;
+                M(6, polynomial_groups[g_point_number][8]) = 1.0; */
 
 
 
@@ -491,7 +491,7 @@ namespace euler
 
 
 
-/*			arma::mat B(6, 10);
+	/*		arma::mat B(6, 10);
 			B.fill(0.0);
 			arma::vec::fixed<6> f;
 			for(int j = 0; j < 10; ++j)
@@ -684,24 +684,24 @@ namespace euler
 
         q[0] = qVec;
 
-#ifdef MY_STABILITY_FIX
+#ifdef GWENO_MY_STABILITY_FIX
         auto max_norm = arma::norm(q[0], 2);
 #endif
 
         for(int i = 1; i < 10; ++i)
         {
             T::FormQVector(q[i], stencil[i]);
-#ifdef MY_STABILITY_FIX
+#ifdef GWENO_MY_STABILITY_FIX
             auto const norm = arma::norm(q[i], 2);
 			if(norm > max_norm)
 				max_norm = norm;
 #endif
         }
 
-#ifdef MY_STABILITY_FIX
+#ifdef GWENO_MY_STABILITY_FIX
         for(int i = 0; i < 10; ++i)
 		{
-			q[i] /= MY_STABILITY_FIX * max_norm;
+			q[i] /= GWENO_MY_STABILITY_FIX * max_norm;
 		}
 #endif
 
@@ -823,8 +823,8 @@ namespace euler
 
 
 
-#ifdef MY_STABILITY_FIX
-        q_reconstructed *= MY_STABILITY_FIX * max_norm;
+#ifdef GWENO_MY_STABILITY_FIX
+        q_reconstructed *= GWENO_MY_STABILITY_FIX * max_norm;
 #endif
 
         if(!((q_reconstructed[0] > 0) && (q_reconstructed[3] > 0)))

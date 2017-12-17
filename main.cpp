@@ -6,6 +6,7 @@
 #include "SpaceMesh/Area.h"
 
 #include "FirstOrderSolver/LaxFriedrichSolver.h"
+#include "WENO/WENOSolver.h"
 #include "WENO/GWENOSolver.h"
 #include "FirstOrderSolver/RoeSolver.h"
 
@@ -67,11 +68,11 @@ int main()
 //	vZone.push_back(zone3);
 
 
-	std::array<double, 3> trProp = {30, 0.0008, 0.19}; // 0.08, 0.079 area ot 2
+	std::array<double, 3> trProp = {30, 0.0008, 0.078}; // 0.08, 0.079 area ot 2
 
 
 
-	euler::GWENOSolver<euler::RoeSolver>
+	euler::WENOSolver<euler::RoeSolver>
 			solver(vZone, [](euler::TriangularMesh const& bcmesh, euler::TriangularMesh const& mainMesh, double time)
 	{
 
@@ -83,7 +84,7 @@ int main()
 			bcmesh[triangle_counter]->velocityY = mainMesh[index]->velocityY;
 			bcmesh[triangle_counter]->pressure = mainMesh[index]->pressure; */
 
-			if ( bcmesh[triangle_counter]->getBarycenter().x() <= -1.5 )//left boundary
+			if ( bcmesh[triangle_counter]->getBarycenter().x() <= -1.5)//left boundary
 			{
 				bcmesh[triangle_counter]->density = 1.4;
 				bcmesh[triangle_counter]->velocityX = 0.9;
@@ -91,7 +92,7 @@ int main()
 				bcmesh[triangle_counter]->pressure = 1.0;
 
 			}
-			else if ( (bcmesh[triangle_counter]->getBarycenter().x() >= 8.0)  )//right, upper and lower boundaries
+			else if ( (bcmesh[triangle_counter]->getBarycenter().x() >= 8.0) )//right, upper and lower boundaries
 			{
 				bcmesh[triangle_counter]->density =  mainMesh[index]->density;
 				bcmesh[triangle_counter]->velocityX = std::fabs(mainMesh[index]->velocityX);

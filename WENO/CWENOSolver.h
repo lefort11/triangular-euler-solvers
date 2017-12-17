@@ -1,5 +1,5 @@
-#ifndef TRIANGULAR_SOLVERS_CWENOLF_H
-#define TRIANGULAR_SOLVERS_CWENOLF_H
+#ifndef TRIANGULAR_SOLVERS_WENOLF_H
+#define TRIANGULAR_SOLVERS_WENOLF_H
 
 #include <array>
 #include "../FirstOrderSolver/LaxFriedrichSolver.h"
@@ -15,7 +15,7 @@ namespace euler
 	{
 	private:
 
-		double const m_eps = 1e-4;
+		double const m_eps = 1e-3;
 
 		static int const gaussian_points_number = 6;
 
@@ -39,6 +39,25 @@ namespace euler
 
 
 		};
+
+        std::array<std::array<int, 4>, 6> polynomial_num = {
+                std::array<int, 4>{0, 1, 3, 4},
+                std::array<int, 4>{0, 2, 3, 4},
+                std::array<int, 4>{1, 2, 5, 6},
+                std::array<int, 4>{1, 0, 5, 6},
+                std::array<int, 4>{2, 0, 7, 8},
+                std::array<int, 4>{2, 1, 7, 8}
+        };
+
+
+        std::array<std::array<int, 6>, 6> g_point_stencils = {
+                std::array<int, 6>{0, 2, 3, 6, 7, 9},
+                std::array<int, 6>{0, 1, 3, 4, 6, 7},
+                std::array<int, 6>{0, 1, 3, 4, 5, 7},
+                std::array<int, 6>{0, 1, 2, 4, 5, 8},
+                std::array<int, 6>{0, 1, 2, 5, 8, 9},
+                std::array<int, 6>{0, 2, 3, 6, 8, 9}
+        };
 
 		struct FOReconstructionPolynomial
 		{
@@ -255,6 +274,7 @@ namespace euler
 
 
 					Triangle* pTriangle = T::m_triangles[triangle_counter];
+					pTriangle->SetBoundary(true);
 
 					std::array<Triangle*, 7> virtualTriangles;
 
@@ -424,11 +444,27 @@ namespace euler
 		for(int i = 0; i < 10; ++i)
 		{
 
-			ksi_average[i] = CalculateKsiAverage(stencil[i], x_0, y_0, h);
-			eta_average[i] = CalculateEtaAverage(stencil[i], x_0, y_0, h);
-			ksi_square_average[i] = CalculateKsiSquareAverage(stencil[i], x_0, y_0, h);
-			eta_square_average[i] = CalculateEtaSquareAverage(stencil[i], x_0, y_0, h);
-			ksi_eta_average[i] = CalculateKsiEtaAverage(stencil[i], x_0, y_0, h);
+			double const area = stencil[i]->getArea2D();
+			ksi_average[i] = 1 / area * T::GaussianIntegration([x_0, y_0, h](double x, double){
+
+				return (x - x_0) / h;
+			}, stencil[i]);
+			eta_average[i] = 1 / area * T::GaussianIntegration([x_0, y_0, h](double x, double y){
+
+				return (y - y_0) / h;
+			}, stencil[i]);
+			ksi_square_average[i] = 1 / area * T::GaussianIntegration([x_0, y_0, h](double x, double y){
+
+				return sqr((x - x_0) / h);
+			}, stencil[i]);
+			eta_square_average[i] = 1 / area * T::GaussianIntegration([x_0, y_0, h](double x, double y){
+
+				return sqr((y - y_0) / h);
+			}, stencil[i]);
+			ksi_eta_average[i] = 1 / area * T::GaussianIntegration([x_0, y_0, h](double x, double y){
+
+				return (x - x_0) * (y - y_0) / sqr(h);
+			}, stencil[i]);
 
 
 
@@ -442,16 +478,13 @@ namespace euler
 			arma::vec3 b;
 			b << 1.0 << (currGPoint.x - x_0) / h << (currGPoint.y - y_0) / h;
 
-
-
-			arma::mat M(4, 9);
-			M.fill(0.0);
-
-
 			arma::vec4 d;
 			d << 1.0 << sqr( (currGPoint.x - x_0) / h ) << sqr( (currGPoint.y - y_0) / h )
 			  << (currGPoint.x - x_0) * (currGPoint.y - y_0) / sqr(h);
 
+
+			arma::mat M(4, 9);
+			M.fill(0.0);
 
 			//getting all first order polynomial's coeffs
 			for(int polynomial_number = 0; polynomial_number < 9; ++polynomial_number)
@@ -465,10 +498,8 @@ namespace euler
 
 				arma::mat33 A;
 				A << 1.0 << 1.0 << 1.0 << arma::endr
-				  << ksi_average[ind_0] << ksi_average[ind_1]
-				  << ksi_average[ind_2] << arma::endr
-				  << eta_average[ind_0] << eta_average[ind_1]
-				  << eta_average[ind_2] << arma::endr;
+				  << ksi_average[ind_0] << ksi_average[ind_1] << ksi_average[ind_2] << arma::endr
+				  << eta_average[ind_0] << eta_average[ind_1] << eta_average[ind_2] << arma::endr;
 
 
 				arma::vec3 coeffs = arma::solve(A, b);
@@ -486,48 +517,69 @@ namespace euler
 				M(3, polynomial_number) = coeffs[0] * ksi_eta_average[ind_0] + coeffs[1] * ksi_eta_average[ind_1]
 										  + coeffs[2] * ksi_eta_average[ind_2];
 
+
 			}
 
+            arma::mat B(6, 6);
+            B.fill(0.0);
+            arma::vec::fixed<6> f;
+            for (int j = 0; j < 6; ++j)
+            {
+               B(0, j) = 1.0;
+               B(1, j) = ksi_average[g_point_stencils[g_point_number][j]];
+               B(2, j) = eta_average[g_point_stencils[g_point_number][j]];
+               B(3, j) = ksi_square_average[g_point_stencils[g_point_number][j]];
+               B(4, j) = eta_square_average[g_point_stencils[g_point_number][j]];
+               B(5, j) = ksi_eta_average[g_point_stencils[g_point_number][j]];
+            }
+            if(arma::rank(B) < 6)
+            {
+                std::cout << arma::rank(B) << std::endl;
+                B.print();
+                double a;
+            }
+            f << 1.0 << (currGPoint.x - x_0) / h << (currGPoint.y - y_0) / h
+             << sqr((currGPoint.x - x_0) / h) << sqr((currGPoint.y - y_0) / h)
+             << (currGPoint.x - x_0) * (currGPoint.y - y_0) / sqr(h);
+
+            arma::vec soCoeffs = arma::solve(B, f);
+
+  /*                     //getting gammas
+
+                       arma::mat G(10, 9);
+                       G.fill(0.0);
+                       for (int j = 0; j < 9; ++j)
+                           G(0, j) = trRecData.fo_polynomial[j].coeffsAtPoints[g_point_number].c[0];
+
+                       G(1, 0) = trRecData.fo_polynomial[0].coeffsAtPoints[g_point_number].c[1];
+                       G(1, 2) = trRecData.fo_polynomial[2].coeffsAtPoints[g_point_number].c[2];
+                       G(1, 5) = trRecData.fo_polynomial[5].coeffsAtPoints[g_point_number].c[1];
+                       G(1, 6) = trRecData.fo_polynomial[6].coeffsAtPoints[g_point_number].c[1];
+
+                       G(2, 0) = trRecData.fo_polynomial[0].coeffsAtPoints[g_point_number].c[2];
+                       G(2, 1) = trRecData.fo_polynomial[1].coeffsAtPoints[g_point_number].c[1];
+                       G(2, 7) = trRecData.fo_polynomial[7].coeffsAtPoints[g_point_number].c[1];
+                       G(2, 8) = trRecData.fo_polynomial[8].coeffsAtPoints[g_point_number].c[1];
+
+                       G(3, 1) = trRecData.fo_polynomial[1].coeffsAtPoints[g_point_number].c[2];
+                       G(3, 2) = trRecData.fo_polynomial[2].coeffsAtPoints[g_point_number].c[1];
+                       G(3, 3) = trRecData.fo_polynomial[3].coeffsAtPoints[g_point_number].c[1];
+                       G(3, 4) = trRecData.fo_polynomial[4].coeffsAtPoints[g_point_number].c[1];
 
 
-/*
+                       G(4, 5) = trRecData.fo_polynomial[5].coeffsAtPoints[g_point_number].c[2];
+                       G(5, 6) = trRecData.fo_polynomial[6].coeffsAtPoints[g_point_number].c[2];
+                       G(6, 3) = trRecData.fo_polynomial[3].coeffsAtPoints[g_point_number].c[2];
+                       G(7, 4) = trRecData.fo_polynomial[4].coeffsAtPoints[g_point_number].c[2];
+                       G(8, 7) = trRecData.fo_polynomial[7].coeffsAtPoints[g_point_number].c[2];
+                       G(9, 8) = trRecData.fo_polynomial[8].coeffsAtPoints[g_point_number].c[2]; */
 
-			//getting gammas
-
-			arma::mat G(10, 9);
-			G.fill(0.0);
-			for(int j = 0; j < 9; ++j)
-				G(0, j) = trRecData.fo_polynomial[j].coeffsAtPoints[g_point_number].c[0];
-
-			G(1, 0) = trRecData.fo_polynomial[0].coeffsAtPoints[g_point_number].c[1];
-			G(1, 2) = trRecData.fo_polynomial[2].coeffsAtPoints[g_point_number].c[2];
-			G(1, 5) = trRecData.fo_polynomial[5].coeffsAtPoints[g_point_number].c[1];
-			G(1, 6) = trRecData.fo_polynomial[6].coeffsAtPoints[g_point_number].c[1];
-
-			G(2, 0) = trRecData.fo_polynomial[0].coeffsAtPoints[g_point_number].c[2];
-			G(2, 1) = trRecData.fo_polynomial[1].coeffsAtPoints[g_point_number].c[1];
-			G(2, 7) = trRecData.fo_polynomial[7].coeffsAtPoints[g_point_number].c[1];
-			G(2, 8) = trRecData.fo_polynomial[8].coeffsAtPoints[g_point_number].c[1];
-
-			G(3, 1) = trRecData.fo_polynomial[1].coeffsAtPoints[g_point_number].c[2];
-			G(3, 2) = trRecData.fo_polynomial[2].coeffsAtPoints[g_point_number].c[1];
-			G(3, 3) = trRecData.fo_polynomial[3].coeffsAtPoints[g_point_number].c[1];
-			G(3, 4) = trRecData.fo_polynomial[4].coeffsAtPoints[g_point_number].c[1];
-
-
-			G(4, 5) = trRecData.fo_polynomial[5].coeffsAtPoints[g_point_number].c[2];
-			G(5, 6) = trRecData.fo_polynomial[6].coeffsAtPoints[g_point_number].c[2];
-			G(6, 3) = trRecData.fo_polynomial[3].coeffsAtPoints[g_point_number].c[2];
-			G(7, 4) = trRecData.fo_polynomial[4].coeffsAtPoints[g_point_number].c[2];
-			G(8, 7) = trRecData.fo_polynomial[7].coeffsAtPoints[g_point_number].c[2];
-			G(9, 8) = trRecData.fo_polynomial[8].coeffsAtPoints[g_point_number].c[2];
-
-			arma::vec9 gammas = arma::solve(G, soCoeffs); */
 
 			//getting gammas
 			M *= 10000;
 			d *= 10000;
 			arma::vec9 gammas = arma::solve(M, d);
+
 
 			for(int i = 0; i < 9; ++i)
 			{
@@ -543,7 +595,8 @@ namespace euler
 				for(int i = 0; i < 9; ++i)
 				{
 					trRecData.so_polynomial.coeffsAtPoints[g_point_number].gammas_plus[i] =
-							0.5 * (gammas[i] + trRecData.so_polynomial.coeffsAtPoints[g_point_number].theta * gammas[i]);
+							0.5 * (gammas[i] + trRecData.so_polynomial.coeffsAtPoints[g_point_number].theta *
+											   std::fabs(gammas[i]));
 					trRecData.so_polynomial.coeffsAtPoints[g_point_number].gammas_minus[i] =
 							trRecData.so_polynomial.coeffsAtPoints[g_point_number].gammas_plus[i] - gammas[i];
 
@@ -781,27 +834,21 @@ namespace euler
 
 			if(!weights_to_be_treated)
 			{
-				omega_waved[polynom_num] = Vec4{triangleRecData.so_polynomial.coeffsAtPoints[current_g_n].gammas[polynom_num],
-												triangleRecData.so_polynomial.coeffsAtPoints[current_g_n].gammas[polynom_num],
-												triangleRecData.so_polynomial.coeffsAtPoints[current_g_n].gammas[polynom_num],
-												triangleRecData.so_polynomial.coeffsAtPoints[current_g_n].gammas[polynom_num]} /
-										   arma::square(eps + smoothIndicator);
+				auto const gamma = triangleRecData.so_polynomial.coeffsAtPoints[current_g_n].gammas[polynom_num];
+				omega_waved[polynom_num] = Vec4{gamma, gamma, gamma, gamma} / arma::square(eps + smoothIndicator);
 
 				omega_waved_sum += omega_waved[polynom_num];
 			} else
 			{
-				omega_waved_plus[polynom_num] = Vec4{triangleRecData.so_polynomial.coeffsAtPoints[current_g_n].gammas_plus[polynom_num],
-													 triangleRecData.so_polynomial.coeffsAtPoints[current_g_n].gammas_plus[polynom_num],
-													 triangleRecData.so_polynomial.coeffsAtPoints[current_g_n].gammas_plus[polynom_num],
-													 triangleRecData.so_polynomial.coeffsAtPoints[current_g_n].gammas_plus[polynom_num]} /
-												arma::square(eps + smoothIndicator);
+				auto const gamma_plus = triangleRecData.so_polynomial.coeffsAtPoints[current_g_n].gammas_plus[polynom_num];
+				auto const gamma_minus = triangleRecData.so_polynomial.coeffsAtPoints[current_g_n].gammas_minus[polynom_num];
+
+				omega_waved_plus[polynom_num] = Vec4{gamma_plus, gamma_plus, gamma_plus, gamma_plus}
+												/ arma::square(eps + smoothIndicator);
 				omega_waved_plus_sum += omega_waved_plus[polynom_num];
 
-				omega_waved_minus[polynom_num] = Vec4{triangleRecData.so_polynomial.coeffsAtPoints[current_g_n].gammas_minus[polynom_num],
-													  triangleRecData.so_polynomial.coeffsAtPoints[current_g_n].gammas_minus[polynom_num],
-													  triangleRecData.so_polynomial.coeffsAtPoints[current_g_n].gammas_minus[polynom_num],
-													  triangleRecData.so_polynomial.coeffsAtPoints[current_g_n].gammas_minus[polynom_num]} /
-												 arma::square(eps + smoothIndicator);
+				omega_waved_minus[polynom_num] = Vec4{gamma_minus, gamma_minus, gamma_minus, gamma_minus} /
+												 arma::square(eps + (1) * smoothIndicator);
 				omega_waved_minus_sum += omega_waved_minus[polynom_num];
 
 			}
@@ -1005,4 +1052,4 @@ namespace euler
 
 
 
-#endif //TRIANGULAR_SOLVERS_CWENOLF_H
+#endif //TRIANGULAR_SOLVERS_WENOLF_H

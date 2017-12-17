@@ -211,7 +211,7 @@ namespace euler
 
 
             if((GetOppTriangle((edgeNumber + 1) % 3) != nullptr) &&
-                    !GetOppTriangle((edgeNumber + 1) % 3)->IsVirtual())
+                    !(GetOppTriangle((edgeNumber + 1) % 3)->IsVirtual()))
 			{
 
 				auto const tr1 = GetOppTriangle((edgeNumber + 1) % 3);
@@ -222,9 +222,9 @@ namespace euler
                         ReflectPoint(tr1->getCorner((ind1_0 + 2) % 3), p1, p2)));
 				vtriangles[1]->setVertexPointer(0, refPoint);
 				vtriangles[1]->setVertexPointer(2, p2);
-				assert(vtriangles[1]->getArea2D() > 0);
 
 				vtriangles[1]->SetVirtual(true);
+				assert(!tr1->IsVirtual());
                 vtriangles[1]->SetParentIndex(tr1->Index());
 
 				vtriangles[0]->SetOppTriangle(0, vtriangles[1]);
@@ -233,7 +233,7 @@ namespace euler
 				auto const rp1 = vtriangles[1]->getCorner(1);
 
 				if((tr1->GetOppTriangle((ind1_0 + 1) % 3) != nullptr) &&
-				   !tr1->GetOppTriangle((ind1_0 + 1) % 3)->IsVirtual())
+				   !(tr1->GetOppTriangle((ind1_0 + 1) % 3)->IsVirtual()))
 				{
 					auto const tr3 = tr1->GetOppTriangle((ind1_0 + 1) % 3);
 					auto const ind3_0 = tr3->getIntraTriangleIndex(p0);
@@ -255,12 +255,12 @@ namespace euler
 
 					vtriangles[2] = vtriangles[1]->ReflectTriangle(2);
 					vtriangles[2]->SetVirtual(true);
-					vtriangles[2]->SetParentIndex(tr1->Index());
+					vtriangles[2]->SetParentIndex(vtriangles[1]->ParentIndex());
 
 				}
 
 				if((tr1->GetOppTriangle(ind1_0)!= nullptr) &&
-				   !tr1->GetOppTriangle(ind1_0)->IsVirtual())
+				   !(tr1->GetOppTriangle(ind1_0)->IsVirtual()))
 				{
 
 					auto const tr5 = tr1->GetOppTriangle(ind1_0);
@@ -283,46 +283,9 @@ namespace euler
 
 					vtriangles[3] = vtriangles[1]->ReflectTriangle(0);
 					vtriangles[3]->SetVirtual(true);
-					vtriangles[3]->SetParentIndex(tr1->Index());
+					vtriangles[3]->SetParentIndex(vtriangles[1]->ParentIndex());
 
 				}
-
-#if 0
-				auto const barycenter = new GEOM_FADE2D::Point2(vtriangles[1]->getBarycenter());
-
-				vtriangles[2] = new Triangle();
-				vtriangles[3] = new Triangle();
-
-				vtriangles[2]->setVertexPointer(0, refPoint);
-				vtriangles[2]->setVertexPointer(1, rp1);
-				vtriangles[2]->setVertexPointer(2, barycenter);
-
-				vtriangles[3]->setVertexPointer(0, rp1);
-				vtriangles[3]->setVertexPointer(1, p2);
-				vtriangles[3]->setVertexPointer(2, barycenter);
-
-				vtriangles[1]->setVertexPointer(1, barycenter);
-
-				vtriangles[1]->SetOppTriangle(0, vtriangles[3]);
-				vtriangles[1]->SetOppTriangle(1, this);
-				vtriangles[1]->SetOppTriangle(2, vtriangles[2]);
-
-				vtriangles[2]->SetOppTriangle(0, vtriangles[3]);
-				vtriangles[2]->SetOppTriangle(1, vtriangles[1]);
-				vtriangles[2]->SetOppTriangle(2, nullptr);
-
-				vtriangles[3]->SetOppTriangle(0, vtriangles[1]);
-				vtriangles[3]->SetOppTriangle(1, vtriangles[2]);
-				vtriangles[3]->SetOppTriangle(2, nullptr);
-
-				vtriangles[1]->SetVirtual(true);
-				vtriangles[2]->SetVirtual(true);
-				vtriangles[3]->SetVirtual(true);
-
-				vtriangles[1]->SetParentIndex(tr1->Index());
-				vtriangles[2]->SetParentIndex(tr1->Index());
-				vtriangles[3]->SetParentIndex(tr1->Index());
-#endif
 
 
 			}
@@ -341,7 +304,7 @@ namespace euler
 
 
 			if((GetOppTriangle((edgeNumber + 2) % 3) != nullptr) &&
-			   !GetOppTriangle((edgeNumber + 2) % 3)->IsVirtual())
+			   !(GetOppTriangle((edgeNumber + 2) % 3)->IsVirtual()))
 			{
 
 				auto const tr2 = GetOppTriangle((edgeNumber + 2) % 3);
@@ -351,17 +314,19 @@ namespace euler
 						ReflectPoint(tr2->getCorner((ind2_0 + 1) % 3), p1, p2)));
 				vtriangles[4]->setVertexPointer(0, p1);
 				vtriangles[4]->setVertexPointer(2, refPoint);
-				assert(vtriangles[4]->getArea2D() > 0);
+				assert(!tr2->IsVirtual());
+
 
 				vtriangles[0]->SetOppTriangle(2, vtriangles[4]);
 
 				vtriangles[4]->SetVirtual(true);
+
 				vtriangles[4]->SetParentIndex(tr2->Index());
 
 				auto const rp2 = vtriangles[4]->getCorner(1);
 
 				if((tr2->GetOppTriangle((ind2_0 + 2) % 3) != nullptr) &&
-				   !tr2->GetOppTriangle((ind2_0 + 2) % 3)->IsVirtual())
+				   !(tr2->GetOppTriangle((ind2_0 + 2) % 3)->IsVirtual()))
 				{
 					auto const tr4 = tr2->GetOppTriangle((ind2_0 + 2) % 3);
 					auto const ind4_0 = tr4->getIntraTriangleIndex(p0);
@@ -383,12 +348,12 @@ namespace euler
 
 					vtriangles[5] = vtriangles[4]->ReflectTriangle(0);
 					vtriangles[5]->SetVirtual(true);
-					vtriangles[5]->SetParentIndex(tr2->Index()  );
+					vtriangles[5]->SetParentIndex(vtriangles[4]->ParentIndex());
 
 				}
 
 				if((tr2->GetOppTriangle(ind2_0)!= nullptr) &&
-				   !tr2->GetOppTriangle(ind2_0)->IsVirtual())
+				   !(tr2->GetOppTriangle(ind2_0)->IsVirtual()))
 				{
 
 					auto const tr6 = tr2->GetOppTriangle(ind2_0);
@@ -411,53 +376,9 @@ namespace euler
 
 					vtriangles[6] = vtriangles[4]->ReflectTriangle(2);
 					vtriangles[6]->SetVirtual(true);
-					vtriangles[6]->SetParentIndex(tr2->Index());
+					vtriangles[6]->SetParentIndex(vtriangles[4]->ParentIndex());
 
 				}
-
-
-
-
-
-
-#if 0
-
-				auto const barycenter = new GEOM_FADE2D::Point2(vtriangles[4]->getBarycenter());
-
-				vtriangles[5] = new Triangle();
-				vtriangles[6] = new Triangle();
-
-				vtriangles[5]->setVertexPointer(0, p1);
-				vtriangles[5]->setVertexPointer(1, rp2);
-				vtriangles[5]->setVertexPointer(2, barycenter);
-
-				vtriangles[6]->setVertexPointer(0, rp2);
-				vtriangles[6]->setVertexPointer(1, refPoint);
-				vtriangles[6]->setVertexPointer(2, barycenter);
-
-				vtriangles[4]->setVertexPointer(1, barycenter);
-
-
-				vtriangles[4]->SetOppTriangle(0, vtriangles[6]);
-				vtriangles[4]->SetOppTriangle(1, this);
-				vtriangles[4]->SetOppTriangle(2, vtriangles[5]);
-
-				vtriangles[5]->SetOppTriangle(0, vtriangles[6]);
-				vtriangles[5]->SetOppTriangle(1, vtriangles[4]);
-				vtriangles[5]->SetOppTriangle(2, nullptr);
-
-				vtriangles[5]->SetOppTriangle(0, vtriangles[4]);
-				vtriangles[5]->SetOppTriangle(1, vtriangles[5]);
-				vtriangles[5]->SetOppTriangle(2, nullptr);
-
-				vtriangles[4]->SetVirtual(true);
-				vtriangles[5]->SetVirtual(true);
-				vtriangles[6]->SetVirtual(true);
-
-				vtriangles[4]->SetParentIndex(tr2->Index());
-				vtriangles[5]->SetParentIndex(tr2->Index());
-				vtriangles[6]->SetParentIndex(tr2->Index());
-#endif
 
 
 			}

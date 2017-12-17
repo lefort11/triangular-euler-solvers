@@ -4,9 +4,10 @@
 #include <array>
 #include "../FirstOrderSolver/LaxFriedrichSolver.h"
 
-//#define CHARACTERISTIC_WISE
-
 //#define MY_STABILITY_FIX 10.0 //100.0, 1e-6
+
+#define CHARACTERISTIC_WISE
+
 
 namespace euler
 {
@@ -15,7 +16,7 @@ namespace euler
 	{
 	private:
 
-		double const m_eps = 1e-3;
+		double const m_eps = 5e-4;
 
 		static int const gaussian_points_number = 6;
 
@@ -91,11 +92,11 @@ namespace euler
 						 Point2 const& gaussianPoint, int edgeNumber) const override;
 
 #ifdef CHARACTERISTIC_WISE
-		void FormL_A(double density, double velX, double velY, double H, arma::mat44& L_A) const;
-		void FormL_B(double density, double velX, double velY, double H, arma::mat44& L_B) const;
+		void FormL(double density, double velX, double velY, double H, arma::mat44& L,
+				   std::array<double, 2> const& normal) const;
 
-		void FormR_A(double density, double velX, double velY, double H, arma::mat44& R_A) const;
-		void FormR_B(double density, double velX, double velY, double H, arma::mat44& R_B) const;
+		void FormR(double density, double velX, double velY, double H, arma::mat44& R,
+				   std::array<double, 2> const& normal) const;
 #endif
 
 		void GetStencil(Triangle const* pTriangle, std::array<Triangle const*, 10> &stencil) const;
@@ -255,6 +256,7 @@ namespace euler
 
 
 					Triangle* pTriangle = T::m_triangles[triangle_counter];
+					pTriangle->SetBoundary(true);
 
 					std::array<Triangle*, 7> virtualTriangles;
 
@@ -268,8 +270,6 @@ namespace euler
 						T::m_boundingTriangles.push_back(virtualTriangles[i]);
 
 					}
-
-
 
 				}
 			}
@@ -462,10 +462,8 @@ namespace euler
 
 				arma::mat33 A;
 				A << 1.0 << 1.0 << 1.0 << arma::endr
-				  << ksi_average[ind_0] << ksi_average[ind_1]
-				  << ksi_average[ind_2] << arma::endr
-				  << eta_average[ind_0] << eta_average[ind_1]
-				  << eta_average[ind_2] << arma::endr;
+				  << ksi_average[ind_0] << ksi_average[ind_1] << ksi_average[ind_2] << arma::endr
+				  << eta_average[ind_0] << eta_average[ind_1] << eta_average[ind_2] << arma::endr;
 
 
 				arma::vec3 coeffs = arma::solve(A, b);
@@ -487,61 +485,60 @@ namespace euler
 			}
 
 
+ /*           arma::mat B(6, 10);
+            B.fill(0.0);
+            arma::vec::fixed<6> f;
+            for (int j = 0; j < 10; ++j)
+            {
+                B(0, j) = 1.0;
+                B(1, j) = ksi_average[j];
+                B(2, j) = eta_average[j];
+                B(3, j) = ksi_square_average[j];
+                B(4, j) = eta_square_average[j];
+                B(5, j) = ksi_eta_average[j];
+            }
+            f << 1.0 << (currGPoint.x - x_0) / h << (currGPoint.y - y_0) / h
+              << sqr((currGPoint.x - x_0) / h) << sqr((currGPoint.y - y_0) / h)
+              << (currGPoint.x - x_0) * (currGPoint.y - y_0) / sqr(h);
 
-/*			arma::mat B(6, 10);
-			B.fill(0.0);
-			arma::vec::fixed<6> f;
-			for(int j = 0; j < 10; ++j)
-			{
-				B(0, j) = 1.0;
-				B(1, j) = ksi_average[j];
-				B(2, j) = eta_average[j];
-				B(3, j) = ksi_square_average[j];
-				B(4, j) = eta_square_average[j];
-				B(5, j) = ksi_eta_average[j];
-			}
-			f << 1.0 << (currGPoint.x - x_0) / h << (currGPoint.y - y_0) / h
-			  << sqr( (currGPoint.x - x_0) / h ) << sqr( (currGPoint.y - y_0) / h )
-			  << (currGPoint.x - x_0) * (currGPoint.y - y_0) / sqr(h);
+            arma::vec soCoeffs = arma::solve(B, f);
 
-			arma::vec soCoeffs = arma::solve(B, f);
+            //getting gammas
 
-			//getting gammas
+            arma::mat G(10, 9);
+            G.fill(0.0);
+            for (int j = 0; j < 9; ++j)
+                G(0, j) = trRecData.fo_polynomial[j].coeffsAtPoints[g_point_number].c[0];
 
-			arma::mat G(10, 9);
-			G.fill(0.0);
-			for(int j = 0; j < 9; ++j)
-				G(0, j) = trRecData.fo_polynomial[j].coeffsAtPoints[g_point_number].c[0];
+            G(1, 0) = trRecData.fo_polynomial[0].coeffsAtPoints[g_point_number].c[1];
+            G(1, 2) = trRecData.fo_polynomial[2].coeffsAtPoints[g_point_number].c[2];
+            G(1, 5) = trRecData.fo_polynomial[5].coeffsAtPoints[g_point_number].c[1];
+            G(1, 6) = trRecData.fo_polynomial[6].coeffsAtPoints[g_point_number].c[1];
 
-			G(1, 0) = trRecData.fo_polynomial[0].coeffsAtPoints[g_point_number].c[1];
-			G(1, 2) = trRecData.fo_polynomial[2].coeffsAtPoints[g_point_number].c[2];
-			G(1, 5) = trRecData.fo_polynomial[5].coeffsAtPoints[g_point_number].c[1];
-			G(1, 6) = trRecData.fo_polynomial[6].coeffsAtPoints[g_point_number].c[1];
+            G(2, 0) = trRecData.fo_polynomial[0].coeffsAtPoints[g_point_number].c[2];
+            G(2, 1) = trRecData.fo_polynomial[1].coeffsAtPoints[g_point_number].c[1];
+            G(2, 7) = trRecData.fo_polynomial[7].coeffsAtPoints[g_point_number].c[1];
+            G(2, 8) = trRecData.fo_polynomial[8].coeffsAtPoints[g_point_number].c[1];
 
-			G(2, 0) = trRecData.fo_polynomial[0].coeffsAtPoints[g_point_number].c[2];
-			G(2, 1) = trRecData.fo_polynomial[1].coeffsAtPoints[g_point_number].c[1];
-			G(2, 7) = trRecData.fo_polynomial[7].coeffsAtPoints[g_point_number].c[1];
-			G(2, 8) = trRecData.fo_polynomial[8].coeffsAtPoints[g_point_number].c[1];
-
-			G(3, 1) = trRecData.fo_polynomial[1].coeffsAtPoints[g_point_number].c[2];
-			G(3, 2) = trRecData.fo_polynomial[2].coeffsAtPoints[g_point_number].c[1];
-			G(3, 3) = trRecData.fo_polynomial[3].coeffsAtPoints[g_point_number].c[1];
-			G(3, 4) = trRecData.fo_polynomial[4].coeffsAtPoints[g_point_number].c[1];
+            G(3, 1) = trRecData.fo_polynomial[1].coeffsAtPoints[g_point_number].c[2];
+            G(3, 2) = trRecData.fo_polynomial[2].coeffsAtPoints[g_point_number].c[1];
+            G(3, 3) = trRecData.fo_polynomial[3].coeffsAtPoints[g_point_number].c[1];
+            G(3, 4) = trRecData.fo_polynomial[4].coeffsAtPoints[g_point_number].c[1];
 
 
-			G(4, 5) = trRecData.fo_polynomial[5].coeffsAtPoints[g_point_number].c[2];
-			G(5, 6) = trRecData.fo_polynomial[6].coeffsAtPoints[g_point_number].c[2];
-			G(6, 3) = trRecData.fo_polynomial[3].coeffsAtPoints[g_point_number].c[2];
-			G(7, 4) = trRecData.fo_polynomial[4].coeffsAtPoints[g_point_number].c[2];
-			G(8, 7) = trRecData.fo_polynomial[7].coeffsAtPoints[g_point_number].c[2];
-			G(9, 8) = trRecData.fo_polynomial[8].coeffsAtPoints[g_point_number].c[2];
+            G(4, 5) = trRecData.fo_polynomial[5].coeffsAtPoints[g_point_number].c[2];
+            G(5, 6) = trRecData.fo_polynomial[6].coeffsAtPoints[g_point_number].c[2];
+            G(6, 3) = trRecData.fo_polynomial[3].coeffsAtPoints[g_point_number].c[2];
+            G(7, 4) = trRecData.fo_polynomial[4].coeffsAtPoints[g_point_number].c[2];
+            G(8, 7) = trRecData.fo_polynomial[7].coeffsAtPoints[g_point_number].c[2];
+            G(9, 8) = trRecData.fo_polynomial[8].coeffsAtPoints[g_point_number].c[2]; */
 
-			arma::vec9 gammas = arma::solve(G, soCoeffs); */
 
 			//getting gammas
-			M *= 10000;
-			d *= 10000;
+            M *= 10000;
+            d *= 10000;
 			arma::vec9 gammas = arma::solve(M, d);
+
 
 			for(int i = 0; i < 9; ++i)
 			{
@@ -557,7 +554,8 @@ namespace euler
 				for(int i = 0; i < 9; ++i)
 				{
 					trRecData.so_polynomial.coeffsAtPoints[g_point_number].gammas_plus[i] =
-							0.5 * (gammas[i] + trRecData.so_polynomial.coeffsAtPoints[g_point_number].theta * gammas[i]);
+							0.5 * (gammas[i] + trRecData.so_polynomial.coeffsAtPoints[g_point_number].theta *
+                                                       std::fabs(gammas[i]));
 					trRecData.so_polynomial.coeffsAtPoints[g_point_number].gammas_minus[i] =
 							trRecData.so_polynomial.coeffsAtPoints[g_point_number].gammas_plus[i] - gammas[i];
 
@@ -633,52 +631,52 @@ namespace euler
 				auto const c_1 = trRecData.fo_polynomial[polynomial_number].coeffsAtPoints[g_point_number].c[1];
 				auto const c_2 = trRecData.fo_polynomial[polynomial_number].coeffsAtPoints[g_point_number].c[2];
 
-				auto const ksi = (trRecData.gaussian_points[g_point_number].x - x_0) / h;
-				auto const eta = (trRecData.gaussian_points[g_point_number].y - y_0) / h;
+				auto const ksi_G = (trRecData.gaussian_points[g_point_number].x - x_0) / h;
+				auto const eta_G = (trRecData.gaussian_points[g_point_number].y - y_0) / h;
 
 
 				//first row, u = 1;
-				A(i, 0) = ksi;
-				A(i, 1) = ksi;
-				A(i, 2) = ksi;
+				A(i, 0) = ksi_G;
+				A(i, 1) = ksi_G;
+				A(i, 2) = ksi_G;
 
-				A(i, 3) = eta;
-				A(i, 4) = eta;
-				A(i, 5) = eta;
+				A(i, 3) = eta_G;
+				A(i, 4) = eta_G;
+				A(i, 5) = eta_G;
 
 				A(i, 6) = 1.0;
 				A(i, 7) = 1.0;
 				A(i, 8) = 1.0;
 
-				c(i) = c_0 + c_1 + c_2;
+				c(i) = 1.0;
 
 				//second row, u = ksi
-				A(i + 1, 0) = ksi_average[ind_0] * ksi;
-				A(i + 1, 1) = ksi_average[ind_1] * ksi;
-				A(i + 1, 2) = ksi_average[ind_2] * ksi;
+				A(i + 1, 0) = ksi_average[ind_0] * ksi_G;
+				A(i + 1, 1) = ksi_average[ind_1] * ksi_G;
+				A(i + 1, 2) = ksi_average[ind_2] * ksi_G;
 
-				A(i + 1, 3) = ksi_average[ind_0] * eta;
-				A(i + 1, 4) = ksi_average[ind_1] * eta;
-				A(i + 1, 5) = ksi_average[ind_2] * eta;
+				A(i + 1, 3) = ksi_average[ind_0] * eta_G;
+				A(i + 1, 4) = ksi_average[ind_1] * eta_G;
+				A(i + 1, 5) = ksi_average[ind_2] * eta_G;
 
 				A(i + 1, 6) = ksi_average[ind_0];
 				A(i + 1, 7) = ksi_average[ind_1];
 				A(i + 1, 8) = ksi_average[ind_2];
-				c(i + 1) = c_0 * ksi_average[ind_0] + c_1 * ksi_average[ind_1] + c_2 * ksi_average[ind_2];
+				c(i + 1) = ksi_G;
 
 				//third row, u = eta;
-				A(i + 2, 0) = eta_average[ind_0] * ksi;
-				A(i + 2, 1) = eta_average[ind_1] * ksi;
-				A(i + 2, 2) = eta_average[ind_2] * ksi;
+				A(i + 2, 0) = eta_average[ind_0] * ksi_G;
+				A(i + 2, 1) = eta_average[ind_1] * ksi_G;
+				A(i + 2, 2) = eta_average[ind_2] * ksi_G;
 
-				A(i + 2, 3) = eta_average[ind_0] * eta;
-				A(i + 2, 4) = eta_average[ind_1] * eta;
-				A(i + 2, 5) = eta_average[ind_2] * eta;
+				A(i + 2, 3) = eta_average[ind_0] * eta_G;
+				A(i + 2, 4) = eta_average[ind_1] * eta_G;
+				A(i + 2, 5) = eta_average[ind_2] * eta_G;
 
 				A(i + 2, 6) = eta_average[ind_0];
 				A(i + 2, 7) = eta_average[ind_1];
 				A(i + 2, 8) = eta_average[ind_2];
-				c(i + 2) = c_0 * eta_average[ind_0] + c_1 * eta_average[ind_1] + c_2 * eta_average[ind_2];
+				c(i + 2) = eta_G;
 
 
 
@@ -688,7 +686,7 @@ namespace euler
             A *= 10000;
             c *= 10000;
 
- //           assert(arma::det(A) != 0);
+ //           assert(arma::rank(A) == 9);
 			arma::vec9 solution = arma::solve(A, c);
 
 			trRecData.smoothIndicatorData[polynomial_number].alpha[0] = solution[0];
@@ -720,6 +718,10 @@ namespace euler
         auto max_norm = arma::norm(q[0], 2);
 #endif
 
+#ifdef CHARACTERISTIC_WISE
+		Vec4 q_star{0.0, 0.0, 0.0, 0.0};
+#endif
+
 		for(int i = 1; i < 10; ++i)
 		{
 			T::FormQVector(q[i], stencil[i]);
@@ -728,6 +730,11 @@ namespace euler
 			if(norm > max_norm)
 				max_norm = norm;
 #endif
+
+#ifdef CHARACTERISTIC_WISE
+			q_star += q[i];
+#endif
+
 		}
 
 #ifdef MY_STABILITY_FIX
@@ -737,8 +744,38 @@ namespace euler
 		}
 #endif
 
+
+
 		//Reconstruction!
+
 		Vec4 q_reconstructed{0.0, 0.0, 0.0, 0.0};
+
+#ifdef CHARACTERISTIC_WISE
+
+        q_star /= 10;
+		arma::mat44 R;
+		arma::mat44 L;
+		double density, velocityX, velocityY, pressure;
+		density = q_star[0];
+		velocityX = q_star[1] / density;
+		velocityY = q_star[2] / density;
+		auto const E = q_star[3] / density;
+		auto const velocity_sqr_abs = sqr(velocityX) + sqr(velocityY);
+		auto const e = E - 0.5 * velocity_sqr_abs;
+		pressure = (T::m_gamma - 1.0) * e * density;
+		auto const H = e + pressure / density + 0.5 * velocity_sqr_abs;
+		auto const c = std::sqrt(T::m_gamma * pressure / density);
+		auto const normal = pTriangle->CalculateNormal(edgeNumber);
+		FormL(density, velocityX, velocityY, H, L, normal);
+		FormR(density, velocityX, velocityY, H, R, normal);
+
+		for(int i = 0; i < 10; ++i)
+		{
+			q[i] = L * q[i];
+		}
+
+
+#endif
 
 		assert(pTriangle->ToBeReconstructed());
 		TriangleReconstructionData const& triangleRecData =
@@ -782,8 +819,6 @@ namespace euler
 			auto const ind_1 = triangleRecData.fo_polynomial[polynom_num].stencil[1];
 			auto const ind_2 = triangleRecData.fo_polynomial[polynom_num].stencil[2];
 
-
-
 			SmoothIndicatorReconstructionData const& smIndData = triangleRecData.smoothIndicatorData[polynom_num];
 
 			Vec4 smoothIndicator = arma::square(smIndData.alpha[0] * q[ind_0]
@@ -795,33 +830,30 @@ namespace euler
 
 			if(!weights_to_be_treated)
 			{
-				omega_waved[polynom_num] = Vec4{triangleRecData.so_polynomial.coeffsAtPoints[current_g_n].gammas[polynom_num],
-												triangleRecData.so_polynomial.coeffsAtPoints[current_g_n].gammas[polynom_num],
-												triangleRecData.so_polynomial.coeffsAtPoints[current_g_n].gammas[polynom_num],
-												triangleRecData.so_polynomial.coeffsAtPoints[current_g_n].gammas[polynom_num]} /
-						arma::square(eps + smoothIndicator);
+                auto const gamma = triangleRecData.so_polynomial.coeffsAtPoints[current_g_n].gammas[polynom_num];
+				omega_waved[polynom_num] = Vec4{gamma, gamma, gamma, gamma} / arma::square(eps + smoothIndicator); //changed 1.5
 
 				omega_waved_sum += omega_waved[polynom_num];
-			} else
+			}
+			else
 			{
-				omega_waved_plus[polynom_num] = Vec4{triangleRecData.so_polynomial.coeffsAtPoints[current_g_n].gammas_plus[polynom_num],
-													 triangleRecData.so_polynomial.coeffsAtPoints[current_g_n].gammas_plus[polynom_num],
-													 triangleRecData.so_polynomial.coeffsAtPoints[current_g_n].gammas_plus[polynom_num],
-													 triangleRecData.so_polynomial.coeffsAtPoints[current_g_n].gammas_plus[polynom_num]} /
-												arma::square(eps + smoothIndicator);
+                auto const gamma_plus = triangleRecData.so_polynomial.coeffsAtPoints[current_g_n].gammas_plus[polynom_num];
+                auto const gamma_minus = triangleRecData.so_polynomial.coeffsAtPoints[current_g_n].gammas_minus[polynom_num];
+
+				omega_waved_plus[polynom_num] = Vec4{gamma_plus, gamma_plus, gamma_plus, gamma_plus}
+												/ arma::square(eps + smoothIndicator); //changed
+
 				omega_waved_plus_sum += omega_waved_plus[polynom_num];
 
-				omega_waved_minus[polynom_num] = Vec4{triangleRecData.so_polynomial.coeffsAtPoints[current_g_n].gammas_minus[polynom_num],
-													 triangleRecData.so_polynomial.coeffsAtPoints[current_g_n].gammas_minus[polynom_num],
-													 triangleRecData.so_polynomial.coeffsAtPoints[current_g_n].gammas_minus[polynom_num],
-													 triangleRecData.so_polynomial.coeffsAtPoints[current_g_n].gammas_minus[polynom_num]} /
-												arma::square(eps + smoothIndicator);
+				omega_waved_minus[polynom_num] = Vec4{gamma_minus, gamma_minus, gamma_minus, gamma_minus} /
+												arma::square(eps + smoothIndicator); //changed
+
 				omega_waved_minus_sum += omega_waved_minus[polynom_num];
 
 			}
 
-
 		}
+
 
 
 		for(int polynom_num = 0; polynom_num < 9; ++polynom_num)
@@ -836,9 +868,11 @@ namespace euler
 			auto const c_1 = current_polynomial.coeffsAtPoints[current_g_n].c[1];
 			auto const c_2 = current_polynomial.coeffsAtPoints[current_g_n].c[2];
 
+
 			if(!weights_to_be_treated)
 			{
 				Vec4 const omega = omega_waved[polynom_num] / omega_waved_sum;
+
 				q_reconstructed += omega % (c_0 * q[ind_0] + c_1 * q[ind_1] + c_2 * q[ind_2]);
 
 			}
@@ -853,10 +887,19 @@ namespace euler
 								   triangleRecData.so_polynomial.coeffsAtPoints[current_g_n].sigma_minus * omega_minus % p;
 			}
 
+
 		}
+
+
 
 #ifdef MY_STABILITY_FIX
         q_reconstructed *= MY_STABILITY_FIX * max_norm;
+#endif
+
+
+#ifdef CHARACTERISTIC_WISE
+
+		q_reconstructed = R * q_reconstructed;
 #endif
 
 		if(!((q_reconstructed[0] > 0) && (q_reconstructed[3] > 0)))
@@ -864,6 +907,7 @@ namespace euler
 			std::cout << "kek" << std::endl;
 			throw 1;
 		}
+
 
 		return q_reconstructed;
 
@@ -877,136 +921,77 @@ namespace euler
 #ifdef CHARACTERISTIC_WISE
 
 	template<class T>
-	inline void WENOSolver<T>::FormL_A(double density, double velocityX, double velocityY,
-									   double H, arma::mat44 &L_A) const
+	inline void WENOSolver<T>::FormL(double density, double velocityX, double velocityY,
+									   double H, arma::mat44 &L,  std::array<double, 2> const& normal) const
 	{
 
 		auto const velocity_sqr_abs = sqr(velocityX) + sqr(velocityY);
-		auto const sound_speed = std::sqrt((T::m_gamma - 1) * (H - 0.5 * velocity_sqr_abs));
+		auto const c = std::sqrt((T::m_gamma - 1) * (H - 0.5 * velocity_sqr_abs));
+
+		auto const vel_n_x = normal[0] * velocityX + normal[1] * velocityY;
+
+		L.row(0) = arma::rowvec::fixed<4>{ ( (T::m_gamma - 1) * 0.5 * velocity_sqr_abs + c * vel_n_x ) / (2 * sqr(c)),
+						 ( (1 - T::m_gamma) * velocityX - c * normal[0] ) / (2 * sqr(c)),
+						 ( (1 - T::m_gamma) * velocityY - c * normal[1] ) / (2 * sqr(c)),
+						 (T::m_gamma - 1) / (2 * sqr(c))
+		};
+		L.row(1) = arma::rowvec::fixed<4>{ ( sqr(c) - (T::m_gamma - 1) * 0.5 * velocity_sqr_abs ) / sqr(c),
+						 (T::m_gamma - 1) * velocityX / sqr(c),
+						 (T::m_gamma - 1) * velocityY / sqr(c),
+						 (1 - T::m_gamma) / sqr(c)
+		};
+		L.row(2) = arma::rowvec::fixed<4>{ (velocityY * normal[0] - velocityX * normal[1]),
+						 normal[1],
+						 -normal[0],
+						 0.0
+		};
+		L.row(3) = arma::rowvec::fixed<4>{ ( (T::m_gamma - 1) * 0.5 * velocity_sqr_abs - c * vel_n_x ) / (2 * sqr(c)),
+						 ( (1 - T::m_gamma) * velocityX + c * normal[0] ) / (2 * sqr(c)),
+						 ( (1 - T::m_gamma) * velocityY + c * normal[1] ) / (2 * sqr(c)),
+						 (T::m_gamma - 1) / (2 * sqr(c))
+		};
 
 
-		L_A(0, 0) = velocity_sqr_abs / 2 + velocityX * sound_speed / (T::m_gamma - 1);
-		L_A(0, 1) = -velocityX - sound_speed / (T::m_gamma - 1);
-		L_A(0, 2) = -velocityY;
-		L_A(0, 3) = 1.0;
 
-		L_A(1, 0) = sound_speed * sound_speed / (T::m_gamma - 1) - velocity_sqr_abs / 2 - velocityY * sound_speed /(T::m_gamma - 1);
-		L_A(1, 1) = velocityX;
-		L_A(1, 2) = velocityY + sound_speed / (T::m_gamma - 1);
-		L_A(1, 3) = -1.0;
-
-		L_A(2, 0) = sound_speed * sound_speed / (T::m_gamma - 1) - velocity_sqr_abs / 2 + velocityY * sound_speed /(T::m_gamma - 1);
-		L_A(2, 1) = velocityX;
-		L_A(2, 2) = velocityY - sound_speed / (T::m_gamma - 1);
-		L_A(2, 3) = -1.0;
-
-		L_A(3, 0) = velocity_sqr_abs / 2 - velocityX * sound_speed / (T::m_gamma - 1);
-		L_A(3, 1) = -velocityX + sound_speed / (T::m_gamma - 1);
-		L_A(3, 2) = -velocityY;
-		L_A(3, 3) = 1.0;
-
-		L_A *= (T::m_gamma - 1) / (2 * sound_speed * sound_speed);
 
 	}
+
 
 
 	template<class T>
-	inline void WENOSolver<T>::FormL_B(double density, double velocityX, double velocityY,
-									   double H, arma::mat44 &L_B) const
+	inline void WENOSolver<T>::FormR(double density, double velocityX, double velocityY,
+									   double H, arma::mat44 &R, std::array<double, 2> const& normal) const
 	{
 
 		auto const velocity_sqr_abs = sqr(velocityX) + sqr(velocityY);
-		auto const sound_speed = std::sqrt((T::m_gamma - 1) * (H - 0.5 * velocity_sqr_abs));
+		auto const c = std::sqrt((T::m_gamma - 1) * (H - 0.5 * velocity_sqr_abs));
 
+		auto const vel_n_x = normal[0] * velocityX + normal[1] * velocityY;
 
-		L_B(0, 0) = velocity_sqr_abs / 2 + velocityY * sound_speed / (T::m_gamma - 1);
-		L_B(0, 1) = -velocityX;
-		L_B(0, 2) = -velocityY - sound_speed / (T::m_gamma - 1);
-		L_B(0, 3) = 1.0;
-
-		L_B(1, 0) = sound_speed * sound_speed / (T::m_gamma - 1) - velocity_sqr_abs / 2 - velocityX * sound_speed / (T::m_gamma - 1);
-		L_B(1, 1) = velocityX + sound_speed / (T::m_gamma - 1);
-		L_B(1, 2) = velocityY;
-		L_B(1, 3) = -1.0;
-
-		L_B(2, 0) = sound_speed * sound_speed / (T::m_gamma - 1) - velocity_sqr_abs / 2 + velocityX * sound_speed / (T::m_gamma - 1);
-		L_B(2, 1) = velocityX - sound_speed / (T::m_gamma - 1);
-		L_B(2, 2) = velocityY;
-		L_B(2, 3) = -1.0;
-
-		L_B(3, 0) = velocity_sqr_abs / 2 - velocityY * sound_speed / (T::m_gamma - 1);
-		L_B(3, 1) = -velocityX;
-		L_B(3, 2) = -velocityY + sound_speed / (T::m_gamma - 1);
-		L_B(3, 3) = 1.0;
-
-		L_B *= (T::m_gamma - 1) / (2 * sound_speed * sound_speed);
+		R.col(0) = Vec4{1.0,
+						velocityX - c * normal[0],
+						velocityY - c * normal[1],
+						H - c * vel_n_x
+		};
+		R.col(1) = Vec4{1.0,
+						velocityX,
+						velocityY,
+						0.5 * velocity_sqr_abs
+		};
+		R.col(2) = Vec4{0.0,
+						normal[1],
+						-normal[0],
+						velocityX * normal[1] - velocityY * normal[0]
+		};
+		R.col(3) = Vec4{1.0,
+						velocityX + c * normal[0],
+						velocityY + c * normal[1],
+						H + c * vel_n_x
+		};
 
 	}
 
 
-	template<class T>
-	inline void WENOSolver<T>::FormR_A(double density, double velocityX, double velocityY,
-									   double H, arma::mat44 &R_A) const
-	{
-
-		auto const velocity_sqr_abs = sqr(velocityX) + sqr(velocityY);
-		auto const sound_speed = std::sqrt((T::m_gamma - 1) * (H - 0.5 * velocity_sqr_abs));
-
-
-
-		R_A(0, 0) = 1;
-		R_A(0, 1) = 1;
-		R_A(0, 2) = 1;
-		R_A(0, 3) = 1;
-
-		R_A(1, 0) = velocityX - sound_speed;
-		R_A(1, 1) = velocityX;
-		R_A(1, 2) = velocityX;
-		R_A(1, 3) = velocityX + sound_speed;
-
-		R_A(2, 0) = velocityY;
-		R_A(2, 1) = velocityY + sound_speed;
-		R_A(2, 2) = velocityY - sound_speed;
-		R_A(2, 3) = velocityY;
-
-		R_A(3, 0) = H - velocityX * sound_speed;
-		R_A(3, 1) = velocity_sqr_abs / 2 + velocityY * sound_speed;
-		R_A(3, 2) = velocity_sqr_abs / 2 - velocityY * sound_speed;
-		R_A(3, 3) = H + velocityX * sound_speed;
-
-
-	}
-
-	template<class T>
-	inline void WENOSolver<T>::FormR_B(double density, double velocityX, double velocityY,
-									   double H, arma::mat44 &R_B) const
-	{
-
-		auto const velocity_sqr_abs = sqr(velocityX) + sqr(velocityY);
-		auto const sound_speed = std::sqrt((T::m_gamma - 1) * (H - 0.5 * velocity_sqr_abs));
-
-
-		R_B(0, 0) = 1;
-		R_B(0, 1) = 1;
-		R_B(0, 2) = 1;
-		R_B(0, 3) = 1;
-
-		R_B(1, 0) = velocityX;
-		R_B(1, 1) = velocityX + sound_speed;
-		R_B(1, 2) = velocityX - sound_speed;
-		R_B(1, 3) = velocityX;
-
-		R_B(2, 0) = velocityY - sound_speed;
-		R_B(2, 1) = velocityY;
-		R_B(2, 2) = velocityY;
-		R_B(2, 3) = velocityY + sound_speed;
-
-		R_B(3, 0) = H - velocityY * sound_speed;
-		R_B(3, 1) = velocity_sqr_abs / 2 + velocityX * sound_speed;
-		R_B(3, 2) = velocity_sqr_abs / 2 - velocityX * sound_speed;
-		R_B(3, 3) = H + velocityY * sound_speed;
-
-	}
 
 #endif
 
