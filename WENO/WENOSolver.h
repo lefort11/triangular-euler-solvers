@@ -16,7 +16,7 @@ namespace euler
 	{
 	private:
 
-		double const m_eps = 5e-4;
+		double const m_eps = 1e-3;
 
 		static int const gaussian_points_number = 6;
 
@@ -277,15 +277,18 @@ namespace euler
 		}
 
 		std::vector<GEOM_FADE2D::Triangle2*> kek(T::m_triangles.size());
-		std::vector<GEOM_FADE2D::Triangle2*> kekas(T::m_boundingTriangles.size());
+		std::vector<GEOM_FADE2D::Triangle2*> kekas;
 
 		for(int i = 0; i < kek.size(); ++i)
 		{
 			kek[i] = dynamic_cast<GEOM_FADE2D::Triangle2*>(T::m_triangles[i]);
 		}
-		for(int i = 0; i < kekas.size(); ++i)
+		for(int i = 0; i < T::m_boundingTriangles.size(); ++i)
 		{
-			kekas[i] = dynamic_cast<GEOM_FADE2D::Triangle2*>(T::m_boundingTriangles[i]);
+            if(T::m_boundingTriangles[i] != nullptr)
+            {
+                kekas.push_back(dynamic_cast<GEOM_FADE2D::Triangle2 *>(T::m_boundingTriangles[i]));
+            }
 		}
 
 		GEOM_FADE2D::Visualizer2 vis("kekas.ps");
@@ -718,9 +721,6 @@ namespace euler
         auto max_norm = arma::norm(q[0], 2);
 #endif
 
-#ifdef CHARACTERISTIC_WISE
-		Vec4 q_star{0.0, 0.0, 0.0, 0.0};
-#endif
 
 		for(int i = 1; i < 10; ++i)
 		{
@@ -731,9 +731,6 @@ namespace euler
 				max_norm = norm;
 #endif
 
-#ifdef CHARACTERISTIC_WISE
-			q_star += q[i];
-#endif
 
 		}
 
@@ -752,22 +749,45 @@ namespace euler
 
 #ifdef CHARACTERISTIC_WISE
 
-        q_star /= 10;
-		arma::mat44 R;
+
+		auto const density_minus = qVec[0];
+		auto const velocityX_minus = qVec[1] / density_minus;
+		auto const velocityY_minus = qVec[2] / density_minus;
+		auto const E_minus = qVec[3] / density_minus;
+		auto const velocity_sqr_abs_minus = sqr(velocityX_minus) + sqr(velocityY_minus);
+		auto const eps_minus = E_minus - 0.5 * velocity_sqr_abs_minus;
+		auto const pressure_minus = (T::m_gamma - 1.0) * eps_minus * density_minus;
+		auto const H_minus = eps_minus + pressure_minus / density_minus + 0.5 * velocity_sqr_abs_minus;
+
+		auto const neighbour_triangle = pTriangle->GetOppTriangle(edgeNumber);
+		auto const density_plus = neighbour_triangle->density;
+		auto const velocityX_plus = neighbour_triangle->velocityX;
+		auto const velocityY_plus = neighbour_triangle->velocityY;
+		auto const pressure_plus = neighbour_triangle->pressure;
+		auto const velocity_sqr_abs_plus = sqr(velocityX_plus) + sqr(velocityY_plus);
+		auto const eps_plus = pressure_plus / (density_plus * (T::m_gamma - 1.0));
+		auto const H_plus = eps_plus + pressure_plus / density_plus + 0.5 * velocity_sqr_abs_plus;
+
+		auto const density_star = std::sqrt(density_minus * density_plus);
+
+		auto const velocityX_star = (std::sqrt(density_minus) * velocityX_minus
+									 + std::sqrt(density_plus) * velocityX_plus)
+									/ (std::sqrt(density_minus) + std::sqrt(density_plus));
+
+		auto const velocityY_star = (std::sqrt(density_minus) * velocityY_minus
+									 + std::sqrt(density_plus) * velocityY_plus)
+									/ (std::sqrt(density_minus) + std::sqrt(density_plus));
+
+		auto const H_star = (std::sqrt(density_minus) * H_minus
+							 + std::sqrt(density_plus) * H_plus)
+							/ (std::sqrt(density_minus) + std::sqrt(density_plus));
+
+        arma::mat44 R;
 		arma::mat44 L;
-		double density, velocityX, velocityY, pressure;
-		density = q_star[0];
-		velocityX = q_star[1] / density;
-		velocityY = q_star[2] / density;
-		auto const E = q_star[3] / density;
-		auto const velocity_sqr_abs = sqr(velocityX) + sqr(velocityY);
-		auto const e = E - 0.5 * velocity_sqr_abs;
-		pressure = (T::m_gamma - 1.0) * e * density;
-		auto const H = e + pressure / density + 0.5 * velocity_sqr_abs;
-		auto const c = std::sqrt(T::m_gamma * pressure / density);
+
 		auto const normal = pTriangle->CalculateNormal(edgeNumber);
-		FormL(density, velocityX, velocityY, H, L, normal);
-		FormR(density, velocityX, velocityY, H, R, normal);
+		FormL(density_star, velocityX_star, velocityY_star, H_star, L, normal);
+		FormR(density_star, velocityX_star, velocityY_star, H_star, R, normal);
 
 		for(int i = 0; i < 10; ++i)
 		{
@@ -807,7 +827,7 @@ namespace euler
 		std::array<Vec4, 9> omega_waved_minus;
 		Vec4 omega_waved_minus_sum{0.0, 0.0, 0.0, 0.0};
 
-		static Vec4 const eps{m_eps, m_eps, m_eps, m_eps};
+		//static Vec4 const eps{m_eps, m_eps, m_eps, m_eps};
 
 		auto const weights_to_be_treated =
                 triangleRecData.so_polynomial.coeffsAtPoints[current_g_n].weights_to_be_treated;
@@ -827,6 +847,15 @@ namespace euler
 							  arma::square(smIndData.beta[0] * q[ind_0]
 										   + smIndData.beta[1] * q[ind_1]
 										   + smIndData.beta[2] * q[ind_2]);
+
+            Vec4 eps{0.0, 0.0, 0.0, 0.0};
+            for(int i = 0; i < 4; ++i)
+            {
+                if(smoothIndicator[i] <  m_eps)
+                    eps[i] = m_eps;
+                else
+                    eps[i] = m_eps * 0.1;
+            }
 
 			if(!weights_to_be_treated)
 			{
