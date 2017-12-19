@@ -277,7 +277,7 @@ namespace euler
 		}
 
 		std::vector<GEOM_FADE2D::Triangle2*> kek(T::m_triangles.size());
-		std::vector<GEOM_FADE2D::Triangle2*> kekas;
+		std::vector<GEOM_FADE2D::Triangle2*> kekas(T::m_boundingTriangles.size());
 
 		for(int i = 0; i < kek.size(); ++i)
 		{
@@ -285,10 +285,7 @@ namespace euler
 		}
 		for(int i = 0; i < T::m_boundingTriangles.size(); ++i)
 		{
-            if(T::m_boundingTriangles[i] != nullptr)
-            {
-                kekas.push_back(dynamic_cast<GEOM_FADE2D::Triangle2 *>(T::m_boundingTriangles[i]));
-            }
+            kekas[i] = dynamic_cast<GEOM_FADE2D::Triangle2 *>(T::m_boundingTriangles[i]);
 		}
 
 		GEOM_FADE2D::Visualizer2 vis("kekas.ps");
@@ -827,7 +824,12 @@ namespace euler
 		std::array<Vec4, 9> omega_waved_minus;
 		Vec4 omega_waved_minus_sum{0.0, 0.0, 0.0, 0.0};
 
-		//static Vec4 const eps{m_eps, m_eps, m_eps, m_eps};
+        auto eps0 = pTriangle->getArea2D();
+        if(eps0 < m_eps * 0.01)
+            eps0 = m_eps * 0.01;
+        else if(eps0 > m_eps)
+            eps0 = m_eps;
+		Vec4 const eps{eps0, eps0, eps0, eps0};
 
 		auto const weights_to_be_treated =
                 triangleRecData.so_polynomial.coeffsAtPoints[current_g_n].weights_to_be_treated;
@@ -847,15 +849,6 @@ namespace euler
 							  arma::square(smIndData.beta[0] * q[ind_0]
 										   + smIndData.beta[1] * q[ind_1]
 										   + smIndData.beta[2] * q[ind_2]);
-
-            Vec4 eps{0.0, 0.0, 0.0, 0.0};
-            for(int i = 0; i < 4; ++i)
-            {
-                if(smoothIndicator[i] <  m_eps)
-                    eps[i] = m_eps;
-                else
-                    eps[i] = m_eps * 0.1;
-            }
 
 			if(!weights_to_be_treated)
 			{
@@ -909,6 +902,7 @@ namespace euler
 			{
 				Vec4 const omega_plus = omega_waved_plus[polynom_num] / omega_waved_plus_sum;
 				Vec4 const omega_minus = omega_waved_minus[polynom_num] / omega_waved_minus_sum;
+
 
 				Vec4 const p = c_0 * q[ind_0] + c_1 * q[ind_1] + c_2 * q[ind_2];
 
