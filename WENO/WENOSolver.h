@@ -6,7 +6,7 @@
 
 //#define MY_STABILITY_FIX 10.0 //100.0, 1e-6
 
-#define CHARACTERISTIC_WISE
+//#define CHARACTERISTIC_WISE
 
 
 namespace euler
@@ -88,8 +88,7 @@ namespace euler
 
 	protected:
 
-		Vec4 Reconstruct(Vec4 const &qVec, Triangle const *pTriangle,
-						 Point2 const& gaussianPoint, int edgeNumber) const override;
+		Vec4 Reconstruct(Vec4 const &qVec, Triangle const *pTriangle, int edgeNumber,  int gPointNumber) const override;
 
 #ifdef CHARACTERISTIC_WISE
 		void FormL(double density, double velX, double velY, double H, arma::mat44& L,
@@ -277,7 +276,7 @@ namespace euler
 		}
 
 		std::vector<GEOM_FADE2D::Triangle2*> kek(T::m_triangles.size());
-		std::vector<GEOM_FADE2D::Triangle2*> kekas(T::m_boundingTriangles.size());
+		std::vector<GEOM_FADE2D::Triangle2*> kekas;
 
 		for(int i = 0; i < kek.size(); ++i)
 		{
@@ -285,7 +284,8 @@ namespace euler
 		}
 		for(int i = 0; i < T::m_boundingTriangles.size(); ++i)
 		{
-            kekas[i] = dynamic_cast<GEOM_FADE2D::Triangle2 *>(T::m_boundingTriangles[i]);
+            if(T::m_boundingTriangles[i] != nullptr)
+                kekas.push_back(dynamic_cast<GEOM_FADE2D::Triangle2 *>(T::m_boundingTriangles[i]));
 		}
 
 		GEOM_FADE2D::Visualizer2 vis("kekas.ps");
@@ -322,7 +322,7 @@ namespace euler
 
 		stencil[8] = stencil[2]->GetOppTriangle(stencil[2]->getIntraTriangleIndex(stencil[0]->getCorner(0)));
 		stencil[9] = stencil[2]->GetOppTriangle(stencil[2]->getIntraTriangleIndex(stencil[0]->getCorner(2)));
-
+/*
 		if(stencil[5] == stencil[8])
 		{
 			stencil[8] = stencil[5]->GetOppTriangle(stencil[5]->getIntraTriangleIndex(stencil[0]->getCorner(2)));
@@ -336,7 +336,7 @@ namespace euler
 			stencil[9] = stencil[6]->GetOppTriangle(stencil[6]->getIntraTriangleIndex(stencil[0]->getCorner(0)));
 		}
 
-
+*/
 
 	}
 
@@ -703,8 +703,8 @@ namespace euler
 	}
 
 	template<class T>
-	inline Vec4 WENOSolver<T>::Reconstruct(Vec4 const& qVec, Triangle const *pTriangle,
-										   Point2 const &gaussianPoint, int edgeNumber) const
+	inline Vec4 WENOSolver<T>::Reconstruct(Vec4 const& qVec, Triangle const *pTriangle, int edgeNumber,
+										   int gPointNumber) const
 	{
 		std::array<Triangle const*, 10> stencil;
 		GetStencil(pTriangle, stencil);
@@ -802,18 +802,7 @@ namespace euler
 
 
 
-		bool point_found;
-		int current_g_n = 0;
-		for(current_g_n = 0; current_g_n < gaussian_points_number; ++current_g_n)
-		{
-			if(triangleRecData.gaussian_points[current_g_n] == gaussianPoint)
-			{
-				point_found = true;
-				break;
-			}
-		}
-		if(!point_found)
-			throw 1;
+		int current_g_n = (2 * (edgeNumber + 1) + gPointNumber) % 6;
 
 
 		std::array<Vec4, 9> omega_waved;
@@ -877,7 +866,6 @@ namespace euler
 		}
 
 
-
 		for(int polynom_num = 0; polynom_num < 9; ++polynom_num)
 		{
 			FOReconstructionPolynomial const& current_polynomial = triangleRecData.fo_polynomial[polynom_num];
@@ -897,7 +885,9 @@ namespace euler
 
 				q_reconstructed += omega % (c_0 * q[ind_0] + c_1 * q[ind_1] + c_2 * q[ind_2]);
 
-			}
+
+
+            }
 			else
 			{
 				Vec4 const omega_plus = omega_waved_plus[polynom_num] / omega_waved_plus_sum;
@@ -906,12 +896,14 @@ namespace euler
 
 				Vec4 const p = c_0 * q[ind_0] + c_1 * q[ind_1] + c_2 * q[ind_2];
 
+
 				q_reconstructed += triangleRecData.so_polynomial.coeffsAtPoints[current_g_n].sigma_plus * omega_plus % p -
 								   triangleRecData.so_polynomial.coeffsAtPoints[current_g_n].sigma_minus * omega_minus % p;
 			}
 
 
 		}
+
 
 
 

@@ -35,31 +35,18 @@ Vec4 LaxFriedrichSolver::CalculateFlux(Vec4 const &qVec, int triangleNumber, int
 {
 	//preparing q_minus and q_plus vectors
 
-	//****** Calculating gaussian points ********//
-
-	static auto const gaussian_weight = 1.0 / 2.0 + sqrt(3.0) / 6.0;
-
-	Point2  gaussian_p_1, gaussian_p_2;
-	auto const firstVertex = m_triangles[triangleNumber]->getCorner((edgeNumber + 1) % 3);
-	auto const secondVertex = m_triangles[triangleNumber]->getCorner((edgeNumber + 2) % 3);
-
-	gaussian_p_1.x = gaussian_weight * firstVertex->x() + (1 - gaussian_weight) * secondVertex->x();
-	gaussian_p_1.y = gaussian_weight * firstVertex->y() + (1 - gaussian_weight) * secondVertex->y();
-
-	gaussian_p_2.x = gaussian_weight * secondVertex->x() + (1 - gaussian_weight) * firstVertex->x();
-	gaussian_p_2.y = gaussian_weight * secondVertex->y() + (1 - gaussian_weight) * firstVertex->y();
 
 	Vec4 flux{0.0, 0.0, 0.0, 0.0};
 
 	auto const normal = CalculateNormal(m_triangles[triangleNumber], edgeNumber);
 
 
-	for (Point2 g_point : {gaussian_p_1, gaussian_p_2})
+	for (int gPointNum = 0; gPointNum < 2; ++gPointNum)
 	{
 		//*****************************************//
 
 		//********** Forming q_minus vector and _minus parameters *******//
-		Vec4 const q_minus = Reconstruct(qVec, m_triangles[triangleNumber], g_point, edgeNumber);
+		Vec4 const q_minus = Reconstruct(qVec, m_triangles[triangleNumber], edgeNumber, gPointNum);
 
 		//	double density_minus, velocityX_minus, velocityY_minus, pressure_minus;
 
@@ -106,7 +93,9 @@ Vec4 LaxFriedrichSolver::CalculateFlux(Vec4 const &qVec, int triangleNumber, int
 			neighbourEdgeNumber = (v1_ind + 1) % 3;
 
 
-		q_plus = Reconstruct(q_plus, neighbour_triangle, g_point, neighbourEdgeNumber);
+		auto const neighGPointNum = (gPointNum + 1) % 2;
+
+		q_plus = Reconstruct(q_plus, neighbour_triangle, neighbourEdgeNumber, (gPointNum + 1) % 2);
 
 
 		//Updating plus values

@@ -31,7 +31,7 @@ namespace euler
 		 */
 		Vec4 CalculateFlux(Vec4 const& qVec, int triangleNumber, int edgeNumber) const override;
 
-		Vec4 Reconstruct(Vec4 const &qVec, Triangle const *pTriangle, Point2 const &gaussianPoint, int edgeNumber) const override
+		Vec4 Reconstruct(Vec4 const &qVec, Triangle const *pTriangle, int edgeNumber, int gPointNumber) const override
 		{
 			return qVec;
 		}
