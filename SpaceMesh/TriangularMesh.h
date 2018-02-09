@@ -301,25 +301,14 @@ namespace euler
 			}
 			else
 			{
-
-				vtriangles[1] = vtriangles[0]->ReflectTriangle(ind1);
-				vtriangles[1]->SetVirtual(true);
-				vtriangles[1]->SetParentIndex(m_index);
-
-				vtriangles[2] = vtriangles[1]->ReflectTriangle(0);
-				vtriangles[3] = vtriangles[1]->ReflectTriangle(2);
-				vtriangles[2]->SetVirtual(true);
-				vtriangles[3]->SetVirtual(true);
-				vtriangles[2]->SetParentIndex(m_index);
-				vtriangles[3]->SetParentIndex(m_index);
-			/*	auto const vtr1 = vtriangles[0]->SummonThreeTriangles(ind1);
+				auto const vtr1 = vtriangles[0]->SummonThreeTriangles(ind1);
 				for(int i = 0; i < 3; ++i)
 				{
 					vtr1[i]->SetVirtual(true);
 					vtr1[i]->SetParentIndex(m_index);
 					vtriangles[i + 1] = vtr1[i];
 				}
-*/
+
 			}
 
 
@@ -414,25 +403,13 @@ namespace euler
 			}
 			else
 			{
-
-				vtriangles[4] = vtriangles[0]->ReflectTriangle(ind2);
-				vtriangles[4]->SetVirtual(true);
-				vtriangles[4]->SetParentIndex(m_index);
-
-				vtriangles[5] = vtriangles[4]->ReflectTriangle(0);
-				vtriangles[6] = vtriangles[4]->ReflectTriangle(2);
-				vtriangles[5]->SetVirtual(true);
-				vtriangles[6]->SetVirtual(true);
-				vtriangles[5]->SetParentIndex(m_index);
-				vtriangles[6]->SetParentIndex(m_index);
-				/*
 				auto const vtr2 = vtriangles[0]->SummonThreeTriangles(ind2);
 				for(int i = 0; i < 3; ++i)
 				{
 					vtr2[i]->SetVirtual(true);
 					vtr2[i]->SetParentIndex(m_index);
 					vtriangles[i + 4] = vtr2[i];
-				} */
+				}
 
 			}
 

@@ -3,11 +3,9 @@ project(Triangular_Solvers)
 
 set(CMAKE_CXX_STANDARD 11)
 
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/CMAKE_MODULES")
-
 IF(APPLE)
 
-    set(CMAKE_C_COMPILER /usr/local/bin/clang-omp CACHE FILEPATH /usr/local/bin/clang-omp CACHE FILEPATH "C compiler" FORCE)
+    set(CMAKE_C_COMPILER /usr/local/bin/clang-omp CACHE FILEPATH "C compiler" FORCE)
     set(CMAKE_CXX_COMPILER /usr/local/bin/clang-omp++ CACHE FILEPATH "C++ compiler" FORCE)
 
     FIND_PACKAGE(OpenMP REQUIRED)
@@ -34,10 +32,7 @@ IF(APPLE)
 ELSEIF(UNIX)
 
 
-
-    set(CMAKE_CXX_COMPILER "clang")
     set(CMAKE_CXX_COMPILER "clang++")
-
     FIND_PACKAGE(OpenMP REQUIRED)
     if(OPENMP_FOUND)
         message("OPENMP FOUND")
@@ -58,11 +53,10 @@ ELSEIF(UNIX)
     FIND_PACKAGE(Armadillo REQUIRED)
     INCLUDE_DIRECTORIES(${ARMADILLO_INCLUDE_DIRS})
 
-    FIND_PACKAGE(MKL REQUIRED)
+    FIND_PACKAGE(LAPACK REQUIRED)
 
 
 ELSE()
-
 
     FIND_LIBRARY(FADE2D_LIBRARY fade2D_x64_v141_Release ${CMAKE_CURRENT_SOURCE_DIR}/lib_source/lib/fade2d_win64)
     IF(FADE2D_LIBRARY)
@@ -115,7 +109,7 @@ add_executable(Triangular_Solvers ${SOURCE_FILES})
 IF(APPLE)
     target_link_libraries(Triangular_Solvers ${FADE2D_LIBRARY} ${ARMADILLO_LIBRARIES})
 ELSEIF(UNIX)
-    target_link_libraries(Triangular_Solvers ${FADE2D_LIBRARY} ${ARMADILLO_LIBRARIES} ${MKL_LIBRARIES})
+    target_link_libraries(Triangular_Solvers ${FADE2D_LIBRARY} ${ARMADILLO_LIBRARIES} ${LAPACK_LIBRARIES})
 ELSE()
     #target_link_libraries(Triangular_Solvers ${FADE2D_LIBRARY} ${LAPACK_LIBRARY} ${GMP_LIBRARY} ${BLASS_LIBRARY})
 	target_link_libraries(Triangular_Solvers ${FADE2D_LIBRARY})

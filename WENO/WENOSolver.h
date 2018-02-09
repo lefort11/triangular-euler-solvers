@@ -6,7 +6,7 @@
 
 //#define MY_STABILITY_FIX 10.0 //100.0, 1e-6
 
-#define CHARACTERISTIC_WISE
+//#define CHARACTERISTIC_WISE
 
 
 namespace euler
@@ -16,7 +16,7 @@ namespace euler
 	{
 	private:
 
-		double const m_eps = 1e-4;
+		double const m_eps = 1e-3;
 
 		static int const gaussian_points_number = 6;
 
@@ -485,8 +485,7 @@ namespace euler
 			}
 
 
-
-/*            arma::mat B(6, 10);
+ /*           arma::mat B(6, 10);
             B.fill(0.0);
             arma::vec::fixed<6> f;
             for (int j = 0; j < 10; ++j)
@@ -532,10 +531,12 @@ namespace euler
             G(6, 3) = trRecData.fo_polynomial[3].coeffsAtPoints[g_point_number].c[2];
             G(7, 4) = trRecData.fo_polynomial[4].coeffsAtPoints[g_point_number].c[2];
             G(8, 7) = trRecData.fo_polynomial[7].coeffsAtPoints[g_point_number].c[2];
-            G(9, 8) = trRecData.fo_polynomial[8].coeffsAtPoints[g_point_number].c[2];
+            G(9, 8) = trRecData.fo_polynomial[8].coeffsAtPoints[g_point_number].c[2]; */
 
-*/
+
 			//getting gammas
+            M *= 10000;
+            d *= 10000;
 			arma::vec9 gammas = arma::solve(M, d);
 
 
@@ -682,6 +683,8 @@ namespace euler
 				i+=3;
 			}
 
+            A *= 10000;
+            c *= 10000;
 
  //           assert(arma::rank(A) == 9);
 			arma::vec9 solution = arma::solve(A, c);
@@ -791,6 +794,7 @@ namespace euler
 
 #endif
 
+		assert(pTriangle->ToBeReconstructed());
 		TriangleReconstructionData const& triangleRecData =
 				pTriangle->IsVirtual()? m_vBoundaryReconstructionData[pTriangle->Index()] :
 									 m_vReconstructionData[pTriangle->Index()];
@@ -809,8 +813,12 @@ namespace euler
 		std::array<Vec4, 9> omega_waved_minus;
 		Vec4 omega_waved_minus_sum{0.0, 0.0, 0.0, 0.0};
 
-
-        Vec4 const eps{m_eps, m_eps, m_eps, m_eps};
+        auto eps0 = pTriangle->getArea2D();
+        if(eps0 < m_eps * 0.01)
+            eps0 = m_eps * 0.01;
+        else if(eps0 > m_eps)
+            eps0 = m_eps;
+		Vec4 const eps{eps0, eps0, eps0, eps0};
 
 		auto const weights_to_be_treated =
                 triangleRecData.so_polynomial.coeffsAtPoints[current_g_n].weights_to_be_treated;
@@ -844,12 +852,12 @@ namespace euler
                 auto const gamma_minus = triangleRecData.so_polynomial.coeffsAtPoints[current_g_n].gammas_minus[polynom_num];
 
 				omega_waved_plus[polynom_num] = Vec4{gamma_plus, gamma_plus, gamma_plus, gamma_plus}
-												/ arma::square(eps + smoothIndicator);
+												/ arma::square(eps + smoothIndicator); //changed
 
 				omega_waved_plus_sum += omega_waved_plus[polynom_num];
 
-				omega_waved_minus[polynom_num] = Vec4{gamma_minus, gamma_minus, gamma_minus, gamma_minus}
-                                                 / arma::square(eps + smoothIndicator);
+				omega_waved_minus[polynom_num] = Vec4{gamma_minus, gamma_minus, gamma_minus, gamma_minus} /
+												arma::square(eps + smoothIndicator); //changed
 
 				omega_waved_minus_sum += omega_waved_minus[polynom_num];
 
@@ -912,7 +920,6 @@ namespace euler
 		if(!((q_reconstructed[0] > 0) && (q_reconstructed[3] > 0)))
 		{
 			std::cout << "kek" << std::endl;
-            T::ClcOutput("results/fail.clc", 0, 0.5, 1);
 			throw 1;
 		}
 

@@ -167,13 +167,18 @@ Vec4 RoeSolver::CalculateFlux(Vec4 const &qVec, int triangleNumber, int edgeNumb
 
 
 		auto const vel_n_x_minus = normal[0] * velocityX_minus + normal[1] * velocityY_minus;
+//		auto const vel_n_y_minus = -normal[1] * velocityX_minus + normal[0] * velocityY_minus;
 
 		auto const vel_n_x_plus = normal[0] * velocityX_plus + normal[1] * velocityY_plus;
+//		auto const vel_n_y_plus = -normal[1] * velocityX_plus + normal[0] * velocityY_plus;
 
 		auto const vel_n_x_star = (std::sqrt(density_minus) * vel_n_x_minus
 								   + std::sqrt(density_plus) * vel_n_x_plus)
 								  / (std::sqrt(density_minus) + std::sqrt(density_plus));
 
+//		auto const vel_n_y_star = (std::sqrt(density_minus) * vel_n_y_minus
+//								   + std::sqrt(density_plus) * vel_n_y_plus)
+//								  / (std::sqrt(density_minus) + std::sqrt(density_plus));
 		auto const velocity_sqr_abs_star = sqr(velocityX_star) + sqr(velocityY_star);
 
 
