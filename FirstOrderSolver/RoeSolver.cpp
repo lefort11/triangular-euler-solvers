@@ -42,8 +42,29 @@ Vec4 RoeSolver::CalculateFlux(Vec4 const &qVec, int triangleNumber, int edgeNumb
 
 	auto const normal = CalculateNormal(m_triangles[triangleNumber], edgeNumber);
 
+    //********* Forming q_plus vector and _plus parameteres **********//
+    Triangle *neighbour_triangle = m_triangles[triangleNumber]->GetOppTriangle(edgeNumber);
 
-	for (int gPointNum = 0; gPointNum < 2; ++gPointNum)
+    Vec4 qVec_plus;
+    //		if (neighbour_triangle == nullptr)
+    //			neighbour_triangle = m_triangles[triangleNumber];
+
+    auto density_plus = neighbour_triangle->density;
+    auto velocityX_plus = neighbour_triangle->velocityX;
+    auto velocityY_plus = neighbour_triangle->velocityY;
+    auto pressure_plus = neighbour_triangle->pressure;
+
+    FormQVector(qVec_plus, density_plus, velocityX_plus, velocityY_plus, pressure_plus);
+
+    //edge_number calculation
+    auto const v0_ind =
+            neighbour_triangle->getIntraTriangleIndex(m_triangles[triangleNumber]->getCorner((edgeNumber + 1) % 3));
+
+    int const neighbourEdgeNumber = (v0_ind + 1) % 3;
+
+
+
+    for (int gPointNum = 0; gPointNum < 2; ++gPointNum)
 	{
 		//*****************************************//
 
@@ -64,29 +85,8 @@ Vec4 RoeSolver::CalculateFlux(Vec4 const &qVec, int triangleNumber, int edgeNumb
 		//****************************************************************//
 
 
-		//********* Forming q_plus vector and _plus parameteres **********//
 
-
-		Vec4 q_plus;
-		Triangle *neighbour_triangle = m_triangles[triangleNumber]->GetOppTriangle(edgeNumber);
-		//		if (neighbour_triangle == nullptr)
-		//			neighbour_triangle = m_triangles[triangleNumber];
-
-		auto density_plus = neighbour_triangle->density;
-		auto velocityX_plus = neighbour_triangle->velocityX;
-		auto velocityY_plus = neighbour_triangle->velocityY;
-		auto pressure_plus = neighbour_triangle->pressure;
-
-		FormQVector(q_plus, density_plus, velocityX_plus, velocityY_plus, pressure_plus);
-
-		//edge_number calculation
-		auto const v0_ind =
-				neighbour_triangle->getIntraTriangleIndex(m_triangles[triangleNumber]->getCorner((edgeNumber + 1) % 3));
-
-		int neighbourEdgeNumber = (v0_ind + 1) % 3;
-
-		q_plus = Reconstruct(q_plus, neighbour_triangle, neighbourEdgeNumber, (gPointNum + 1) % 2);
-
+        Vec4 q_plus = Reconstruct(qVec_plus, neighbour_triangle, neighbourEdgeNumber, (gPointNum + 1) % 2);
 
 		//Updating plus values
 		density_plus = q_plus[0];
@@ -284,11 +284,15 @@ Vec4 RoeSolver::CalculateFlux(Vec4 const &qVec, int triangleNumber, int edgeNumb
 
 
         flux += 0.5 * (normal[0] * (F_minus + F_plus) + normal[1] * (G_minus + G_plus));
-        for (int k = 0; k < 4; ++k)
+/*		for (int k = 0; k < 4; ++k)
         {
             flux -= 0.5 * std::fabs(lambdas_n_waved[k]) * arma::dot(l_n[k], q_plus - q_minus) * r_n[k];
         }
-
+*/
+        flux -= 0.5 * (std::fabs(lambdas_n_waved[0]) * arma::dot(l_n[0], q_plus - q_minus) * r_n[0]
+                       + std::fabs(lambdas_n_waved[1]) * arma::dot(l_n[1], q_plus - q_minus) * r_n[1]
+                       + std::fabs(lambdas_n_waved[2]) * arma::dot(l_n[2], q_plus - q_minus) * r_n[2]
+                       + std::fabs(lambdas_n_waved[3]) * arma::dot(l_n[3], q_plus - q_minus) * r_n[3]);
 
 	}
 

@@ -6,6 +6,12 @@
 
 #include "TriangularMesh.h"
 
+#define X_LEFT (-4.2)
+#define X_RIGHT 7.8
+#define Y_BOT (-6.0)
+#define Y_TOP 6.0
+
+
 namespace euler
 {
 
@@ -25,8 +31,22 @@ namespace euler
 
 	};
 
+    class MeshParams
+    {
+    public:
+        double minAngleDegree = 20.0;
+        double minEdgeLength = 0.001;
+        double maxEdgeLength = DBL_MAX;
+        GEOM_FADE2D::Vector2 gridVector = {1.0, 0.0};
+        double gridLength = DBL_MAX;
+        double growFactor = 5.0;
+        double growFactorMinArea = 0.001;
 
-	//!@brief Zone class describes a zone bounded by some functions.
+    };
+
+
+
+    //!@brief Zone class describes a zone bounded by some functions.
 	class Zone
 	{
 		const ConstraintFunction m_function;
@@ -72,7 +92,7 @@ namespace euler
 		 * @param discrPointNumber - point number of constraint function discretezation
 		 * @param initStateFunc - initial function of the problem
 		**/
-		TriangularMesh Triangulate(std::array<double, 3> const& triangleProperties,
+		TriangularMesh Triangulate(MeshParams const& triangleProperties,
 								   std::function<std::array<double, 4>(GEOM_FADE2D::Point2)> const& initStateFunc);
 
 	private:
@@ -131,29 +151,6 @@ namespace euler
 		}
 	};
 
-	class MyMeshGenParams: public GEOM_FADE2D::MeshGenParams
-	{
-	public:
-		MyMeshGenParams(GEOM_FADE2D::Zone2* pZone): MeshGenParams(pZone)
-		{}
-
-		double getMaxEdgeLength(GEOM_FADE2D::Triangle2* pT) override
-		{
-			if((pT->getOppositeTriangle(0) == nullptr) ||
-					(pT->getOppositeTriangle(1) == nullptr) ||
-					(pT->getOppositeTriangle(2) == nullptr))
-				return 0.5 * maxEdgeLength;
-			return maxEdgeLength;
-		}
-
-/*		double getMaxEdgeLength(GEOM_FADE2D::Triangle2* pT) override
-		{
-			if(pT->getInteriorAngle2D(pT->getMaxIndex()) >= 80)
-				return maxEdgeLength;
-			return 1.4 * maxEdgeLength;
-		} */
-
-	};
 
 }
 

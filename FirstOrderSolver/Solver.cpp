@@ -112,20 +112,6 @@ void Solver::Calculate(double time)
 }
 
 
-Vec4 Solver::RungeKuttaTVDStep(Vec4 const& current_q, std::function<Vec4(Vec4 const&)> const& f) const
-{
-
-	auto const q_1 = current_q + m_delta_t * f(current_q);
-
-//	auto const q_2 = 3.0/4.0 * current_q + 1.0/4.0 * q_1 + 1.0/4.0 * m_delta_t * f(q_1);
-
-//	auto const next_q = 1.0/3.0 * current_q + 2.0/3.0 * q_2 + 2.0/3.0 * m_delta_t * f(q_2);
-
-//	return next_q;
-
-	return q_1;
-
-}
 
 
 

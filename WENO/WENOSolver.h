@@ -16,7 +16,7 @@ namespace euler
 	{
 	private:
 
-		double const m_eps = 1e-4;
+		double const m_eps = 1e-3;
 
 		static int const gaussian_points_number = 6;
 
@@ -79,7 +79,7 @@ namespace euler
 
 		explicit WENOSolver(std::vector<Zone> const &constraints,
 						std::function<void(TriangularMesh const&, TriangularMesh const&, double)> const &bcFunc,
-						std::array<double, 3> const &triangleProp = {0.0, 0.0, 0.0},
+						MeshParams const &triangleProp,
 						double gamma = 5.0 / 3.0) : T(constraints, bcFunc, triangleProp, gamma)
 		{}
 
@@ -485,8 +485,8 @@ namespace euler
 			}
 
 
-
-/*            arma::mat B(6, 10);
+/*
+            arma::mat B(6, 10);
             B.fill(0.0);
             arma::vec::fixed<6> f;
             for (int j = 0; j < 10; ++j)
@@ -536,6 +536,8 @@ namespace euler
 
 */
 			//getting gammas
+            M *= 10000;
+            d *= 10000;
 			arma::vec9 gammas = arma::solve(M, d);
 
 

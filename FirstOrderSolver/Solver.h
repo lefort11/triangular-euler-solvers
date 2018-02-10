@@ -20,10 +20,10 @@ namespace euler
 		{
 			static int const NX = 300;
 			static int const NY = 300;
-			double const X1 = -1.5;
-			double const X2 = 8.0;
-			double const Y1 = -4.0;
-			double const Y2 = 4.0;
+			double const X1 = X_LEFT;
+			double const X2 = X_RIGHT;
+			double const Y1 = Y_BOT;
+			double const Y2 = Y_TOP;
 			double const HX = (X2 - X1) / NX;
 			double const HY = (Y2 - Y1) / NX;
 			std::array<double, NX> X;
@@ -37,7 +37,7 @@ namespace euler
 		Area m_area;
 
 
-		std::array<double, 3> m_triangularizationProperties;
+		MeshParams m_triangularizationProperties;
 
 
 		//const std::function<std::array<double, 4>(GEOM_FADE2D::Point2)> m_initStateFunc;
@@ -63,7 +63,7 @@ namespace euler
 
 		explicit Solver(std::vector<Zone> const& constraints,
 						std::function<void(TriangularMesh const&, TriangularMesh const&, double)>  const& bcFunc,
-						std::array<double, 3> const& triangleProp = {0.0, 0.0, 0.0},
+						MeshParams const& triangleProp,
 						double gamma = 1.4): m_area(constraints),
 												 m_triangularizationProperties(triangleProp),
 												 m_boundaryConditionFunction(bcFunc),
@@ -166,7 +166,24 @@ namespace euler
 		 * @param f	right part of the diff equation
 		 * @return q-vector at next time layer
 		**/
-		Vec4 RungeKuttaTVDStep(Vec4 const& current_q, std::function<Vec4(Vec4 const&)> const& f) const;
+		template<typename T>
+		Vec4 RungeKuttaTVDStep(Vec4 const& current_q, T const& f) const
+		{
+
+			auto const q_1 = current_q + m_delta_t * f(current_q);
+
+		//	auto const q_2 = 3.0/4.0 * current_q + 1.0/4.0 * q_1 + 1.0/4.0 * m_delta_t * f(q_1);
+
+		//	auto const next_q = 1.0/3.0 * current_q + 2.0/3.0 * q_2 + 2.0/3.0 * m_delta_t * f(q_2);
+
+		//	return next_q;
+
+			return q_1;
+
+		}
+
+		//	Vec4 RungeKuttaTVDStep(Vec4 const& current_q, std::function<Vec4(Vec4 const&)> const& f) const;
+
 
 		/**
 		 * @return triangleNumber-th triangle's area
