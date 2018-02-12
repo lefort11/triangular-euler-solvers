@@ -29,7 +29,8 @@ TriangularMesh Area::Triangulate(MeshParams const& triangleProperties,
 {
 
 	//making bounding rectangle
-	GEOM_FADE2D::Point2 p1(X_LEFT, Y_BOT), p2(X_LEFT, Y_TOP), p3(X_RIGHT, Y_BOT), p4(X_RIGHT, Y_TOP);
+	//GEOM_FADE2D::Point2 p1(X_LEFT, Y_BOT), p2(X_LEFT, Y_TOP), p3(X_RIGHT, Y_BOT), p4(X_RIGHT, Y_TOP);
+	GEOM_FADE2D::Point2 p1(-1, -1), p2(-1, 1), p3(1, -1), p4(1, 1);
 	m_globalArea.insert(p1);
 	m_globalArea.insert(p2);
 	m_globalArea.insert(p3);
@@ -94,7 +95,7 @@ TriangularMesh Area::Triangulate(MeshParams const& triangleProperties,
     params.gridLength = triangleProperties.gridLength;
 	params.growFactor = triangleProperties.growFactor;
 	params.growFactorMinArea = triangleProperties.growFactorMinArea;
-    //params.capAspectLimit = 0.9;
+    params.capAspectLimit = triangleProperties.capAspectLimit;
 
 //	m_globalArea.refine(pBoundedZone, triangleProperties[0], triangleProperties[1], triangleProperties[2], true);
 	m_globalArea.refineAdvanced(&params);

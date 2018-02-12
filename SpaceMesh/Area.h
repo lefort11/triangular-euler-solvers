@@ -41,6 +41,7 @@ namespace euler
         double gridLength = DBL_MAX;
         double growFactor = 5.0;
         double growFactorMinArea = 0.001;
+		double capAspectLimit = 10.0;
 
     };
 
