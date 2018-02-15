@@ -87,7 +87,7 @@ TriangularMesh Area::Triangulate(MeshParams const& triangleProperties,
 	//refining final zone
 	auto pBoundedZone(pGrowZone->convertToBoundedZone());
 
-	GEOM_FADE2D::MeshGenParams params(pBoundedZone); //changed
+	MyMeshGenParams params(pBoundedZone); //changed
 	params.minAngleDegree = triangleProperties.minAngleDegree;
 	params.minEdgeLength = triangleProperties.minEdgeLength;
 	params.maxEdgeLength = triangleProperties.maxEdgeLength;

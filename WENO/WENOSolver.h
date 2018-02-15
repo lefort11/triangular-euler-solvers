@@ -811,8 +811,14 @@ namespace euler
 		std::array<Vec4, 9> omega_waved_minus;
 		Vec4 omega_waved_minus_sum{0.0, 0.0, 0.0, 0.0};
 
+		double eps0;
+		auto const barycenter = pTriangle->getBarycenter();
+		if((barycenter.x() > -1.5) && (barycenter.x() < 8.0) && (std::fabs(barycenter.y()) < 4.0))
+			eps0 = 1e-3;
+		else
+			eps0 = 1e-4;
 
-        Vec4 const eps{m_eps, m_eps, m_eps, m_eps};
+        Vec4 const eps{eps0, eps0, eps0, eps0};
 
 		auto const weights_to_be_treated =
                 triangleRecData.so_polynomial.coeffsAtPoints[current_g_n].weights_to_be_treated;

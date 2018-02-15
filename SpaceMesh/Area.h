@@ -45,6 +45,25 @@ namespace euler
 
     };
 
+    class MyMeshGenParams: public GEOM_FADE2D::MeshGenParams
+    {
+    public:
+        MyMeshGenParams(GEOM_FADE2D::Zone2* pZone): MeshGenParams(pZone)
+        {}
+
+        double getMaxEdgeLength(GEOM_FADE2D::Triangle2* pT) override
+        {
+            auto const barycenter = pT->getBarycenter();
+            if((barycenter.x() > -1.5) && (barycenter.x() < 8.0) && (std::fabs(barycenter.y()) < 4.0))
+            {
+                return maxEdgeLength;
+            }
+            return 1.5 * maxEdgeLength;
+
+        }
+
+	};
+
 
 
     //!@brief Zone class describes a zone bounded by some functions.

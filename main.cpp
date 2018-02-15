@@ -75,7 +75,7 @@ int main()
 	euler::MeshParams meshParams;
 	meshParams.minAngleDegree = 27.0;
 	meshParams.minEdgeLength = 0.0008;
-	meshParams.maxEdgeLength = 0.2;
+	meshParams.maxEdgeLength = 0.14;
 	meshParams.growFactor = 2.0;
     meshParams.capAspectLimit = 2.0;
 //	meshParams.gridVector = GEOM_FADE2D::Vector2(1.0, 1.0);
