@@ -38,11 +38,12 @@ void Solver::Calculate(double time)
 
 		UpdateBoundingMesh(currentTime);
 
-		std::cout << currentTime << std::endl;
+        std::cout << currentTime << std::endl;
 
 
 
-		//trngl_cntr - triangle counter
+
+        //trngl_cntr - triangle counter
 #pragma omp parallel for
 		for(int trngl_number = 0; trngl_number < m_triangles.size(); ++trngl_number)
 		{
@@ -80,14 +81,34 @@ void Solver::Calculate(double time)
 
 			GetGasParamsFromQ(nextQs[trngl_cntr], m_triangles[trngl_cntr]->density, m_triangles[trngl_cntr]->velocityX,
 							  m_triangles[trngl_cntr]->velocityY, m_triangles[trngl_cntr]->pressure);
+            if(!(m_triangles[trngl_cntr]->density > 0.01))
+            {
+                std::cout << "density " << m_triangles[trngl_cntr]->density << " "
+                          << m_triangles[trngl_cntr]->getBarycenter().x() << " "
+                          << m_triangles[trngl_cntr]->getBarycenter().y() << std::endl;
+                if(m_triangles[trngl_cntr]->density <= 0.01)
+                    m_triangles[trngl_cntr]->density = 0.01;
+                else //NaN
+                    throw 2;
 
-		}
+            }
+            if(!(m_triangles[trngl_cntr]->pressure > 0.01))
+            {
+                std::cout << "pressure  " << m_triangles[trngl_cntr]->pressure << " "
+                          << m_triangles[trngl_cntr]->getBarycenter().x() << " "
+                          << m_triangles[trngl_cntr]->getBarycenter().y() << std::endl;
+                throw 2;
+
+            }
+
+
+        }
 
 		currentTime += m_delta_t;
 
 		if(timeLayersNumber % 20 == 0)
 		{
-			std::stringstream stln;
+            std::stringstream stln;
 			stln << std::setw(10) << std::setfill('0') << timeLayersNumber;
 			std::string clcPath("results/clc/" + stln.str() + ".clc");
 			ClcOutput(clcPath, m_delta_t, currentTime, timeLayersNumber);

@@ -811,12 +811,15 @@ namespace euler
 		std::array<Vec4, 9> omega_waved_minus;
 		Vec4 omega_waved_minus_sum{0.0, 0.0, 0.0, 0.0};
 
-		double eps0;
-		auto const barycenter = pTriangle->getBarycenter();
-		if((barycenter.x() > -1.5) && (barycenter.x() < 8.0) && (std::fabs(barycenter.y()) < 4.0))
-			eps0 = 1e-3;
-		else
-			eps0 = 1e-4;
+//        double area = pTriangle->getArea2D();
+        //double eps0 = 4 * sqr(std::min(T::m_meshProperties.gridLength, T::m_meshProperties.maxEdgeLength)) / 144;
+        //double eps0 = std::sqrt(2 * pTriangle->getArea2D()) / 144;
+        double eps0 = std::max(std::min(2.0 * T::m_max_area / T::m_total_area, 1e-2), 1e-6);
+/*        auto const barycenter = pTriangle->getBarycenter();
+		if(!((barycenter.x() > -2.0) && (barycenter.x() < 7.3) && (std::fabs(barycenter.y()) < 5.0)))
+			eps0 = 1e-3; */
+
+
 
         Vec4 const eps{eps0, eps0, eps0, eps0};
 

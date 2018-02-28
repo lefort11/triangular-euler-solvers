@@ -18,8 +18,8 @@ namespace euler
 
 		struct CartesianMesh
 		{
-			static int const NX = 300;
-			static int const NY = 300;
+			static int const NX = 310;
+			static int const NY = 310;
 			double const X1 = X_LEFT;
 			double const X2 = X_RIGHT;
 			double const Y1 = Y_BOT;
@@ -36,15 +36,13 @@ namespace euler
 
 		Area m_area;
 
-
-		MeshParams m_triangularizationProperties;
-
-
 		//const std::function<std::array<double, 4>(GEOM_FADE2D::Point2)> m_initStateFunc;
 
 	protected:
 
-		TriangularMesh m_triangles;
+        MeshParams m_meshProperties;
+
+        TriangularMesh m_triangles;
 
 		TriangularMesh m_boundingTriangles;
 
@@ -56,6 +54,8 @@ namespace euler
 																					m_boundaryConditionFunction;
 
 		double m_lambda_max;
+        double m_max_area = 0.0;
+        double m_total_area = 0.0;
 
 	public:
 
@@ -65,7 +65,7 @@ namespace euler
 						std::function<void(TriangularMesh const&, TriangularMesh const&, double)>  const& bcFunc,
 						MeshParams const& triangleProp,
 						double gamma = 1.4): m_area(constraints),
-												 m_triangularizationProperties(triangleProp),
+												 m_meshProperties(triangleProp),
 												 m_boundaryConditionFunction(bcFunc),
 												 m_gamma(gamma),
 												 m_delta_t(0),
@@ -80,7 +80,14 @@ namespace euler
 
 		virtual void Init(std::function<std::array<double, 4>(GEOM_FADE2D::Point2)> const& initStateFunction)
 		{
-			m_triangles = m_area.Triangulate(m_triangularizationProperties, initStateFunction);
+			m_triangles = m_area.Triangulate(m_meshProperties, initStateFunction);
+            for(int i = 0; i < m_triangles.size(); ++i)
+            {
+                auto const area = m_triangles[i]->getArea2D();
+                m_total_area += area;
+                if (area > m_max_area)
+                    m_max_area = area;
+            }
 
 			CreateBoundingMesh();
 
@@ -224,7 +231,7 @@ namespace euler
 
 			m_lambda_max = 0.0;
 
-			for(int i =0; i < m_triangles.size(); ++i)
+			for(int i = 0; i < m_triangles.size(); ++i)
 			{
 
 				if(min_area > m_triangles[i]->getArea2D())
@@ -304,8 +311,9 @@ namespace euler
 			auto const eps = E - 0.5 * velocity_sqr_abs;
 			pressure = (m_gamma - 1.0) * eps * density;
 
-			if(!(density > 0))
+/*			if(!(density > 0))
             {
+
                 std::cout << "density " << density << std::endl;
                 throw 2;
             }
@@ -317,7 +325,7 @@ namespace euler
 #else
                 throw 2;
 #endif
-            }
+            } */
 		}
 
 	public:
@@ -399,9 +407,9 @@ namespace euler
 		{
 			bool b1, b2, b3;
 
-			b1 = sign(pt, v1, v2) <= 0.0;
-			b2 = sign(pt, v2, v3) <= 0.0;
-			b3 = sign(pt, v3, v1) <= 0.0;
+			b1 = sign(pt, v1, v2) < 0.0;
+			b2 = sign(pt, v2, v3) < 0.0;
+			b3 = sign(pt, v3, v1) < 0.0;
 
 			return ((b1 == b2) && (b2 == b3));
 		}
@@ -422,7 +430,6 @@ namespace euler
 #pragma omp parallel for
 			for(int i = 0; i < m_cartesianMesh.NX; ++i)
 			{
-#pragma omp parallel for
 				for(int j = 0; j < m_cartesianMesh.NY; ++j)
 				{
 					auto const point = GEOM_FADE2D::Point2(m_cartesianMesh.X[i], m_cartesianMesh.Y[j]);
@@ -573,7 +580,7 @@ namespace euler
 
 
 
-			m_triangles = m_area.Triangulate(m_triangularizationProperties, [](GEOM_FADE2D::Point2 point)
+			m_triangles = m_area.Triangulate(m_meshProperties, [](GEOM_FADE2D::Point2 point)
 			{
 				
 			});

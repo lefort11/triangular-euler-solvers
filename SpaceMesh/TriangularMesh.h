@@ -282,7 +282,7 @@ namespace euler
 				{
 
 					vtriangles[3] = vtriangles[1]->ReflectTriangle(0);
-/*                    if((std::fabs(vtriangles[3]->getCorner(1)->x() - tr1->getCorner(ind1_0)->x()) < 1e-4) &&
+                    if((std::fabs(vtriangles[3]->getCorner(1)->x() - tr1->getCorner(ind1_0)->x()) < 1e-4) &&
                             (std::fabs((vtriangles[3]->getCorner(1)->y() - tr1->getCorner(ind1_0)->y())) < 1e-4))
                     {
                         delete vtriangles[3];
@@ -293,9 +293,9 @@ namespace euler
                     {
                         vtriangles[3]->SetVirtual(true);
                         vtriangles[3]->SetParentIndex(vtriangles[1]->ParentIndex());
-                    } */
-					vtriangles[3]->SetVirtual(true);
-					vtriangles[3]->SetParentIndex(vtriangles[1]->ParentIndex());
+                    }
+//					vtriangles[3]->SetVirtual(true);
+//					vtriangles[3]->SetParentIndex(vtriangles[1]->ParentIndex());
 
 				}
 
@@ -398,7 +398,7 @@ namespace euler
 				{
 
 					vtriangles[6] = vtriangles[4]->ReflectTriangle(2);
- /*                   if((std::fabs(vtriangles[6]->getCorner(1)->x() - tr2->getCorner(ind2_0)->x()) < 1e-4) &&
+					if((std::fabs(vtriangles[6]->getCorner(1)->x() - tr2->getCorner(ind2_0)->x()) < 1e-4) &&
                             (std::fabs(vtriangles[6]->getCorner(1)->y() -  tr2->getCorner(ind2_0)->y()) < 1e-4))
                     {
                         delete vtriangles[6];
@@ -409,9 +409,9 @@ namespace euler
                         vtriangles[6]->SetVirtual(true);
                         vtriangles[6]->SetParentIndex(vtriangles[4]->ParentIndex());
                     }
-*/
-					vtriangles[6]->SetVirtual(true);
-					vtriangles[6]->SetParentIndex(vtriangles[4]->ParentIndex());
+
+//					vtriangles[6]->SetVirtual(true);
+//					vtriangles[6]->SetParentIndex(vtriangles[4]->ParentIndex());
 				}
 
 

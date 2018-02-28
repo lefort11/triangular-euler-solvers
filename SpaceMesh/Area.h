@@ -6,11 +6,17 @@
 
 #include "TriangularMesh.h"
 
+/*
 #define X_LEFT (-4.2)
 #define X_RIGHT 7.8
 #define Y_BOT (-6.0)
 #define Y_TOP 6.0
+*/
 
+#define X_LEFT (-2.0)
+#define X_RIGHT 8.0
+#define Y_BOT (-5.0)
+#define Y_TOP 5.0
 
 namespace euler
 {
@@ -58,7 +64,7 @@ namespace euler
             {
                 return maxEdgeLength;
             }
-            return 1.5 * maxEdgeLength;
+            return 1.7 * maxEdgeLength;
 
         }
 

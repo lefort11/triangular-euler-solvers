@@ -61,26 +61,71 @@ int main()
 
 
 									 }, 4);
+    euler::ConstraintFunction smallsquare([](double t)
+                                     {
+                                         double x, y;
+                                         if((t >= 0) && (t < 0.25))
+                                         {
+                                             x = -0.2;
+                                             //y = -4 * t + 1;
+                                             y = 0.2 + (-0.2 - 0.2) * 4 * t;
+                                             // y = -Y_TOP * (t - 0.25) / 0.25 + Y_BOT * t / 0.25;
+                                         }
+                                         else if((t >= 0.25) && (t < 0.5))
+                                         {
+                                             y = -0.2;
+                                             //x = 4*(t - 0.25) - 1;
+                                             x = -0.2 + (0.2 + 0.2) * 4 * (t - 0.25);
+                                         }
+                                         else if((t >= 0.5) && (t < 0.75))
+                                         {
+                                             x = 0.2;
+                                             // y = 4*(t - 0.5) - 1;
+                                             y = -0.2 + (0.2 + 0.2) * 4 * (t - 0.5);
+                                         }
+                                         else
+                                         {
+                                             y = 0.2;
+                                             //x = -4*(t - 0.75) + 1;
+                                             x = 0.2 + (-0.2 - 0.2) * 4 * (t - 0.75);
+                                         }
+
+                                         return GEOM_FADE2D::Point2(x, y);
+
+
+                                     }, 4);
 
 	euler::Zone zone(circle1, false),
 //				zone2(circle2, true),
-				zone3(square, true);
+				zone3(square, true),
+                zone4(smallsquare, false);
 
 	std::vector<euler::Zone> vZone;
 	vZone.push_back(zone);
 //	vZone.push_back(zone2);
 	vZone.push_back(zone3);
+//    vZone.push_back(zone4);
 
-
-	euler::MeshParams meshParams;
-	meshParams.minAngleDegree = 27.0;
-	meshParams.minEdgeLength = 0.0008;
-	meshParams.maxEdgeLength = 0.14;
+    euler::MeshParams meshParams;
+    meshParams.minAngleDegree = 30.0;
+    meshParams.minEdgeLength = 0.0008;
+    meshParams.maxEdgeLength = 0.15;
 	meshParams.growFactor = 2.0;
     meshParams.capAspectLimit = 2.0;
-//	meshParams.gridVector = GEOM_FADE2D::Vector2(1.0, 1.0);
-	//meshParams.gridLength = 0.8;
+	meshParams.gridVector = GEOM_FADE2D::Vector2(1.0, 0.0);
+//    meshParams.gridLength = 1.5 * meshParams.maxEdgeLength;
+    meshParams.gridLength = 0.07134;
 
+/*
+	euler::MeshParams meshParams;
+	meshParams.minAngleDegree = 30.0;
+	meshParams.minEdgeLength = 0.001;
+	meshParams.maxEdgeLength = 5.0;
+//	meshParams.growFactor = 2.0;
+    meshParams.capAspectLimit = 2.0;
+//	meshParams.gridVector = GEOM_FADE2D::Vector2(1.0, 1.0);
+	meshParams.gridLength = 0.12;
+*/
 
 
 
@@ -105,7 +150,7 @@ int main()
                 } else if ((bcmesh[triangle_counter]->getBarycenter().x() >= X_RIGHT))//right, upper and lower boundaries
                 {
                     bcmesh[triangle_counter]->density = mainMesh[index]->density;
-                    bcmesh[triangle_counter]->velocityX = std::fabs(mainMesh[index]->velocityX);
+                    bcmesh[triangle_counter]->velocityX = mainMesh[index]->velocityX;
                     bcmesh[triangle_counter]->velocityY = mainMesh[index]->velocityY;
                     bcmesh[triangle_counter]->pressure = mainMesh[index]->pressure;
 
