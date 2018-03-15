@@ -22,7 +22,7 @@ namespace euler
 			bool isBoundary = false;
 			int parentIndex = -1;
 
-			bool toBeReconstructed = true;
+			bool toBeReconstructed = false;
 
 		} m_boundaryProperties;
 
@@ -194,11 +194,13 @@ namespace euler
 
 
 
-		void CreateWENOVirtualTriangles(int const edgeNumber, std::array<Triangle*, 7> & vtriangles)
+		void CreateWENOVirtualTriangles(int const edgeNumber, std::vector<Triangle*> & vtriangles)
 		{
+            vtriangles.resize(7);
 			vtriangles[0] = ReflectTriangle(edgeNumber);
 			vtriangles[0]->SetVirtual(true);
 			vtriangles[0]->SetParentIndex(m_index);
+            vtriangles[0]->SetReconstructionNecessity(true);
 
 			auto const p0 = getCorner(edgeNumber);
 			auto const p1 = getCorner((edgeNumber + 1) % 3);
@@ -209,9 +211,123 @@ namespace euler
 			auto const ind1 = vtriangles[0]->getIntraTriangleIndex(getCorner((edgeNumber + 1) % 3));
 			auto const ind2 = vtriangles[0]->getIntraTriangleIndex(getCorner((edgeNumber + 2) % 3));
 
+            if((GetOppTriangle((edgeNumber + 1) % 3) == nullptr) || (GetOppTriangle((edgeNumber + 2) % 3) == nullptr))
+            {
+                vtriangles.resize(10);
+                if(GetOppTriangle((edgeNumber + 1) % 3) == nullptr)
+                {
+                    vtriangles[1] = ReflectTriangle((edgeNumber + 1) % 3);
+                    vtriangles[1]->SetParentIndex(m_index);
+                    vtriangles[1]->SetReconstructionNecessity(true);
 
-            if((GetOppTriangle((edgeNumber + 1) % 3) != nullptr) &&
-                    !(GetOppTriangle((edgeNumber + 1) % 3)->IsVirtual()))
+                    vtriangles[2] = new Triangle();
+                    vtriangles[2]->setVertexPointer(0, getCorner((edgeNumber + 2) % 3));
+                    vtriangles[2]->setVertexPointer(1, vtriangles[0]->getCorner(1));
+                    vtriangles[2]->setVertexPointer(2, vtriangles[1]->getCorner(1));
+                    vtriangles[2]->SetOppTriangle(1, vtriangles[1]);
+                    vtriangles[2]->SetOppTriangle(2, vtriangles[0]);
+                    vtriangles[2]->SetParentIndex(m_index);
+
+                    vtriangles[1]->SetOppTriangle(2, vtriangles[2]);
+                    vtriangles[0]->SetOppTriangle(0, vtriangles[2]);
+
+                    vtriangles[3] = vtriangles[2]->ReflectTriangle(0);
+                    vtriangles[3]->SetParentIndex(GetOppTriangle((edgeNumber + 2) % 3) == nullptr ? m_index :
+                                                  GetOppTriangle((edgeNumber + 2) % 3)->Index());
+
+                    vtriangles[0]->SetVirtual(true);
+                    vtriangles[1]->SetVirtual(true);
+                    vtriangles[2]->SetVirtual(true);
+                    vtriangles[3]->SetVirtual(true);
+
+
+					vtriangles[4] = vtriangles[0]->ReflectTriangle(2);
+                    vtriangles[5] = vtriangles[1]->ReflectTriangle(0);
+                    vtriangles[4]->SetVirtual(true);
+                    vtriangles[5]->SetVirtual(true);
+                    vtriangles[4]->SetParentIndex(GetOppTriangle((edgeNumber + 2) % 3) == nullptr ? m_index :
+                                                  GetOppTriangle((edgeNumber + 2) % 3)->Index());
+                    vtriangles[5]->SetParentIndex(GetOppTriangle((edgeNumber + 2) % 3) == nullptr ? m_index :
+                                                  GetOppTriangle((edgeNumber + 2) % 3)->Index());
+
+
+                    vtriangles[6] = vtriangles[4]->ReflectTriangle(0);
+                    vtriangles[7] = vtriangles[4]->ReflectTriangle(2);
+                    vtriangles[6]->SetVirtual(true);
+                    vtriangles[7]->SetVirtual(true);
+                    vtriangles[6]->SetParentIndex(vtriangles[4]->ParentIndex());
+                    vtriangles[7]->SetParentIndex(vtriangles[4]->ParentIndex());
+
+
+                    vtriangles[8] = vtriangles[5]->ReflectTriangle(0);
+                    vtriangles[9] = vtriangles[5]->ReflectTriangle(2);
+                    vtriangles[8]->SetVirtual(true);
+                    vtriangles[9]->SetVirtual(true);
+                    vtriangles[8]->SetParentIndex(vtriangles[5]->ParentIndex());
+                    vtriangles[9]->SetParentIndex(vtriangles[5]->ParentIndex());
+
+
+
+
+                }
+                if(GetOppTriangle((edgeNumber + 2) % 3) == nullptr)
+                {
+                    vtriangles[1] = ReflectTriangle((edgeNumber + 2) % 3);
+                    vtriangles[1]->SetParentIndex(m_index);
+                    vtriangles[1]->SetReconstructionNecessity(true);
+
+                    vtriangles[2] = new Triangle();
+                    vtriangles[2]->setVertexPointer(0, getCorner((edgeNumber + 1) % 3));
+                    vtriangles[2]->setVertexPointer(1, vtriangles[1]->getCorner(1));
+                    vtriangles[2]->setVertexPointer(2, vtriangles[0]->getCorner(1));
+                    vtriangles[2]->SetOppTriangle(1, vtriangles[0]);
+                    vtriangles[2]->SetOppTriangle(2, vtriangles[1]);
+                    vtriangles[2]->SetParentIndex(m_index);
+
+                    vtriangles[1]->SetOppTriangle(0, vtriangles[2]);
+                    vtriangles[0]->SetOppTriangle(2, vtriangles[2]);
+
+                    vtriangles[3] = vtriangles[2]->ReflectTriangle(0);
+                    vtriangles[3]->SetParentIndex(GetOppTriangle((edgeNumber + 1) % 3) == nullptr ? m_index :
+                                                  GetOppTriangle((edgeNumber + 1) % 3)->Index());
+
+
+					vtriangles[0]->SetVirtual(true);
+					vtriangles[1]->SetVirtual(true);
+					vtriangles[2]->SetVirtual(true);
+					vtriangles[3]->SetVirtual(true);
+
+
+                    vtriangles[4] = vtriangles[0]->ReflectTriangle(0);
+                    vtriangles[5] = vtriangles[1]->ReflectTriangle(2);
+                    vtriangles[4]->SetVirtual(true);
+                    vtriangles[5]->SetVirtual(true);
+                    vtriangles[4]->SetParentIndex(GetOppTriangle((edgeNumber + 1) % 3) == nullptr ? m_index :
+                                                  GetOppTriangle((edgeNumber + 1) % 3)->Index());
+                    vtriangles[5]->SetParentIndex(GetOppTriangle((edgeNumber + 1) % 3) == nullptr ? m_index :
+                                                  GetOppTriangle((edgeNumber + 1) % 3)->Index());
+
+
+                    vtriangles[6] = vtriangles[4]->ReflectTriangle(0);
+                    vtriangles[7] = vtriangles[4]->ReflectTriangle(2);
+                    vtriangles[6]->SetVirtual(true);
+                    vtriangles[7]->SetVirtual(true);
+                    vtriangles[6]->SetParentIndex(vtriangles[4]->ParentIndex());
+                    vtriangles[7]->SetParentIndex(vtriangles[4]->ParentIndex());
+
+
+                    vtriangles[8] = vtriangles[5]->ReflectTriangle(0);
+                    vtriangles[9] = vtriangles[5]->ReflectTriangle(2);
+                    vtriangles[8]->SetVirtual(true);
+                    vtriangles[9]->SetVirtual(true);
+                    vtriangles[8]->SetParentIndex(vtriangles[5]->ParentIndex());
+                    vtriangles[9]->SetParentIndex(vtriangles[5]->ParentIndex());
+
+
+                }
+
+            }
+            else
 			{
 
 				auto const tr1 = GetOppTriangle((edgeNumber + 1) % 3);
@@ -300,36 +416,6 @@ namespace euler
 				}
 
 
-			}
-			else
-			{
-
-/*				vtriangles[1] = vtriangles[0]->ReflectTriangle(ind1);
-				vtriangles[1]->SetVirtual(true);
-				vtriangles[1]->SetParentIndex(m_index);
-
-				vtriangles[2] = vtriangles[1]->ReflectTriangle(0);
-				vtriangles[3] = vtriangles[1]->ReflectTriangle(2);
-				vtriangles[2]->SetVirtual(true);
-				vtriangles[3]->SetVirtual(true);
-				vtriangles[2]->SetParentIndex(m_index);
-				vtriangles[3]->SetParentIndex(m_index);
-				*/
-				auto const vtr1 = vtriangles[0]->SummonThreeTriangles(ind1);
-				for(int i = 0; i < 3; ++i)
-				{
-					vtr1[i]->SetVirtual(true);
-					vtr1[i]->SetParentIndex(m_index);
-					vtriangles[i + 1] = vtr1[i];
-				}
-			}
-
-
-
-			if((GetOppTriangle((edgeNumber + 2) % 3) != nullptr) &&
-			   !(GetOppTriangle((edgeNumber + 2) % 3)->IsVirtual()))
-			{
-
 				auto const tr2 = GetOppTriangle((edgeNumber + 2) % 3);
 				auto const ind2_0 = tr2->getIntraTriangleIndex(p0);
 				vtriangles[4] = new Triangle();
@@ -416,39 +502,7 @@ namespace euler
 
 
 			}
-			else
-			{
-/*
-				vtriangles[4] = vtriangles[0]->ReflectTriangle(ind2);
-				vtriangles[4]->SetVirtual(true);
-				vtriangles[4]->SetParentIndex(m_index);
 
-				vtriangles[5] = vtriangles[4]->ReflectTriangle(0);
-				vtriangles[6] = vtriangles[4]->ReflectTriangle(2);
-				vtriangles[5]->SetVirtual(true);
-				vtriangles[6]->SetVirtual(true);
-				vtriangles[5]->SetParentIndex(m_index);
-				vtriangles[6]->SetParentIndex(m_index);
-				*/
-
-				auto const vtr2 = vtriangles[0]->SummonThreeTriangles(ind2);
-				for(int i = 0; i < 3; ++i)
-				{
-					vtr2[i]->SetVirtual(true);
-					vtr2[i]->SetParentIndex(m_index);
-					vtriangles[i + 4] = vtr2[i];
-				}
-
-			}
-
-
-			for(int i = 0; i < 7; ++i)
-            {
-                if(vtriangles[i] != nullptr)
-                    vtriangles[i]->SetReconstructionNecessity(false);
-
-            }
-            vtriangles[0]->SetReconstructionNecessity(true);
 		}
 
 

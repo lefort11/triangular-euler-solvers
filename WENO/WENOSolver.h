@@ -257,16 +257,19 @@ namespace euler
 					Triangle* pTriangle = T::m_triangles[triangle_counter];
 					pTriangle->SetBoundary(true);
 
-					std::array<Triangle*, 7> virtualTriangles;
+					std::vector<Triangle*> virtualTriangles(7);
 
 					pTriangle->CreateWENOVirtualTriangles(edge_number, virtualTriangles);
 
-					virtualTriangles[0]->SetIndex(m_vBoundaryReconstructionData.size());
-					m_vBoundaryReconstructionData.push_back(TriangleReconstructionData());
-					for(int i = 0; i < 7; ++i)
+					for(int i = 0; i < virtualTriangles.size(); ++i)
 					{
-//						virtualTriangles[i]->SetIndex(T::m_boundingTriangles.size());
 						T::m_boundingTriangles.push_back(virtualTriangles[i]);
+
+                        if((virtualTriangles[i] != nullptr) && virtualTriangles[i]->ToBeReconstructed())
+                        {
+                            virtualTriangles[i]->SetIndex(m_vBoundaryReconstructionData.size());
+                            m_vBoundaryReconstructionData.push_back(TriangleReconstructionData());
+                        }
 
 					}
 
@@ -355,12 +358,15 @@ namespace euler
 
 		}
 #pragma omp parallel for
-		for(int triangle_number = 0; triangle_number < m_vBoundaryReconstructionData.size(); triangle_number++)
+		for(int triangle_number = 0; triangle_number < T::m_boundingTriangles.size(); triangle_number++)
 		{
 
-            assert(T::m_boundingTriangles[triangle_number * 7]->ToBeReconstructed());
-			GetTriangleReconstructionData(m_vBoundaryReconstructionData[triangle_number],
-                                          T::m_boundingTriangles[triangle_number * 7]);
+            if((T::m_boundingTriangles[triangle_number] != nullptr) &&
+					T::m_boundingTriangles[triangle_number]->ToBeReconstructed())
+            {
+                GetTriangleReconstructionData(m_vBoundaryReconstructionData[T::m_boundingTriangles[triangle_number]->Index()],
+                                              T::m_boundingTriangles[triangle_number]);
+            }
 
 		}
 	}
@@ -814,7 +820,11 @@ namespace euler
 //        double area = pTriangle->getArea2D();
         //double eps0 = 4 * sqr(std::min(T::m_meshProperties.gridLength, T::m_meshProperties.maxEdgeLength)) / 144;
         //double eps0 = std::sqrt(2 * pTriangle->getArea2D()) / 144;
+
+
         double eps0 = std::max(std::min(2.0 * T::m_max_area / T::m_total_area, 1e-2), 1e-6);
+
+        eps0 = std::sqrt(pTriangle->getArea2D());
 /*        auto const barycenter = pTriangle->getBarycenter();
 		if(!((barycenter.x() > -2.0) && (barycenter.x() < 7.3) && (std::fabs(barycenter.y()) < 5.0)))
 			eps0 = 1e-3; */
@@ -835,12 +845,12 @@ namespace euler
 
 			SmoothIndicatorReconstructionData const& smIndData = triangleRecData.smoothIndicatorData[polynom_num];
 
-			Vec4 smoothIndicator = arma::square(smIndData.alpha[0] * q[ind_0]
+			Vec4 smoothIndicator = 0.5 / std::sqrt(pTriangle->getArea2D()) * arma::sqrt(arma::square(smIndData.alpha[0] * q[ind_0]
 										   + smIndData.alpha[1] * q[ind_1]
 										   + smIndData.alpha[2] * q[ind_2]) +
 							  arma::square(smIndData.beta[0] * q[ind_0]
 										   + smIndData.beta[1] * q[ind_1]
-										   + smIndData.beta[2] * q[ind_2]);
+										   + smIndData.beta[2] * q[ind_2]));
 
 			if(!weights_to_be_treated)
 			{
