@@ -95,16 +95,29 @@ int main()
 
                                      }, 4);
 
-	euler::Zone zone(circle1, false),
+    euler::ConstraintFunction wing([](double t)
+                                   {
+                                       double const x0 = -0.05;
+                                       double const y0 = 0.05;
+                                       double const r = 1.06;
+                                       t *= 2*M_PI;
+                                       double abs = euler::sqr(x0) + euler::sqr(y0) + euler::sqr(r) + 2*x0*r*cos(t) + 2*y0*r*sin(t);
+                                       double x = 0.5 *(x0 + r*cos(t) + (x0 + r*cos(t))/abs) + 0.8;
+                                       double y = 0.5 *(y0 + r*sin(t) - (y0 + r*sin(t))/abs) * 1.1;
+
+                                       double const theta = -M_PI / 90;
+                                       return GEOM_FADE2D::Point2(x*cos(theta) - y*sin(theta), x*sin(theta) + y * cos(theta));
+                                   }, 35);
+
+	euler::Zone smallCircle(circle1, false),
 //				zone2(circle2, true),
-				zone3(square, true),
-                zone4(smallsquare, false);
+				hugeSquare(square, true),
+                smallSquare(smallsquare, false),
+                wingZone(wing, false);
 
 	std::vector<euler::Zone> vZone;
-	vZone.push_back(zone);
-//	vZone.push_back(zone2);
-	vZone.push_back(zone3);
-//    vZone.push_back(zone4);
+    vZone.push_back(hugeSquare);
+    vZone.push_back(smallCircle);
 
     euler::MeshParams meshParams;
     meshParams.minAngleDegree = 30.0;
@@ -129,7 +142,7 @@ int main()
 
 
 
-	euler::WENOSolver<euler::RoeSolver>
+	euler::RoeSolver
 			solver(vZone, [](euler::TriangularMesh const& bcmesh, euler::TriangularMesh const& mainMesh, double time)
 	{
 
@@ -197,7 +210,7 @@ int main()
 //					return std::array<double, 4>{{1.0, 0.0, 0.0, 1.0}};
 				});
 
-	solver.Calculate(100.0);
+	solver.Calculate(60.0);
 
 	solver.Output("results/density2D.txt", "results/velocity2D.txt", "results/pressure2D.txt");
 	solver.ClcOutput("results/test.clc", 0, 0.5, 1);

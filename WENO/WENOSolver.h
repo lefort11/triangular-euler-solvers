@@ -822,9 +822,9 @@ namespace euler
         //double eps0 = std::sqrt(2 * pTriangle->getArea2D()) / 144;
 
 
-        double eps0 = std::max(std::min(2.0 * T::m_max_area / T::m_total_area, 1e-2), 1e-6);
+        //double eps0 = std::max(std::min(T::m_max_area / T::m_total_area, 1e-2), 1e-6);
 
-        eps0 = std::sqrt(pTriangle->getArea2D());
+        double eps0 = 2.0 * pTriangle->getArea2D() / T::m_total_area;
 /*        auto const barycenter = pTriangle->getBarycenter();
 		if(!((barycenter.x() > -2.0) && (barycenter.x() < 7.3) && (std::fabs(barycenter.y()) < 5.0)))
 			eps0 = 1e-3; */
@@ -836,6 +836,8 @@ namespace euler
 		auto const weights_to_be_treated =
                 triangleRecData.so_polynomial.coeffsAtPoints[current_g_n].weights_to_be_treated;
 
+
+
 		for(int polynom_num = 0; polynom_num < 9; ++polynom_num)
 		{
 
@@ -845,17 +847,19 @@ namespace euler
 
 			SmoothIndicatorReconstructionData const& smIndData = triangleRecData.smoothIndicatorData[polynom_num];
 
-			Vec4 smoothIndicator = 0.5 / std::sqrt(pTriangle->getArea2D()) * arma::sqrt(arma::square(smIndData.alpha[0] * q[ind_0]
+			Vec4 smoothIndicator = 1.0 / pTriangle->getArea2D() * (arma::square(smIndData.alpha[0] * q[ind_0]
 										   + smIndData.alpha[1] * q[ind_1]
 										   + smIndData.alpha[2] * q[ind_2]) +
 							  arma::square(smIndData.beta[0] * q[ind_0]
 										   + smIndData.beta[1] * q[ind_1]
 										   + smIndData.beta[2] * q[ind_2]));
 
+
 			if(!weights_to_be_treated)
 			{
                 auto const gamma = triangleRecData.so_polynomial.coeffsAtPoints[current_g_n].gammas[polynom_num];
 				omega_waved[polynom_num] = Vec4{gamma, gamma, gamma, gamma} / arma::square(eps + smoothIndicator); //changed 1.5
+
 
 				omega_waved_sum += omega_waved[polynom_num];
 			}
@@ -867,10 +871,11 @@ namespace euler
 				omega_waved_plus[polynom_num] = Vec4{gamma_plus, gamma_plus, gamma_plus, gamma_plus}
 												/ arma::square(eps + smoothIndicator);
 
+
 				omega_waved_plus_sum += omega_waved_plus[polynom_num];
 
 				omega_waved_minus[polynom_num] = Vec4{gamma_minus, gamma_minus, gamma_minus, gamma_minus}
-                                                 / arma::square(eps + smoothIndicator);
+                                                    / arma::square(eps + smoothIndicator);
 
 				omega_waved_minus_sum += omega_waved_minus[polynom_num];
 
