@@ -29,7 +29,7 @@ namespace euler
 		 * @param edgeNumber
 		 * @return Numerical flux vector
 		 */
-		Vec4 CalculateFlux(Vec4 const& qVec, int triangleNumber, int edgeNumber) const override;
+		virtual Vec4 CalculateFlux(Vec4 const& qVec, int triangleNumber, int edgeNumber) const override;
 
 		Vec4 Reconstruct(Vec4 const &qVec, Triangle const *pTriangle, int edgeNumber, int gPointNumber) const override
 		{

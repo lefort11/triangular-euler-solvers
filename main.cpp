@@ -8,6 +8,7 @@
 #include "FirstOrderSolver/LaxFriedrichSolver.h"
 #include "WENO/WENOSolver.h"
 #include "FirstOrderSolver/RoeSolver.h"
+#include "HYBRID/HYBRIDSolver.h"
 
 
 int main()
@@ -142,7 +143,7 @@ int main()
 
 
 
-	euler::RoeSolver
+	euler::HYBRIDSolver
 			solver(vZone, [](euler::TriangularMesh const& bcmesh, euler::TriangularMesh const& mainMesh, double time)
 	{
 

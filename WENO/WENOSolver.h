@@ -16,7 +16,7 @@ namespace euler
 	{
 	private:
 
-		double const m_eps = 1e-3;
+		double const m_eps = 1e-6;
 
 		static int const gaussian_points_number = 6;
 
@@ -824,14 +824,14 @@ namespace euler
 
         //double eps0 = std::max(std::min(T::m_max_area / T::m_total_area, 1e-2), 1e-6);
 
-        double eps0 = 2.0 * pTriangle->getArea2D() / T::m_total_area;
+ //       double eps0 = 2.0 * pTriangle->getArea2D() / T::m_total_area;
 /*        auto const barycenter = pTriangle->getBarycenter();
 		if(!((barycenter.x() > -2.0) && (barycenter.x() < 7.3) && (std::fabs(barycenter.y()) < 5.0)))
 			eps0 = 1e-3; */
 
 
 
-        Vec4 const eps{eps0, eps0, eps0, eps0};
+        Vec4 const eps{m_eps, m_eps, m_eps, m_eps};
 
 		auto const weights_to_be_treated =
                 triangleRecData.so_polynomial.coeffsAtPoints[current_g_n].weights_to_be_treated;
@@ -847,7 +847,7 @@ namespace euler
 
 			SmoothIndicatorReconstructionData const& smIndData = triangleRecData.smoothIndicatorData[polynom_num];
 
-			Vec4 smoothIndicator = 1.0 / pTriangle->getArea2D() * (arma::square(smIndData.alpha[0] * q[ind_0]
+			Vec4 smoothIndicator = (arma::square(smIndData.alpha[0] * q[ind_0]
 										   + smIndData.alpha[1] * q[ind_1]
 										   + smIndData.alpha[2] * q[ind_2]) +
 							  arma::square(smIndData.beta[0] * q[ind_0]
