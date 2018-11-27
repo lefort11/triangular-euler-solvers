@@ -19,7 +19,7 @@ int main()
 										  auto x = 0.2 * cos(2.0 * M_PI * t);
 										  auto y = 0.2 * sin(2.0 * M_PI * t);
 										  return GEOM_FADE2D::Point2(x, y);
-									  }, 40); //0,2 50
+									  }, 50); //0,2 50
 
 	euler::ConstraintFunction circle2([](double t)
 									  {
@@ -110,7 +110,23 @@ int main()
                                        return GEOM_FADE2D::Point2(x*cos(theta) - y*sin(theta), x*sin(theta) + y * cos(theta));
                                    }, 35);
 
-	euler::Zone smallCircle(circle1, false),
+    euler::ConstraintFunction wing2([](double t)
+                                    {
+                                        double const x0 = -0.05;
+                                        double const y0 = 0.00;
+                                        double const r = 1.07;
+                                        t *= 2*M_PI;
+                                        double abs = euler::sqr(x0) + euler::sqr(y0) + euler::sqr(r) + 2*x0*r*cos(t) + 2*y0*r*sin(t);
+                                        double x = 0.5 *(x0 + r*cos(t) + (x0 + r*cos(t))/abs) + 0.8;
+                                        double y = 0.5 *(y0 + r*sin(t) - (y0 + r*sin(t))/abs) * 1.7;
+
+                                        double const theta = -M_PI / 25;
+                                        return GEOM_FADE2D::Point2(x*cos(theta) - y*sin(theta), x*sin(theta) + y * cos(theta));
+                                    }, 35);
+
+
+
+    euler::Zone smallCircle(circle1, false),
 //				zone2(circle2, true),
 				hugeSquare(square, true),
                 smallSquare(smallsquare, false),
@@ -128,7 +144,7 @@ int main()
     meshParams.capAspectLimit = 2.0;
 	meshParams.gridVector = GEOM_FADE2D::Vector2(1.0, 0.0);
 //    meshParams.gridLength = 1.5 * meshParams.maxEdgeLength;
-    meshParams.gridLength = 0.07134;
+    meshParams.gridLength = 0.0423121;
 
 /*
 	euler::MeshParams meshParams;

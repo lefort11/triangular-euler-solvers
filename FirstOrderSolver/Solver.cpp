@@ -12,12 +12,31 @@ void Solver::Calculate(double time)
 
 	std::cout << m_triangles.size() << std::endl;
 
+	// ***************** Calculating time step ********************** //
+	m_min_area = m_triangles[0]->getArea2D();
+	m_lambda_max = 0.0;
+	for(int i = 0; i < m_triangles.size(); ++i)
+	{
+
+		if(m_min_area > m_triangles[i]->getArea2D())
+			m_min_area = m_triangles[i]->getArea2D();
+
+		auto const velocity_abs = std::sqrt(sqr(m_triangles[i]->velocityX) + sqr(m_triangles[i]->velocityY));
+		auto const sound_speed = std::sqrt(m_gamma * m_triangles[i]->pressure / m_triangles[i]->density);
+		if(m_lambda_max < std::fabs(velocity_abs + sound_speed))
+			m_lambda_max = std::fabs(velocity_abs + sound_speed);
+
+
+	}
+
 	auto currentTime = 0.0;
 	m_delta_t = CalculateTimeStep();
 
 	if(m_delta_t > time)
 		m_delta_t = time;
 	//currentTime += delta_t;
+
+	// ************************************************************* //
 
 	std::vector<Vec4> currentQs(m_triangles.size());
 
@@ -101,8 +120,19 @@ void Solver::Calculate(double time)
 
             }
 
+			// ****** getting lambda_max for calculating time step ********//
+			m_lambda_max = 0.0;
 
-        }
+			auto const velocity_abs = std::sqrt(sqr(m_triangles[trngl_cntr]->velocityX)
+												+ sqr(m_triangles[trngl_cntr]->velocityY));
+			auto const sound_speed = std::sqrt(m_gamma * m_triangles[trngl_cntr]->pressure /
+													   m_triangles[trngl_cntr]->density);
+			if(m_lambda_max < std::fabs(velocity_abs + sound_speed))
+				m_lambda_max = std::fabs(velocity_abs + sound_speed);
+
+			// ****************************************************//
+
+		}
 
 		currentTime += m_delta_t;
 
@@ -114,6 +144,7 @@ void Solver::Calculate(double time)
 			ClcOutput(clcPath, m_delta_t, currentTime, timeLayersNumber);
 
 		}
+
 
 		m_delta_t = CalculateTimeStep();
 		if(currentTime + m_delta_t > time)

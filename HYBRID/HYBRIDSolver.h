@@ -69,7 +69,7 @@ namespace euler
 
 		double Alpha(Triangle* const pTriangle) const
 		{
-			double const alpha_max = 0.4;
+			double const alpha_max = 0.3;
 
 			double const s = pTriangle->getArea2D();
 			double const h = std::sqrt(s);

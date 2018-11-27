@@ -18,8 +18,8 @@ namespace euler
 
 		struct CartesianMesh
 		{
-			static int const NX = 310;
-			static int const NY = 310;
+			static int const NX = 351;
+			static int const NY = 351;
 			double const X1 = X_LEFT;
 			double const X2 = X_RIGHT;
 			double const Y1 = Y_BOT;
@@ -53,7 +53,8 @@ namespace euler
 		std::function<void(TriangularMesh const& boundaryMesh, TriangularMesh const& mainMesh, double currentTime)>
 																					m_boundaryConditionFunction;
 
-		double m_lambda_max;
+		double m_lambda_max = 0.0;
+        double m_min_area = 1e10;
         double m_max_area = 0.0;
         double m_total_area = 0.0;
 
@@ -227,25 +228,9 @@ namespace euler
 		{
 
 			double const sigma = 0.55;
-			auto min_area = m_triangles[0]->getArea2D();
-
-			m_lambda_max = 0.0;
-
-			for(int i = 0; i < m_triangles.size(); ++i)
-			{
-
-				if(min_area > m_triangles[i]->getArea2D())
-					min_area = m_triangles[i]->getArea2D();
-
-				auto const velocity_abs = std::sqrt(sqr(m_triangles[i]->velocityX) + sqr(m_triangles[i]->velocityY));
-				auto const sound_speed = std::sqrt(m_gamma * m_triangles[i]->pressure / m_triangles[i]->density);
-				if(m_lambda_max < std::fabs(velocity_abs + sound_speed))
-					m_lambda_max = std::fabs(velocity_abs + sound_speed);
 
 
-			}
-
-			return sigma * std::sqrt(min_area) / (2.0 * m_lambda_max);
+			return sigma * std::sqrt(m_min_area) / (2.0 * m_lambda_max);
 
 		}
 
